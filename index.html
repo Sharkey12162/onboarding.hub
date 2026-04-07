@@ -554,6 +554,30 @@
     transition: background 0.15s;
   }
   .btn-danger:hover { background: #fee2e2; }
+  .btn-print {
+    background: #f0fdf4;
+    color: var(--green);
+    border: 1px solid #bbf7d0;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-print:hover { background: #dcfce7; }
+
+  @media print {
+    header, nav, .nh-toolbar, .section:not(#checklist), #checklist .section-header p { display: none !important; }
+    #checklist { display: block !important; }
+    body { background: white; }
+    .hire-card { box-shadow: none; border: 1px solid #ccc; }
+    .hire-card-header { background: #0f1f3d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cl-item { break-inside: avoid; }
+    .cl-category { break-inside: avoid; }
+    .link-edit-form, .edit-link-btn, .btn-print, .btn-danger, .btn-primary, .nh-select { display: none !important; }
+  }
 
   /* Add hire modal */
   .modal-bg {
@@ -799,9 +823,137 @@
   <section id="resources" class="section active">
     <div class="section-header">
       <h2>Onboarding Resources</h2>
-      <p>Key files, platforms, and tools used throughout the hiring and onboarding process. Click ✏️ to edit any link.</p>
+      <p>Key files, platforms, and tools used throughout the hiring and onboarding process. Click ✏️ next to any link to edit it.</p>
     </div>
-    <div class="cards-grid" id="resources-grid"></div>
+    <div class="cards-grid">
+
+      <div class="card" data-res-id="r1">
+        <div class="card-category">Hiring / Onboarding</div>
+        <h3>New Hire Checklist</h3>
+        <p class="card-desc"><strong>What:</strong> Centralized checklist with detailed information for each new hire — office and field staff.<br><br><strong>Why:</strong> Track onboarding completion and quickly access required info for team members.<br><br><strong>When:</strong> Used during the hiring and onboarding process, and as an ongoing reference.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">📄 New hire checklist – Updated File Sept. 2025.xlsx</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r1',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r1">
+          <input type="text" id="lt-r1" placeholder="Link display text" /><input type="url" id="lu-r1" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r1')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r1',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r1')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r2">
+        <div class="card-category">Hiring / Onboarding</div>
+        <h3>Diploma / GED / OSHA List</h3>
+        <p class="card-desc"><strong>What:</strong> Confirms whether each technician has submitted OSHA 10/30 certification and a Diploma or GED.<br><br><strong>Why:</strong> Required to verify eligibility for NEBB exam certification and ensure compliance.<br><br><strong>When:</strong> Requested immediately after the offer letter is sent via Indeed messages.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">📄 Diploma_GED_OSHA List.xlsx</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r2',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r2">
+          <input type="text" id="lt-r2" placeholder="Link display text" /><input type="url" id="lu-r2" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r2')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r2',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r2')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r3">
+        <div class="card-category">Hiring / Onboarding</div>
+        <h3>OSHA 10 &amp; 30 Cards – Certificates</h3>
+        <p class="card-desc"><strong>What:</strong> SharePoint location storing OSHA 10 and 30 cards/certificates, organized by region.<br><br><strong>Why:</strong> Centralized official record of OSHA certifications — stores actual documents, not just Yes/No status.<br><br><strong>When:</strong> Uploaded as soon as documents are received via Indeed message or email.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">🗂️ SharePoint: OSHA 10 &amp; 30 Cards – All Documents</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r3',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r3">
+          <input type="text" id="lt-r3" placeholder="Link display text" /><input type="url" id="lu-r3" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r3')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r3',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r3')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r4">
+        <div class="card-category">Hiring / Onboarding</div>
+        <h3>Tech Education Certs (SharePoint)</h3>
+        <p class="card-desc"><strong>What:</strong> SharePoint location for technicians' education documents (Diploma, GED, transcripts). Files saved as LastName, FirstName.<br><br><strong>Why:</strong> Education records required for future technician certification.<br><br><strong>When:</strong> Requested immediately after the offer letter — same message as OSHA request.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">🗂️ High School or GED Diplomas – OneDrive</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r4',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r4">
+          <input type="text" id="lt-r4" placeholder="Link display text" /><input type="url" id="lu-r4" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r4')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r4',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r4')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r5">
+        <div class="card-category">ATA / Training</div>
+        <h3>ATA Progress – ATA Hours Sheet</h3>
+        <p class="card-desc"><strong>What:</strong> Tracks technician training hours by region, including start date and calculated tenure.<br><br><strong>Why:</strong> Monitor weekly Costcode Training hours and validate the 2-hour weekly guideline.<br><br><strong>When:</strong> Reviewed every <strong>Monday</strong> using data from PM assistants in the ATA Training Cost – Weekly Reports.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">📄 ATA progress since Feb 2025.xlsx</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r5',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r5">
+          <input type="text" id="lt-r5" placeholder="Link display text" /><input type="url" id="lu-r5" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r5')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r5',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r5')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r6">
+        <div class="card-category">ATA / Training</div>
+        <h3>ATA Progress – Timelogs Training Sheet</h3>
+        <p class="card-desc"><strong>What:</strong> Sheet used to paste training hours each technician punches under the Training Cost Code.<br><br><strong>Why:</strong> Capture and consolidate weekly training time data for tracking and reporting.<br><br><strong>When:</strong> Updated every <strong>Monday</strong> using weekly timelog data.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">📄 ATA progress since Feb 2025.xlsx</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r6',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r6">
+          <input type="text" id="lt-r6" placeholder="Link display text" /><input type="url" id="lu-r6" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r6')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r6',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r6')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r7">
+        <div class="card-category">ATA / Training</div>
+        <h3>ATA Progress – ATA Progress Sheet</h3>
+        <p class="card-desc"><strong>What:</strong> Tracks ATA lesson status for each technician using color coding (green, yellow, blue).<br><br><strong>Why:</strong> Monitor lesson progress, identify technicians behind, and document PM approval.<br><br><strong>When:</strong> Reviewed and updated every <strong>Friday</strong>.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">📄 ATA progress since Feb 2025.xlsx</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r7',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r7">
+          <input type="text" id="lt-r7" placeholder="Link display text" /><input type="url" id="lu-r7" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r7')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r7',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r7')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r8">
+        <div class="card-category">ATA / Training</div>
+        <h3>Airadigm Technical Academy</h3>
+        <p class="card-desc"><strong>What:</strong> Training platform where technicians complete ATA lessons. Accounts use Airadigm emails.<br><br><strong>Why:</strong> Manage and track technician training, ensure course completion, support ATA requirements.<br><br><strong>When:</strong> Enrolled on first day of orientation; progress reviewed every Friday.</p>
+        <div class="link-wrap">
+          <a class="card-link res-link-display" href="https://joe-balancer.teachable.com/admin/dashboard" target="_blank">🔗 Open Teachable Dashboard</a>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r8',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r8">
+          <input type="text" id="lt-r8" placeholder="Link display text" /><input type="url" id="lu-r8" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r8')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r8',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r8')">Reset</button></div>
+        </div>
+      </div>
+
+      <div class="card" data-res-id="r9">
+        <div class="card-category">ATA / Training</div>
+        <h3>Digital ATA Scores</h3>
+        <p class="card-desc"><strong>What:</strong> SharePoint location with individual spreadsheets per technician (Last Name, First Name – Digital ATA Scores) tracking ATA scores and learning progress.<br><br><strong>Why:</strong> Centralized record of each technician's ATA performance over time.<br><br><strong>When:</strong> New spreadsheet created at orientation start; updated every Friday.</p>
+        <div class="link-wrap">
+          <span class="card-link res-link-display">🗂️ Digital ATA Scores – SharePoint</span>
+          <button class="edit-link-btn" onclick="toggleLinkEdit('r9',event)" title="Edit link">✏️</button>
+        </div>
+        <div class="link-edit-form" id="lef-r9">
+          <input type="text" id="lt-r9" placeholder="Link display text" /><input type="url" id="lu-r9" placeholder="Paste URL here (leave blank if no link)" />
+          <div class="link-edit-actions"><button class="save-link-btn" onclick="saveLinkEdit('r9')">Save</button><button class="cancel-link-btn" onclick="toggleLinkEdit('r9',null,true)">Cancel</button><button class="reset-link-btn" onclick="resetLink('r9')">Reset</button></div>
+        </div>
+      </div>
+
+    </div>
   </section>
 
   <!-- ═══════════ RESPONSIBILITIES ═══════════ -->
@@ -1229,7 +1381,7 @@
   <section id="weekly" class="section">
     <div class="section-header">
       <h2>Weekly Tasks Log</h2>
-      <p>Full task history for Paula and Natalia. Filter by owner or status.</p>
+      <p>Full task history for Paula and Natalia. Filter by owner or status. &nbsp;<span style="background:#eff6ff;color:#1d4ed8;font-size:0.78rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid #bfdbfe;">✏️ Click any cell to edit it</span></p>
     </div>
 
     <div class="wt-filters">
@@ -1252,7 +1404,8 @@
             <th style="width:9%">Priority</th>
             <th style="width:10%">Status</th>
             <th style="width:10%">Category</th>
-            <th style="width:12%">Notes</th>
+            <th style="width:10%">Notes</th>
+            <th style="width:8%">Link</th>
           </tr>
         </thead>
         <tbody id="wt-body"></tbody>
@@ -1272,6 +1425,7 @@
       </select>
       <button class="btn-primary" onclick="openModal()">+ Add New Hire</button>
       <button class="btn-danger" id="delete-btn" onclick="deleteHire()" style="display:none">🗑 Remove</button>
+      <button class="btn-print" id="print-btn" onclick="printChecklist()" style="display:none">🖨️ Print to PDF</button>
     </div>
 
     <div id="hire-display">
@@ -1413,6 +1567,7 @@ function populateSelect(selectedId) {
 
 function loadHire(id) {
   const deleteBtn = document.getElementById('delete-btn');
+  const printBtn  = document.getElementById('print-btn');
   if (!id) {
     document.getElementById('hire-display').innerHTML = `
       <div class="hire-empty">
@@ -1421,9 +1576,11 @@ function loadHire(id) {
         <p>Click <strong>+ Add New Hire</strong> to get started, or select an existing hire above.</p>
       </div>`;
     deleteBtn.style.display = 'none';
+    printBtn.style.display  = 'none';
     return;
   }
   deleteBtn.style.display = 'inline-block';
+  printBtn.style.display  = 'inline-block';
   const hires = getHires();
   const hire = hires.find(h => h.id === id);
   if (!hire) return;
@@ -1524,6 +1681,10 @@ function deleteHire() {
   loadHire('');
 }
 
+function printChecklist() {
+  window.print();
+}
+
 // Close modal on bg click
 document.getElementById('modal-bg').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
@@ -1619,26 +1780,116 @@ function statusClass(s) {
   return '';
 }
 
+// Load task overrides from localStorage
+function getTaskOverrides() {
+  try { return JSON.parse(localStorage.getItem('wt_overrides') || '{}'); } catch { return {}; }
+}
+function saveTaskOverrides(obj) { localStorage.setItem('wt_overrides', JSON.stringify(obj)); }
+
+function getTaskData(idx) {
+  const overrides = getTaskOverrides();
+  return Object.assign({}, tasks[idx], overrides[idx] || {});
+}
+
+function showSaved() {
+  const el = document.getElementById('wt-save-note');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+let currentFilter = 'all';
+
 function renderTable(filter) {
+  if (filter !== undefined) currentFilter = filter;
   const tbody = document.getElementById('wt-body');
   tbody.innerHTML = '';
-  tasks.forEach(t => {
-    const hidden = filter !== 'all' && !(
-      t.owner.toLowerCase().includes(filter.toLowerCase()) ||
-      (t.status && t.status.toLowerCase() === filter.toLowerCase())
+  tasks.forEach((_, idx) => {
+    const t = getTaskData(idx);
+    const hidden = currentFilter !== 'all' && !(
+      t.owner.toLowerCase().includes(currentFilter.toLowerCase()) ||
+      (t.status && t.status.toLowerCase() === currentFilter.toLowerCase())
     );
     const tr = document.createElement('tr');
+    tr.setAttribute('data-idx', idx);
     if (hidden) tr.setAttribute('data-hidden', 'true');
     tr.innerHTML = `
-      <td>${t.task}</td>
-      <td style="font-size:0.78rem;font-weight:600;color:var(--navy)">${t.owner}</td>
-      <td style="font-size:0.77rem;color:var(--muted)">${t.due || '—'}</td>
-      <td>${t.priority ? `<span class="priority-badge ${priorityClass(t.priority)}">${t.priority}</span>` : ''}</td>
-      <td>${t.status ? `<span class="status-badge ${statusClass(t.status)}">${t.status}</span>` : ''}</td>
-      <td style="font-size:0.77rem;color:var(--muted)">${t.category || ''}</td>
-      <td style="font-size:0.76rem;color:var(--muted);font-style:italic">${t.notes || ''}</td>
+      <td class="editable" onclick="editCell(this,${idx},'task')">${t.task}</td>
+      <td class="editable" onclick="editCell(this,${idx},'owner')" style="font-size:0.78rem;font-weight:600;color:var(--navy)">${t.owner}</td>
+      <td class="editable" onclick="editCell(this,${idx},'due')" style="font-size:0.77rem;color:var(--muted)">${t.due || '—'}</td>
+      <td class="editable" onclick="editCell(this,${idx},'priority')">${t.priority ? `<span class="priority-badge ${priorityClass(t.priority)}">${t.priority}</span>` : '<span style="color:var(--muted);font-size:0.75rem">click to set</span>'}</td>
+      <td class="editable" onclick="editCell(this,${idx},'status')">${t.status ? `<span class="status-badge ${statusClass(t.status)}">${t.status}</span>` : '<span style="color:var(--muted);font-size:0.75rem">click to set</span>'}</td>
+      <td class="editable" onclick="editCell(this,${idx},'category')" style="font-size:0.77rem;color:var(--muted)">${t.category || ''}</td>
+      <td class="editable" onclick="editCell(this,${idx},'notes')" style="font-size:0.76rem;color:var(--muted);font-style:italic">${t.notes || ''}</td>
+      <td style="text-align:center">${t.link ? `<a href="${t.link}" target="_blank" style="font-size:0.78rem;color:var(--sky);font-weight:600;text-decoration:none;background:#eff6ff;padding:3px 9px;border-radius:6px;white-space:nowrap;">🔗 Open</a>` : `<button onclick="editCell(this.closest('td'),${idx},'link')" style="background:none;border:1px dashed var(--border);color:var(--muted);font-size:0.72rem;padding:3px 8px;border-radius:6px;cursor:pointer;">+ add</button>`}</td>
     `;
     tbody.appendChild(tr);
+  });
+}
+
+function editCell(td, idx, field) {
+  if (td.classList.contains('editing')) return;
+  td.classList.add('editing');
+  const t = getTaskData(idx);
+  const current = t[field] || '';
+
+  let input;
+  if (field === 'priority') {
+    input = document.createElement('select');
+    input.className = 'cell-select';
+    ['','Urgent','High','Medium','Low'].forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v || '— none —';
+      if (v === current) o.selected = true;
+      input.appendChild(o);
+    });
+  } else if (field === 'status') {
+    input = document.createElement('select');
+    input.className = 'cell-select';
+    ['','Not started','In progress','Completed'].forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v || '— none —';
+      if (v === current) o.selected = true;
+      input.appendChild(o);
+    });
+  } else if (field === 'due') {
+    input = document.createElement('input');
+    input.type = 'date';
+    input.className = 'cell-input';
+    input.value = (current === '—' ? '' : current);
+  } else if (field === 'link') {
+    input = document.createElement('input');
+    input.type = 'url';
+    input.className = 'cell-input';
+    input.value = current;
+    input.placeholder = 'Paste URL then Enter';
+  } else {
+    input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'cell-input';
+    input.value = current;
+  }
+
+  td.innerHTML = '';
+  td.appendChild(input);
+  input.focus();
+  if (input.tagName === 'INPUT') { input.select(); }
+
+  function commit() {
+    const newVal = input.value.trim();
+    const overrides = getTaskOverrides();
+    if (!overrides[idx]) overrides[idx] = {};
+    overrides[idx][field] = newVal;
+    saveTaskOverrides(overrides);
+    showSaved();
+    renderTable();
+  }
+
+  input.addEventListener('blur', commit);
+  input.addEventListener('change', () => { if (input.tagName === 'SELECT') commit(); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { input.blur(); }
+    if (e.key === 'Escape') { td.classList.remove('editing'); renderTable(); }
   });
 }
 
@@ -1649,6 +1900,85 @@ function filterTasks(filter, btn) {
 }
 
 renderTable('all');
+
+// ══════════════════════════════════
+//  RESOURCES — editable links
+// ══════════════════════════════════
+
+const RES_DEFAULTS = {
+  r1:{ text:'📄 New hire checklist – Updated File Sept. 2025.xlsx', url:'' },
+  r2:{ text:'📄 Diploma_GED_OSHA List.xlsx', url:'' },
+  r3:{ text:'🗂️ SharePoint: OSHA 10 & 30 Cards – All Documents', url:'' },
+  r4:{ text:'🗂️ High School or GED Diplomas – OneDrive', url:'' },
+  r5:{ text:'📄 ATA progress since Feb 2025.xlsx', url:'' },
+  r6:{ text:'📄 ATA progress since Feb 2025.xlsx', url:'' },
+  r7:{ text:'📄 ATA progress since Feb 2025.xlsx', url:'' },
+  r8:{ text:'🔗 Open Teachable Dashboard', url:'https://joe-balancer.teachable.com/admin/dashboard' },
+  r9:{ text:'🗂️ Digital ATA Scores – SharePoint', url:'' },
+};
+
+function getResLinks() {
+  try { return JSON.parse(localStorage.getItem('res_links') || '{}'); } catch { return {}; }
+}
+function saveResLinks(o) { localStorage.setItem('res_links', JSON.stringify(o)); }
+
+function applyResLink(id) {
+  const saved = getResLinks()[id];
+  const def   = RES_DEFAULTS[id];
+  const text  = saved ? saved.text : def.text;
+  const url   = saved ? saved.url  : def.url;
+  const wrap  = document.querySelector('[data-res-id="' + id + '"] .link-wrap');
+  if (!wrap) return;
+  const existing = wrap.querySelector('.res-link-display');
+  if (existing) existing.remove();
+  const el = url ? document.createElement('a') : document.createElement('span');
+  el.className = 'card-link res-link-display';
+  el.textContent = text;
+  if (url) { el.href = url; el.target = '_blank'; }
+  wrap.insertBefore(el, wrap.querySelector('.edit-link-btn'));
+  // pre-fill inputs
+  const lt = document.getElementById('lt-' + id);
+  const lu = document.getElementById('lu-' + id);
+  if (lt) lt.value = text;
+  if (lu) lu.value = url;
+}
+
+function initResources() {
+  Object.keys(RES_DEFAULTS).forEach(applyResLink);
+}
+
+function toggleLinkEdit(id, e, forceClose) {
+  if (e) e.stopPropagation();
+  const form = document.getElementById('lef-' + id);
+  if (!form) return;
+  const isOpen = form.classList.contains('open');
+  document.querySelectorAll('.link-edit-form.open').forEach(f => f.classList.remove('open'));
+  if (!forceClose && !isOpen) {
+    form.classList.add('open');
+    const lt = document.getElementById('lt-' + id);
+    if (lt) lt.focus();
+  }
+}
+
+function saveLinkEdit(id) {
+  const text = (document.getElementById('lt-' + id) || {}).value || '';
+  const url  = (document.getElementById('lu-' + id) || {}).value || '';
+  const overrides = getResLinks();
+  overrides[id] = { text: text.trim(), url: url.trim() };
+  saveResLinks(overrides);
+  document.getElementById('lef-' + id).classList.remove('open');
+  applyResLink(id);
+}
+
+function resetLink(id) {
+  const overrides = getResLinks();
+  delete overrides[id];
+  saveResLinks(overrides);
+  document.getElementById('lef-' + id).classList.remove('open');
+  applyResLink(id);
+}
+
+initResources();
 </script>
 </body>
 </html>
