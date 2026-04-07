@@ -572,7 +572,7 @@
     header, nav, .nh-toolbar, .section:not(#checklist), #checklist .section-header p { display: none !important; }
     #checklist { display: block !important; }
     body { background: white; }
-    .hire-card { box-shadow: none; border: 1px solid #ccc; }
+    .hire-card { box-shadow: none; border: 1px solid #ccc; } .print-dropdown-wrap { display: none !important; }
     .hire-card-header { background: #0f1f3d !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .cl-item { break-inside: avoid; }
     .cl-category { break-inside: avoid; }
@@ -1390,7 +1390,17 @@
       </select>
       <button class="btn-primary" onclick="openModal()">+ Add New Hire</button>
       <button class="btn-danger" id="delete-btn" onclick="deleteHire()" style="display:none">🗑 Remove</button>
-      <button class="btn-print" id="print-btn" onclick="printChecklist()" style="display:none">🖨️ Print to PDF</button>
+      <div class="print-dropdown-wrap" id="print-btn" style="display:none;position:relative;">
+      <button class="btn-print" onclick="togglePrintMenu(event)">🖨️ Print to PDF ▾</button>
+      <div id="print-menu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(15,31,61,0.15);z-index:200;min-width:210px;overflow:hidden;">
+        <div onclick="printAll()" style="padding:13px 18px;cursor:pointer;font-size:14px;font-weight:600;color:var(--navy);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;transition:background 0.15s;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='white'">
+          📋 Print Full Checklist
+        </div>
+        <div onclick="printUnchecked()" style="padding:13px 18px;cursor:pointer;font-size:14px;font-weight:600;color:var(--orange);display:flex;align-items:center;gap:10px;transition:background 0.15s;" onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='white'">
+          ⬜ Print Unchecked Items Only
+        </div>
+      </div>
+    </div>
     </div>
 
     <div id="hire-display">
@@ -1646,8 +1656,56 @@ function deleteHire() {
   loadHire('');
 }
 
-function printChecklist() {
+function togglePrintMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('print-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function() {
+  const menu = document.getElementById('print-menu');
+  if (menu) menu.style.display = 'none';
+});
+
+function printAll() {
+  document.getElementById('print-menu').style.display = 'none';
+  document.querySelectorAll('.cl-item').forEach(item => {
+    item.style.display = 'flex';
+  });
+  document.querySelectorAll('.cl-category').forEach(cat => {
+    cat.style.display = 'block';
+  });
+  window._printMode = 'all';
   window.print();
+}
+
+function printUnchecked() {
+  document.getElementById('print-menu').style.display = 'none';
+  // Hide checked items before printing
+  document.querySelectorAll('.cl-item').forEach(item => {
+    const cb = item.querySelector('.cl-cb');
+    if (cb && cb.classList.contains('checked')) {
+      item.setAttribute('data-hidden-print', 'true');
+      item.style.display = 'none';
+    }
+  });
+  // Hide categories that have no visible items
+  document.querySelectorAll('.cl-category').forEach(cat => {
+    const visible = cat.querySelectorAll('.cl-item:not([data-hidden-print="true"])');
+    if (visible.length === 0) {
+      cat.setAttribute('data-hidden-print', 'true');
+      cat.style.display = 'none';
+    }
+  });
+  window._printMode = 'unchecked';
+  window.print();
+  // Restore after print
+  setTimeout(function() {
+    document.querySelectorAll('[data-hidden-print="true"]').forEach(el => {
+      el.style.display = '';
+      el.removeAttribute('data-hidden-print');
+    });
+    window._printMode = null;
+  }, 1000);
 }
 
 // Close modal on bg click
