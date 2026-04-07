@@ -441,6 +441,260 @@
   .s-notstarted  { background: #f1f5f9; color: #475569; }
   .s-inprogress  { background: #eff6ff; color: #1d4ed8; }
 
+  /* ── NEW HIRE CHECKLIST ── */
+  .nh-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .nh-select {
+    flex: 1;
+    min-width: 180px;
+    max-width: 280px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .nh-select:focus { outline: 2px solid var(--sky); border-color: transparent; }
+  .btn-primary {
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--sky); }
+  .btn-danger {
+    background: #fef2f2;
+    color: var(--red);
+    border: 1px solid #fecaca;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-danger:hover { background: #fee2e2; }
+
+  /* Add hire modal */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15,31,61,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(15,31,61,0.25);
+    animation: fadeIn 0.2s ease;
+  }
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+  .field-group input, .field-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: var(--white);
+  }
+  .field-group input:focus, .field-group select:focus {
+    outline: 2px solid var(--sky);
+    border-color: transparent;
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+  .btn-secondary {
+    background: var(--light);
+    color: var(--muted);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Hire card */
+  .hire-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .hire-card-header {
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: var(--white);
+    padding: 20px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .hire-info h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+  .hire-meta {
+    font-size: 0.78rem;
+    opacity: 0.75;
+    margin-top: 4px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .hire-progress-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 160px;
+  }
+  .hire-progress-label {
+    font-size: 0.78rem;
+    opacity: 0.8;
+  }
+  .hire-progress-bar-bg {
+    width: 160px;
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .hire-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.35s ease;
+  }
+
+  /* Checklist categories */
+  .cl-categories { padding: 22px 26px; }
+  .cl-category { margin-bottom: 22px; }
+  .cl-category:last-child { margin-bottom: 0; }
+  .cl-cat-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sky);
+    padding: 0 0 8px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    user-select: none;
+  }
+  .cl-item:hover { background: var(--light); }
+  .cl-item.done .cl-label { text-decoration: line-through; color: var(--muted); }
+  .cl-item.done .cl-checkbox { background: var(--green); border-color: var(--green); }
+  .cl-item.done .cl-checkbox::after { opacity: 1; }
+  .cl-checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    background: var(--white);
+    transition: all 0.15s;
+    position: relative;
+  }
+  .cl-checkbox::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .cl-label {
+    font-size: 0.87rem;
+    color: var(--text);
+    line-height: 1.45;
+    transition: color 0.15s;
+  }
+  .cl-label small {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .cl-note-flag {
+    font-size: 0.68rem;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+  .hire-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .hire-empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .hire-empty h3 { font-family: 'DM Serif Display', serif; color: var(--navy); margin-bottom: 6px; }
+  .hire-empty p { font-size: 0.88rem; }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     .header-inner { flex-wrap: wrap; padding: 14px 18px; }
@@ -470,6 +724,7 @@
       <button onclick="showSection('responsibilities', this)">📋 Responsibilities</button>
       <button onclick="showSection('orientation', this)">📅 May Orientation</button>
       <button onclick="showSection('weekly', this)">✅ Weekly Tasks</button>
+      <button onclick="showSection('checklist', this)">🆕 New Hire Checklist</button>
     </nav>
   </div>
 </header>
@@ -1040,11 +1295,279 @@
       </table>
     </div>
   </section>
+  <!-- ═══════════ NEW HIRE CHECKLIST ═══════════ -->
+  <section id="checklist" class="section">
+    <div class="section-header">
+      <h2>New Hire Checklist</h2>
+      <p>Track every onboarding step per technician. Data is saved automatically in your browser.</p>
+    </div>
+
+    <div class="nh-toolbar">
+      <select class="nh-select" id="hire-select" onchange="loadHire(this.value)">
+        <option value="">— Select a new hire —</option>
+      </select>
+      <button class="btn-primary" onclick="openModal()">+ Add New Hire</button>
+      <button class="btn-danger" id="delete-btn" onclick="deleteHire()" style="display:none">🗑 Remove</button>
+    </div>
+
+    <div id="hire-display">
+      <div class="hire-empty">
+        <div class="empty-icon">📋</div>
+        <h3>No hire selected</h3>
+        <p>Click <strong>+ Add New Hire</strong> to get started, or select an existing hire above.</p>
+      </div>
+    </div>
+  </section>
 
 </main>
 
+<!-- ── ADD HIRE MODAL ── -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3>Add New Hire</h3>
+    <div class="field-group">
+      <label>Full Name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Justin Holton" />
+    </div>
+    <div class="field-group">
+      <label>Role / Position</label>
+      <select id="f-role">
+        <option value="Field Technician">Field Technician</option>
+        <option value="Survey Technician">Survey Technician</option>
+        <option value="Lead Technician">Lead Technician</option>
+        <option value="Office Staff">Office Staff</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label>Region</label>
+      <input type="text" id="f-region" placeholder="e.g. DFW, Southeast, etc." />
+    </div>
+    <div class="field-group">
+      <label>Orientation / Start Date</label>
+      <input type="date" id="f-date" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveHire()">Add Hire</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ── NAV ──
+// ══════════════════════════════════
+//  NEW HIRE CHECKLIST
+// ══════════════════════════════════
+
+const CHECKLIST_TEMPLATE = [
+  {
+    cat: '📁 Pre-Hire Documentation',
+    items: [
+      { id:'offer_sent',    label:'Offer letter sent' },
+      { id:'phone_conf',    label:'Cell phone number confirmed', note:'Via Indeed message' },
+      { id:'address_conf',  label:'Mailing address confirmed', note:'Via Indeed message' },
+      { id:'osha_recv',     label:'OSHA 10 or OSHA 30 certificate received', note:'Photo or PDF via Indeed/email' },
+      { id:'osha_sp',       label:'OSHA certificate uploaded to SharePoint', note:'Filed by region in OSHA 10 & 30 Cards folder' },
+      { id:'diploma_recv',  label:'High school diploma / GED / transcript received' },
+      { id:'diploma_sp',    label:'Diploma/GED uploaded to SharePoint', note:'Tech Education Certs folder — LastName, FirstName format' },
+      { id:'osha_list',     label:'Added to Diploma_GED_OSHA List.xlsx' },
+    ]
+  },
+  {
+    cat: '💻 Digital Onboarding',
+    items: [
+      { id:'dig_onboard',   label:'Digital onboarding complete', note:'Confirmed in New Hire Spreadsheet' },
+      { id:'lisa_fu',       label:'Followed up with Lisa if completion status unclear' },
+      { id:'nh_checklist',  label:'Added to New Hire Checklist spreadsheet' },
+    ]
+  },
+  {
+    cat: '🖥️ IT Setup & Orientation Day',
+    items: [
+      { id:'it_session',    label:'IT Onboarding session complete with Ana', note:'Send orientation link Monday; session on Orientation Day' },
+      { id:'tools_test',    label:'Tools testing complete', note:'8:15 AM EST with Ana on Orientation Day' },
+      { id:'rc_active',     label:'RingCentral account active', note:'Brenda confirms in Onboarding thread' },
+      { id:'outlook_cal',   label:'Outlook Calendar placeholder set (1 hour)' },
+    ]
+  },
+  {
+    cat: '📱 RC Threads & Team Setup',
+    items: [
+      { id:'rc_social',     label:'Added to Company Social RC Thread' },
+      { id:'rc_field',      label:'Added to Field Tech Resources RC Thread' },
+      { id:'rc_ttb',        label:'Added to Training Touch Base / BZ Info Thread' },
+      { id:'rc_comp',       label:'Added to Competition GROUP RC Thread' },
+      { id:'team_created',  label:'TEAM created (PM + Brenda + new tech)' },
+      { id:'mtg_wed',       label:'Added to New Tech Update (Wednesdays)', note:'⚠ Skip if Survey Technician', flag:'Survey: Skip' },
+      { id:'mtg_thu',       label:'Added to TTB (Thursdays)' },
+      { id:'rc_conf',       label:'Confirmation posted in Orientation thread', note:'Asked tech to confirm meeting attendance' },
+    ]
+  },
+  {
+    cat: '🎓 ATA Training Enrollment',
+    items: [
+      { id:'ata_account',   label:'ATA account created', note:'Use Airadigm email on joe-balancer.teachable.com' },
+      { id:'ata_basics',    label:'Enrolled in Basics course' },
+      { id:'ata_start',     label:'Enrolled in ATA Getting Started course' },
+      { id:'ata_safety',    label:'Enrolled in Safety course' },
+      { id:'ata_scores',    label:'Digital ATA Scores spreadsheet created', note:'SharePoint — Last Name, First Name – Digital ATA Scores' },
+      { id:'ata_progress',  label:'Added to ATA Progress tracking sheet', note:'Color-coded: green/yellow/blue' },
+    ]
+  },
+  {
+    cat: '🗂️ Systems & Admin',
+    items: [
+      { id:'sys_wex',       label:'Added to WEX' },
+      { id:'sys_usab',      label:'Added to USA Balancing' },
+      { id:'sys_qad',       label:'Added to QAD', note:'Coordinate with Lisa for any missing info' },
+      { id:'sys_offcal',    label:'Added to Office Calendar (Outlook)' },
+      { id:'sys_anniv',     label:'Added to Anniversary / Birthday Tracker spreadsheet' },
+      { id:'sys_maps',      label:'Added to AirSolutions & Balancing Employee Location Map (Google My Maps)' },
+    ]
+  },
+];
+
+function getHires() {
+  try { return JSON.parse(localStorage.getItem('nh_hires') || '[]'); } catch { return []; }
+}
+function saveHires(hires) {
+  localStorage.setItem('nh_hires', JSON.stringify(hires));
+}
+
+function populateSelect(selectedId) {
+  const hires = getHires();
+  const sel = document.getElementById('hire-select');
+  sel.innerHTML = '<option value="">— Select a new hire —</option>';
+  hires.forEach(h => {
+    const opt = document.createElement('option');
+    opt.value = h.id;
+    opt.textContent = h.name + (h.role ? ' — ' + h.role : '');
+    if (h.id === selectedId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function loadHire(id) {
+  const deleteBtn = document.getElementById('delete-btn');
+  if (!id) {
+    document.getElementById('hire-display').innerHTML = `
+      <div class="hire-empty">
+        <div class="empty-icon">📋</div>
+        <h3>No hire selected</h3>
+        <p>Click <strong>+ Add New Hire</strong> to get started, or select an existing hire above.</p>
+      </div>`;
+    deleteBtn.style.display = 'none';
+    return;
+  }
+  deleteBtn.style.display = 'inline-block';
+  const hires = getHires();
+  const hire = hires.find(h => h.id === id);
+  if (!hire) return;
+
+  const checked = hire.checked || {};
+  const totalItems = CHECKLIST_TEMPLATE.reduce((a, c) => a + c.items.length, 0);
+  const doneItems  = Object.values(checked).filter(Boolean).length;
+  const pct = Math.round((doneItems / totalItems) * 100);
+
+  let catsHtml = '';
+  CHECKLIST_TEMPLATE.forEach(cat => {
+    let itemsHtml = cat.items.map(item => `
+      <div class="cl-item ${checked[item.id] ? 'done' : ''}" onclick="toggleItem('${id}','${item.id}')">
+        <div class="cl-checkbox"></div>
+        <div class="cl-label">
+          ${item.label}
+          ${item.flag ? `<span class="cl-note-flag">${item.flag}</span>` : ''}
+          ${item.note ? `<small>${item.note}</small>` : ''}
+        </div>
+      </div>`).join('');
+    catsHtml += `
+      <div class="cl-category">
+        <div class="cl-cat-title">${cat.cat}</div>
+        ${itemsHtml}
+      </div>`;
+  });
+
+  const dateStr = hire.date ? new Date(hire.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+
+  document.getElementById('hire-display').innerHTML = `
+    <div class="hire-card">
+      <div class="hire-card-header">
+        <div class="hire-info">
+          <h3>${hire.name}</h3>
+          <div class="hire-meta">
+            ${hire.role ? `<span>💼 ${hire.role}</span>` : ''}
+            ${hire.region ? `<span>📍 ${hire.region}</span>` : ''}
+            ${dateStr ? `<span>📅 Start: ${dateStr}</span>` : ''}
+          </div>
+        </div>
+        <div class="hire-progress-wrap">
+          <div class="hire-progress-label">${doneItems} / ${totalItems} completed (${pct}%)</div>
+          <div class="hire-progress-bar-bg">
+            <div class="hire-progress-bar" id="prog-bar" style="width:${pct}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-categories">${catsHtml}</div>
+    </div>`;
+}
+
+function toggleItem(hireId, itemId) {
+  const hires = getHires();
+  const hire = hires.find(h => h.id === hireId);
+  if (!hire) return;
+  if (!hire.checked) hire.checked = {};
+  hire.checked[itemId] = !hire.checked[itemId];
+  saveHires(hires);
+  loadHire(hireId);
+}
+
+function openModal() {
+  document.getElementById('modal-bg').classList.add('open');
+  document.getElementById('f-name').focus();
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-region').value = '';
+  document.getElementById('f-date').value = '';
+}
+
+function saveHire() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+  const hire = {
+    id: 'h_' + Date.now(),
+    name,
+    role:   document.getElementById('f-role').value,
+    region: document.getElementById('f-region').value.trim(),
+    date:   document.getElementById('f-date').value,
+    checked: {}
+  };
+  const hires = getHires();
+  hires.push(hire);
+  saveHires(hires);
+  closeModal();
+  populateSelect(hire.id);
+  loadHire(hire.id);
+}
+
+function deleteHire() {
+  const id = document.getElementById('hire-select').value;
+  if (!id) return;
+  const hires = getHires().filter(h => h.id !== id);
+  saveHires(hires);
+  populateSelect('');
+  loadHire('');
+}
+
+// Close modal on bg click
+document.getElementById('modal-bg').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init on load
+populateSelect('');
+
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
