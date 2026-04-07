@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Onboarding Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="setup-screen hidden">
+    <div class="setup-card">
+      <div class="setup-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#1A5276"/><path d="M14 24h20M24 14l10 10-10 10" stroke="#F4D03F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Onboarding Hub Setup</h1>
+      <p>Enter your Supabase credentials to connect. You only need to do this once.</p>
+      <div class="form-group">
+        <label>Supabase Project URL</label>
+        <input type="text" id="setup-url" placeholder="https://xxxx.supabase.co" />
+      </div>
+      <div class="form-group">
+        <label>Supabase Anon Key</label>
+        <input type="text" id="setup-key" placeholder="eyJhbGci..." />
+      </div>
+      <button class="btn-primary" onclick="saveConfig()">Connect & Initialize</button>
+      <div id="setup-status" class="setup-status"></div>
+      <details class="setup-help">
+        <summary>Where do I find these?</summary>
+        <p>Go to <strong>app.supabase.com</strong> → Your Project → Settings → API. Copy the <em>Project URL</em> and <em>anon public</em> key.</p>
+      </details>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#1A5276"/><path d="M14 24h20M24 14l10 10-10 10" stroke="#F4D03F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Onboarding Hub</span>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
+          <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="weekly" onclick="switchView('weekly', this)">
+          <span class="nav-icon">📋</span><span class="nav-label">Weekly Tasks</span>
+        </button>
+        <button class="nav-item" data-view="orientation" onclick="switchView('orientation', this)">
+          <span class="nav-icon">🗓️</span><span class="nav-label">May Orientation</span>
+        </button>
+        <button class="nav-item" data-view="responsibilities" onclick="switchView('responsibilities', this)">
+          <span class="nav-icon">👥</span><span class="nav-label">Responsibilities</span>
+        </button>
+        <button class="nav-item" data-view="links" onclick="switchView('links', this)">
+          <span class="nav-icon">🔗</span><span class="nav-label">Resources</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-reset" onclick="resetConfig()">⚙ Settings</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h2 id="view-title">Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search tasks, procedures..." oninput="handleSearch(this.value)" />
+          </div>
+          <div class="filter-group" id="filter-bar"></div>
+        </div>
+      </header>
+
+      <!-- VIEWS -->
+      <div class="view-container">
+
+        <!-- DASHBOARD -->
+        <div id="view-dashboard" class="view active">
+          <div class="stats-grid" id="stats-grid"></div>
+          <div class="dashboard-grid">
+            <div class="dash-panel">
+              <h3>🔴 Urgent / High Priority</h3>
+              <div id="urgent-list" class="task-mini-list"></div>
+            </div>
+            <div class="dash-panel">
+              <h3>📅 Upcoming Orientation (May 2026)</h3>
+              <div id="upcoming-list" class="task-mini-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEEKLY TASKS -->
+        <div id="view-weekly" class="view">
+          <div class="view-toolbar">
+            <div class="filter-pills" id="weekly-filters"></div>
+            <button class="btn-add" onclick="openAddTask()">+ Add Task</button>
+          </div>
+          <div id="weekly-board" class="kanban-board"></div>
+        </div>
+
+        <!-- MAY ORIENTATION -->
+        <div id="view-orientation" class="view">
+          <div class="orientation-header">
+            <div class="orientation-meta">
+              <span class="badge badge-blue">📅 Orientation: May 19, 2026</span>
+              <span class="badge badge-yellow">⭐ Bootcamp: June 15, 2026</span>
+            </div>
+            <div id="orientation-progress-bar" class="progress-bar-wrap"></div>
+          </div>
+          <div id="orientation-phases"></div>
+        </div>
+
+        <!-- RESPONSIBILITIES -->
+        <div id="view-responsibilities" class="view">
+          <div id="responsibilities-list" class="proc-list"></div>
+        </div>
+
+        <!-- LINKS / RESOURCES -->
+        <div id="view-links" class="view">
+          <div class="links-grid" id="links-grid"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ADD TASK MODAL -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Add New Task</h3>
+        <button class="modal-close" onclick="closeAddTask()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Task Name</label>
+          <input type="text" id="task-name" placeholder="Enter task name" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Owner</label>
+            <input type="text" id="task-owner" placeholder="e.g. Paula" />
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="task-due" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="task-priority">
+              <option>Urgent</option>
+              <option>High</option>
+              <option selected>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="task-category">
+              <option>Hiring</option>
+              <option>Training</option>
+              <option>Orientation</option>
+              <option>Meetings</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="task-notes" rows="3" placeholder="Additional notes..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Resources / Links</label>
+          <input type="text" id="task-resources" placeholder="e.g. Indeed job post" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeAddTask()">Cancel</button>
+        <button class="btn-primary" onclick="saveTask()">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP DETAIL MODAL -->
+  <div id="step-modal-overlay" class="modal-overlay hidden" onclick="closeStepModal(event)">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3 id="step-modal-title"></h3>
+        <button class="modal-close" onclick="closeStepModal()">✕</button>
+      </div>
+      <div class="modal-body" id="step-modal-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
