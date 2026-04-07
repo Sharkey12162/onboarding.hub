@@ -428,7 +428,7 @@ html, body { height: 100%; font-family: 'Segoe UI', Arial, sans-serif; backgroun
         <label>Supabase Anon Key</label>
         <input type="text" id="setup-key" placeholder="eyJhbGci..." />
       </div>
-      <button class="btn-primary" onclick="saveConfig()">Connect &amp; Initialize</button>
+      <button class="btn-primary" id="connect-btn" onclick="doConnect()">Connect &amp; Initialize</button>
       <div id="setup-status" class="setup-status"></div>
       <details class="setup-help">
         <summary>Where do I find these?</summary>
@@ -817,6 +817,7 @@ async function ensureWeeklyData() {
 // ---- APP INIT ----
 
 async function showApp() {
+  if (window._sb) supabase = window._sb;
   document.getElementById('setup-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('main-content').innerHTML += ''; // trigger repaint
@@ -1271,5 +1272,35 @@ function formatDate(d) {
   } catch { return d; }
 }
   </script>
+
+<script>
+function doConnect() {
+  var url = document.getElementById('setup-url').value.trim();
+  var key = document.getElementById('setup-key').value.trim();
+  var status = document.getElementById('setup-status');
+  
+  if (!url || !key) {
+    status.innerHTML = '<span style="color:red">Please enter both fields.</span>';
+    return;
+  }
+  
+  status.innerHTML = 'Connecting...';
+  
+  try {
+    var client = window.supabase ? window.supabase.createClient(url, key) : supabase.createClient(url, key);
+    window._sb = client;
+    localStorage.setItem('onboarding_cfg', JSON.stringify({url: url, key: key}));
+    status.innerHTML = '<span style="color:green">✓ Connected! Loading...</span>';
+    setTimeout(function() {
+      document.getElementById('setup-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      window.supabaseClient = client;
+      if(typeof showApp === 'function') { showApp(); }
+    }, 800);
+  } catch(err) {
+    status.innerHTML = '<span style="color:red">Error: ' + err.message + '</span>';
+  }
+}
+</script>
 </body>
 </html>
