@@ -441,6 +441,70 @@
   .s-notstarted  { background: #f1f5f9; color: #475569; }
   .s-inprogress  { background: #eff6ff; color: #1d4ed8; }
 
+  /* ── EDITABLE RESOURCE LINKS ── */
+  .link-wrap { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .edit-link-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1rem; color: var(--muted); padding: 3px 5px;
+    border-radius: 5px; line-height: 1;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .edit-link-btn:hover { color: var(--sky); background: #eff6ff; }
+  .link-edit-form {
+    display: none; width: 100%; margin-top: 8px;
+    background: #f8faff; border-radius: 9px; padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .link-edit-form.open { display: block; }
+  .link-edit-form input {
+    width: 100%; padding: 7px 10px; margin-bottom: 8px;
+    border: 1px solid var(--border); border-radius: 7px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text);
+    background: var(--white);
+  }
+  .link-edit-form input:focus { outline: 2px solid var(--sky); border-color: transparent; }
+  .link-edit-form input:last-of-type { margin-bottom: 10px; }
+  .link-edit-actions { display: flex; gap: 8px; }
+  .save-link-btn {
+    background: var(--navy); color: white; border: none;
+    padding: 6px 14px; border-radius: 7px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+  }
+  .save-link-btn:hover { background: var(--sky); }
+  .cancel-link-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    padding: 6px 12px; border-radius: 7px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; cursor: pointer;
+  }
+  .reset-link-btn {
+    background: none; border: none; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 0.74rem; cursor: pointer;
+    margin-left: auto; text-decoration: underline;
+  }
+  .reset-link-btn:hover { color: var(--red); }
+
+  /* ── EDITABLE TABLE CELLS ── */
+  .wt-table td { cursor: default; }
+  .wt-table td.editable { cursor: pointer; }
+  .wt-table td.editable:hover { background: #f0f6ff !important; }
+  .wt-table td.editing { background: #eff6ff !important; padding: 6px 8px !important; }
+  .cell-input {
+    width: 100%; border: 1.5px solid var(--sky); border-radius: 6px;
+    padding: 5px 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    background: white; color: var(--text); outline: none; min-width: 80px;
+  }
+  .cell-select {
+    width: 100%; border: 1.5px solid var(--sky); border-radius: 6px;
+    padding: 5px 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    background: white; color: var(--text); outline: none; cursor: pointer;
+  }
+  .wt-save-note {
+    font-size: 0.75rem; color: var(--green); margin-bottom: 10px;
+    display: none; font-weight: 600;
+  }
+  .wt-save-note.show { display: block; }
+
   /* ── NEW HIRE CHECKLIST ── */
   .nh-toolbar {
     display: flex;
@@ -735,110 +799,9 @@
   <section id="resources" class="section active">
     <div class="section-header">
       <h2>Onboarding Resources</h2>
-      <p>Key files, platforms, and tools used throughout the hiring and onboarding process.</p>
+      <p>Key files, platforms, and tools used throughout the hiring and onboarding process. Click ✏️ to edit any link.</p>
     </div>
-    <div class="cards-grid">
-
-      <div class="card">
-        <div class="card-category">Hiring / Onboarding</div>
-        <h3>New Hire Checklist</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Centralized checklist with detailed information for each new hire — office and field staff.<br><br>
-          <strong>Why:</strong> Track onboarding completion and quickly access required info for team members.<br><br>
-          <strong>When:</strong> Used during the hiring and onboarding process, and as an ongoing reference.
-        </p>
-        <span class="card-link">📄 New hire checklist – Updated File Sept. 2025.xlsx</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">Hiring / Onboarding</div>
-        <h3>Diploma / GED / OSHA List</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Confirms whether each technician has submitted OSHA 10/30 certification and a Diploma or GED.<br><br>
-          <strong>Why:</strong> Required to verify eligibility for NEBB exam certification and ensure compliance.<br><br>
-          <strong>When:</strong> Requested immediately after the offer letter is sent via Indeed messages.
-        </p>
-        <span class="card-link">📄 Diploma_GED_OSHA List.xlsx</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">Hiring / Onboarding</div>
-        <h3>OSHA 10 &amp; 30 Cards – Certificates</h3>
-        <p class="card-desc">
-          <strong>What:</strong> SharePoint location storing OSHA 10 and 30 cards/certificates, organized by region.<br><br>
-          <strong>Why:</strong> Centralized official record of OSHA certifications — stores actual documents, not just Yes/No status.<br><br>
-          <strong>When:</strong> Uploaded as soon as documents are received via Indeed message or email.
-        </p>
-        <span class="card-link">🗂️ SharePoint: OSHA 10 &amp; 30 Cards – All Documents</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">Hiring / Onboarding</div>
-        <h3>Tech Education Certs (SharePoint)</h3>
-        <p class="card-desc">
-          <strong>What:</strong> SharePoint location for technicians' education documents (Diploma, GED, transcripts). Files saved as LastName, FirstName.<br><br>
-          <strong>Why:</strong> Education records required for future technician certification.<br><br>
-          <strong>When:</strong> Requested immediately after the offer letter — same message as OSHA request.
-        </p>
-        <span class="card-link">🗂️ High School or GED Diplomas – OneDrive</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">ATA / Training</div>
-        <h3>ATA Progress – ATA Hours Sheet</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Tracks technician training hours by region, including start date and calculated tenure.<br><br>
-          <strong>Why:</strong> Monitor weekly Costcode Training hours and validate the 2-hour weekly guideline.<br><br>
-          <strong>When:</strong> Reviewed every <strong>Monday</strong> using data from PM assistants in the ATA Training Cost – Weekly Reports.
-        </p>
-        <span class="card-link">📄 ATA progress since Feb 2025.xlsx</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">ATA / Training</div>
-        <h3>ATA Progress – Timelogs Training Sheet</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Sheet used to paste training hours each technician punches under the Training Cost Code.<br><br>
-          <strong>Why:</strong> Capture and consolidate weekly training time data for tracking and reporting.<br><br>
-          <strong>When:</strong> Updated every <strong>Monday</strong> using weekly timelog data.
-        </p>
-        <span class="card-link">📄 ATA progress since Feb 2025.xlsx</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">ATA / Training</div>
-        <h3>ATA Progress – ATA Progress Sheet</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Tracks ATA lesson status for each technician using color coding (green, yellow, blue).<br><br>
-          <strong>Why:</strong> Monitor lesson progress, identify technicians behind, and document PM approval.<br><br>
-          <strong>When:</strong> Reviewed and updated every <strong>Friday</strong>.
-        </p>
-        <span class="card-link">📄 ATA progress since Feb 2025.xlsx</span>
-      </div>
-
-      <div class="card">
-        <div class="card-category">ATA / Training</div>
-        <h3>Airadigm Technical Academy</h3>
-        <p class="card-desc">
-          <strong>What:</strong> Training platform where technicians complete ATA lessons. Accounts use Airadigm emails.<br><br>
-          <strong>Why:</strong> Manage and track technician training, ensure course completion, support ATA requirements.<br><br>
-          <strong>When:</strong> Enrolled on first day of orientation; progress reviewed every Friday.
-        </p>
-        <a class="card-link" href="https://joe-balancer.teachable.com/admin/dashboard" target="_blank">🔗 Open Teachable Dashboard</a>
-      </div>
-
-      <div class="card">
-        <div class="card-category">ATA / Training</div>
-        <h3>Digital ATA Scores</h3>
-        <p class="card-desc">
-          <strong>What:</strong> SharePoint location with individual spreadsheets per technician (Last Name, First Name – Digital ATA Scores) tracking ATA scores and learning progress.<br><br>
-          <strong>Why:</strong> Centralized record of each technician's ATA performance over time.<br><br>
-          <strong>When:</strong> New spreadsheet created at orientation start; updated every Friday.
-        </p>
-        <span class="card-link">🗂️ Digital ATA Scores – SharePoint</span>
-      </div>
-
-    </div>
+    <div class="cards-grid" id="resources-grid"></div>
   </section>
 
   <!-- ═══════════ RESPONSIBILITIES ═══════════ -->
@@ -1277,6 +1240,7 @@
       <button class="filter-btn" onclick="filterTasks('Not started', this)">⬜ Not Started</button>
       <button class="filter-btn" onclick="filterTasks('In progress', this)">🔄 In Progress</button>
     </div>
+    <div class="wt-save-note" id="wt-save-note">✓ Changes saved</div>
 
     <div class="wt-table-wrap">
       <table class="wt-table" id="wt-table">
