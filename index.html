@@ -732,17 +732,16 @@ function saveConfig() {
   status.textContent = 'Connecting...';
   status.className = 'setup-status';
 
-  localStorage.setItem('onboarding_cfg', JSON.stringify({ url, key }));
-  initSupabase(url, key).then(ok => {
-    if (ok) {
-      status.textContent = '✓ Connected! Loading app...';
-      status.className = 'setup-status success';
-      setTimeout(() => showApp(), 700);
-    } else {
-      status.textContent = '✗ Could not connect. Check your credentials.';
-      status.className = 'setup-status error';
-    }
-  });
+  try {
+    supabase = window.supabase.createClient(url, key);
+    localStorage.setItem('onboarding_cfg', JSON.stringify({ url, key }));
+    status.textContent = 'Connected! Loading app...';
+    status.className = 'setup-status success';
+    setTimeout(() => showApp(), 700);
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    status.className = 'setup-status error';
+  }
 }
 
 function resetConfig() {
