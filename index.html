@@ -5,7 +5,407 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Onboarding Hub</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+/* ============================================================
+   ONBOARDING HUB — STYLES
+   Brand Colors: Navy #1A5276, Gold #F4D03F, Light #EBF5FB
+   ============================================================ */
+
+:root {
+  --navy:       #1A5276;
+  --navy-dark:  #154360;
+  --navy-light: #2471A3;
+  --gold:       #F4D03F;
+  --gold-dark:  #D4AC0D;
+  --bg:         #F0F4F8;
+  --bg-card:    #FFFFFF;
+  --text:       #1C2833;
+  --text-muted: #717D7E;
+  --border:     #D5D8DC;
+  --success:    #1E8449;
+  --warning:    #D35400;
+  --error:      #C0392B;
+  --info:       #2471A3;
+  --sidebar-w:  240px;
+  --radius:     10px;
+  --shadow:     0 2px 12px rgba(26,82,118,0.09);
+  --transition: 0.18s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+/* ---- SETUP SCREEN ---- */
+.setup-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+}
+.setup-card {
+  background: white; border-radius: 18px; padding: 44px 40px; max-width: 440px; width: 95%;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.22); text-align: center;
+}
+.setup-logo { margin-bottom: 16px; }
+.setup-card h1 { font-size: 22px; color: var(--navy); margin-bottom: 8px; }
+.setup-card p { color: var(--text-muted); margin-bottom: 24px; font-size: 13px; }
+.setup-status { margin-top: 14px; font-size: 13px; min-height: 20px; }
+.setup-status.error { color: var(--error); }
+.setup-status.success { color: var(--success); }
+.setup-help { margin-top: 18px; text-align: left; font-size: 12px; color: var(--text-muted); }
+.setup-help summary { cursor: pointer; font-weight: 600; color: var(--navy); }
+.setup-help p { margin-top: 8px; line-height: 1.5; }
+
+/* ---- LAYOUT ---- */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ---- SIDEBAR ---- */
+#sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--navy);
+  display: flex; flex-direction: column; transition: width var(--transition);
+  z-index: 100; box-shadow: 2px 0 18px rgba(26,82,118,0.18);
+}
+#sidebar.collapsed { width: 62px; min-width: 62px; }
+#sidebar.collapsed .nav-label,
+#sidebar.collapsed .sidebar-header span,
+#sidebar.collapsed .btn-reset { display: none; }
+#sidebar.collapsed .nav-item { justify-content: center; padding: 12px; }
+
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo span { color: white; font-size: 15px; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
+.sidebar-toggle {
+  background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer;
+  font-size: 18px; padding: 4px; border-radius: 6px; transition: color var(--transition);
+}
+.sidebar-toggle:hover { color: var(--gold); }
+
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: none; border: none; color: rgba(255,255,255,0.75); cursor: pointer;
+  padding: 11px 18px; font-size: 13.5px; font-weight: 500; transition: all var(--transition);
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+.nav-item.active { background: rgba(244,208,63,0.12); color: var(--gold); border-left-color: var(--gold); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer { padding: 14px 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+.btn-reset {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.65); cursor: pointer; padding: 8px 14px; border-radius: 8px;
+  font-size: 12px; width: 100%; transition: all var(--transition);
+}
+.btn-reset:hover { background: rgba(255,255,255,0.15); color: white; }
+
+/* ---- MAIN CONTENT ---- */
+#main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  background: white; border-bottom: 1px solid var(--border); padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.topbar-left h2 { font-size: 20px; font-weight: 700; color: var(--navy); }
+.topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.search-wrap {
+  display: flex; align-items: center; gap: 8px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; min-width: 220px;
+}
+.search-icon { color: var(--text-muted); }
+#search-input { border: none; background: none; outline: none; font-size: 13px; color: var(--text); width: 100%; }
+
+.view-container { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ---- VIEWS ---- */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ---- DASHBOARD ---- */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: white; border-radius: var(--radius); padding: 18px 20px;
+  box-shadow: var(--shadow); border-left: 4px solid var(--navy);
+  transition: transform var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card.gold { border-left-color: var(--gold-dark); }
+.stat-card.green { border-left-color: var(--success); }
+.stat-card.red   { border-left-color: var(--error); }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.dash-panel { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.dash-panel h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--bg); }
+
+.task-mini-list { display: flex; flex-direction: column; gap: 8px; }
+.task-mini {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--bg); border-radius: 8px; cursor: pointer; transition: background var(--transition);
+  border-left: 3px solid transparent;
+}
+.task-mini:hover { background: #e8f0f8; }
+.task-mini.urgent { border-left-color: var(--error); }
+.task-mini.high   { border-left-color: var(--warning); }
+.task-mini-name { flex: 1; font-size: 13px; font-weight: 500; }
+.task-mini-owner { font-size: 11px; color: var(--text-muted); }
+
+/* ---- KANBAN BOARD ---- */
+.view-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  padding: 5px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: white; cursor: pointer; font-size: 12px; font-weight: 600; transition: all var(--transition);
+  color: var(--text-muted);
+}
+.pill:hover { border-color: var(--navy); color: var(--navy); }
+.pill.active { background: var(--navy); color: white; border-color: var(--navy); }
+.pill.gold { border-color: var(--gold-dark); color: var(--gold-dark); }
+.pill.gold.active { background: var(--gold-dark); color: white; }
+
+.kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.kanban-col { background: var(--bg); border-radius: var(--radius); padding: 14px; min-height: 300px; }
+.kanban-col-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--border);
+}
+.kanban-col-header h4 { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.col-count { background: var(--border); color: var(--text-muted); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+
+.task-card {
+  background: white; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; transition: all var(--transition);
+  border-top: 3px solid transparent; position: relative;
+}
+.task-card:hover { box-shadow: 0 4px 16px rgba(26,82,118,0.14); transform: translateY(-1px); }
+.task-card.urgent { border-top-color: var(--error); }
+.task-card.high   { border-top-color: var(--warning); }
+.task-card.medium { border-top-color: var(--info); }
+.task-card.low    { border-top-color: #27AE60; }
+
+.task-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+.task-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.tag { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+.tag.urgent { background: #FDEDEC; color: var(--error); }
+.tag.high   { background: #FDEBD0; color: var(--warning); }
+.tag.medium { background: #EBF5FB; color: var(--info); }
+.tag.low    { background: #EAFAF1; color: var(--success); }
+.tag.hiring      { background: #EBF5FB; color: #1A5276; }
+.tag.training    { background: #FEF9E7; color: #9A7D0A; }
+.tag.orientation { background: #F4ECF7; color: #6C3483; }
+.tag.meetings    { background: #E8F8F5; color: #0E6655; }
+
+.task-owner { font-size: 11px; color: var(--text-muted); }
+.task-due   { font-size: 11px; color: var(--text-muted); }
+
+.task-checkbox {
+  position: absolute; top: 10px; right: 10px;
+  width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border);
+  background: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.task-checkbox:hover { border-color: var(--navy); }
+.task-checkbox.checked { background: var(--success); border-color: var(--success); }
+.task-checkbox.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
+
+/* ---- ORIENTATION PHASES ---- */
+.orientation-header { margin-bottom: 24px; }
+.orientation-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.badge-blue   { background: #EBF5FB; color: var(--navy); border: 1px solid #AED6F1; }
+.badge-yellow { background: #FEF9E7; color: #9A7D0A; border: 1px solid #F9E79F; }
+
+.progress-bar-wrap { background: var(--bg); border-radius: 8px; overflow: hidden; height: 10px; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--navy), var(--gold)); border-radius: 8px; transition: width 0.5s ease; }
+
+.phase-section { margin-bottom: 28px; }
+.phase-title {
+  font-size: 13px; font-weight: 800; color: var(--navy); text-transform: uppercase;
+  letter-spacing: 0.8px; padding: 10px 16px; background: white;
+  border-radius: 8px; margin-bottom: 12px; border-left: 4px solid var(--gold);
+  box-shadow: var(--shadow);
+}
+.orient-task {
+  background: white; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+  box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 14px;
+  transition: all var(--transition); cursor: pointer;
+}
+.orient-task:hover { box-shadow: 0 4px 18px rgba(26,82,118,0.14); }
+.orient-task.done { opacity: 0.6; }
+.orient-task.done .orient-task-name { text-decoration: line-through; color: var(--text-muted); }
+
+.orient-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--transition); margin-top: 1px;
+}
+.orient-check:hover { border-color: var(--navy); }
+.orient-check.checked { background: var(--success); border-color: var(--success); }
+.orient-check.checked::after { content: '✓'; color: white; font-size: 13px; font-weight: 800; }
+
+.orient-task-body { flex: 1; }
+.orient-task-name { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+.orient-task-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.orient-date { font-size: 11px; color: var(--text-muted); }
+.orient-owner { font-size: 11px; font-weight: 600; color: var(--navy-light); background: #EBF5FB; padding: 2px 8px; border-radius: 8px; }
+.expand-btn { font-size: 11px; color: var(--navy-light); margin-left: auto; }
+.orient-steps {
+  display: none; margin-top: 12px; background: var(--bg); border-radius: 8px; padding: 12px 14px;
+  font-size: 12.5px; line-height: 1.7; color: var(--text); white-space: pre-line;
+}
+.orient-steps.open { display: block; }
+
+/* ---- RESPONSIBILITIES ---- */
+.proc-list { display: flex; flex-direction: column; gap: 14px; }
+.proc-card {
+  background: white; border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden; transition: all var(--transition);
+}
+.proc-header {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  cursor: pointer; transition: background var(--transition);
+}
+.proc-header:hover { background: var(--bg); }
+.proc-num {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: white;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0;
+}
+.proc-trigger { flex: 1; }
+.proc-trigger-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); margin-bottom: 2px; }
+.proc-trigger-text { font-size: 14px; font-weight: 600; color: var(--navy); }
+.proc-meta { display: flex; gap: 8px; align-items: center; }
+.proc-arrow { color: var(--text-muted); transition: transform var(--transition); }
+.proc-card.open .proc-arrow { transform: rotate(90deg); }
+
+.proc-body { display: none; border-top: 1px solid var(--border); }
+.proc-card.open .proc-body { display: block; }
+.proc-section { padding: 16px 20px; }
+.proc-section + .proc-section { border-top: 1px solid var(--bg); }
+.proc-section-label { font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+.proc-steps { font-size: 13px; line-height: 1.75; white-space: pre-line; color: var(--text); }
+.proc-steps-checklist { list-style: none; margin-top: 8px; }
+.proc-steps-checklist li {
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+  border-radius: 6px; transition: background var(--transition); cursor: pointer;
+}
+.proc-steps-checklist li:hover { background: var(--bg); }
+.step-cb {
+  width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border);
+  flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.step-cb.done { background: var(--success); border-color: var(--success); }
+.step-cb.done::after { content: '✓'; color: white; font-size: 10px; font-weight: 800; }
+.step-text { font-size: 13px; line-height: 1.5; }
+.step-text.done { text-decoration: line-through; color: var(--text-muted); }
+
+/* ---- RESOURCES / LINKS ---- */
+.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.link-card {
+  background: white; border-radius: var(--radius); padding: 18px 20px;
+  box-shadow: var(--shadow); transition: all var(--transition); border-top: 3px solid var(--navy);
+}
+.link-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,82,118,0.14); }
+.link-category { font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+.link-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.link-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+.link-url {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+  color: var(--navy-light); text-decoration: none; background: var(--bg); padding: 6px 12px;
+  border-radius: 6px; transition: all var(--transition); word-break: break-all;
+}
+.link-url:hover { background: #EBF5FB; color: var(--navy); }
+
+/* ---- MODAL ---- */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,20,40,0.55); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.modal {
+  background: white; border-radius: 14px; width: 100%; max-width: 500px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+  animation: modal-in 0.2s ease;
+}
+.modal-wide { max-width: 680px; }
+@keyframes modal-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; color: var(--navy); }
+.modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 4px; transition: color var(--transition); }
+.modal-close:hover { color: var(--error); }
+.modal-body { padding: 22px 24px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+
+/* ---- FORMS ---- */
+.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 13px; color: var(--text); outline: none; transition: border-color var(--transition);
+  background: white;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { border-color: var(--navy); }
+
+/* ---- BUTTONS ---- */
+.btn-primary {
+  background: var(--navy); color: white; border: none; padding: 10px 22px;
+  border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-primary:hover { background: var(--navy-dark); }
+.btn-secondary {
+  background: white; color: var(--text); border: 1.5px solid var(--border); padding: 10px 22px;
+  border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-secondary:hover { border-color: var(--navy); color: var(--navy); }
+.btn-add {
+  background: var(--gold); color: var(--navy-dark); border: none; padding: 9px 18px;
+  border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background var(--transition);
+}
+.btn-add:hover { background: var(--gold-dark); color: white; }
+
+/* ---- TOAST ---- */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--navy); color: white;
+  padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.2); z-index: 9999;
+  animation: toast-in 0.2s ease;
+}
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--error); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---- UTILITIES ---- */
+.hidden { display: none !important; }
+.empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+.loading { text-align: center; padding: 40px; color: var(--text-muted); }
+.loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 10px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+  #sidebar { position: fixed; height: 100vh; z-index: 200; }
+  #sidebar:not(.collapsed) + #main-content { margin-left: var(--sidebar-w); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .kanban-board { grid-template-columns: 1fr; }
+}
+  </style>
 </head>
 <body>
 
@@ -25,19 +425,17 @@
         <label>Supabase Anon Key</label>
         <input type="text" id="setup-key" placeholder="eyJhbGci..." />
       </div>
-      <button class="btn-primary" onclick="saveConfig()">Connect & Initialize</button>
+      <button class="btn-primary" onclick="saveConfig()">Connect &amp; Initialize</button>
       <div id="setup-status" class="setup-status"></div>
       <details class="setup-help">
         <summary>Where do I find these?</summary>
-        <p>Go to <strong>app.supabase.com</strong> → Your Project → Settings → API. Copy the <em>Project URL</em> and <em>anon public</em> key.</p>
+        <p>Go to <strong>app.supabase.com</strong> → Your Project → Settings → API Keys → Legacy anon, service_role API keys. Copy the <em>Project URL</em> and <em>anon</em> key.</p>
       </details>
     </div>
   </div>
 
   <!-- MAIN APP -->
   <div id="app" class="hidden">
-
-    <!-- SIDEBAR -->
     <aside id="sidebar">
       <div class="sidebar-header">
         <div class="logo">
@@ -46,38 +444,21 @@
         </div>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       </div>
-
       <nav class="sidebar-nav">
-        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)">
-          <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
-        </button>
-        <button class="nav-item" data-view="weekly" onclick="switchView('weekly', this)">
-          <span class="nav-icon">📋</span><span class="nav-label">Weekly Tasks</span>
-        </button>
-        <button class="nav-item" data-view="orientation" onclick="switchView('orientation', this)">
-          <span class="nav-icon">🗓️</span><span class="nav-label">May Orientation</span>
-        </button>
-        <button class="nav-item" data-view="responsibilities" onclick="switchView('responsibilities', this)">
-          <span class="nav-icon">👥</span><span class="nav-label">Responsibilities</span>
-        </button>
-        <button class="nav-item" data-view="links" onclick="switchView('links', this)">
-          <span class="nav-icon">🔗</span><span class="nav-label">Resources</span>
-        </button>
+        <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard', this)"><span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" data-view="weekly" onclick="switchView('weekly', this)"><span class="nav-icon">📋</span><span class="nav-label">Weekly Tasks</span></button>
+        <button class="nav-item" data-view="orientation" onclick="switchView('orientation', this)"><span class="nav-icon">🗓️</span><span class="nav-label">May Orientation</span></button>
+        <button class="nav-item" data-view="responsibilities" onclick="switchView('responsibilities', this)"><span class="nav-icon">👥</span><span class="nav-label">Responsibilities</span></button>
+        <button class="nav-item" data-view="links" onclick="switchView('links', this)"><span class="nav-icon">🔗</span><span class="nav-label">Resources</span></button>
       </nav>
-
       <div class="sidebar-footer">
         <button class="btn-reset" onclick="resetConfig()">⚙ Settings</button>
       </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main id="main-content">
-
-      <!-- TOP BAR -->
       <header class="topbar">
-        <div class="topbar-left">
-          <h2 id="view-title">Dashboard</h2>
-        </div>
+        <div class="topbar-left"><h2 id="view-title">Dashboard</h2></div>
         <div class="topbar-right">
           <div class="search-wrap">
             <span class="search-icon">🔍</span>
@@ -87,25 +468,14 @@
         </div>
       </header>
 
-      <!-- VIEWS -->
       <div class="view-container">
-
-        <!-- DASHBOARD -->
         <div id="view-dashboard" class="view active">
           <div class="stats-grid" id="stats-grid"></div>
           <div class="dashboard-grid">
-            <div class="dash-panel">
-              <h3>🔴 Urgent / High Priority</h3>
-              <div id="urgent-list" class="task-mini-list"></div>
-            </div>
-            <div class="dash-panel">
-              <h3>📅 Upcoming Orientation (May 2026)</h3>
-              <div id="upcoming-list" class="task-mini-list"></div>
-            </div>
+            <div class="dash-panel"><h3>🔴 Urgent / High Priority</h3><div id="urgent-list" class="task-mini-list"></div></div>
+            <div class="dash-panel"><h3>📅 Upcoming Orientation (May 2026)</h3><div id="upcoming-list" class="task-mini-list"></div></div>
           </div>
         </div>
-
-        <!-- WEEKLY TASKS -->
         <div id="view-weekly" class="view">
           <div class="view-toolbar">
             <div class="filter-pills" id="weekly-filters"></div>
@@ -113,8 +483,6 @@
           </div>
           <div id="weekly-board" class="kanban-board"></div>
         </div>
-
-        <!-- MAY ORIENTATION -->
         <div id="view-orientation" class="view">
           <div class="orientation-header">
             <div class="orientation-meta">
@@ -125,17 +493,8 @@
           </div>
           <div id="orientation-phases"></div>
         </div>
-
-        <!-- RESPONSIBILITIES -->
-        <div id="view-responsibilities" class="view">
-          <div id="responsibilities-list" class="proc-list"></div>
-        </div>
-
-        <!-- LINKS / RESOURCES -->
-        <div id="view-links" class="view">
-          <div class="links-grid" id="links-grid"></div>
-        </div>
-
+        <div id="view-responsibilities" class="view"><div id="responsibilities-list" class="proc-list"></div></div>
+        <div id="view-links" class="view"><div class="links-grid" id="links-grid"></div></div>
       </div>
     </main>
   </div>
@@ -144,53 +503,21 @@
   <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
     <div class="modal">
       <div class="modal-header">
-        <h3 id="modal-title">Add New Task</h3>
+        <h3>Add New Task</h3>
         <button class="modal-close" onclick="closeAddTask()">✕</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label>Task Name</label>
-          <input type="text" id="task-name" placeholder="Enter task name" />
+        <div class="form-group"><label>Task Name</label><input type="text" id="task-name" placeholder="Enter task name" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>Owner</label><input type="text" id="task-owner" placeholder="e.g. Paula" /></div>
+          <div class="form-group"><label>Due Date</label><input type="date" id="task-due" /></div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Owner</label>
-            <input type="text" id="task-owner" placeholder="e.g. Paula" />
-          </div>
-          <div class="form-group">
-            <label>Due Date</label>
-            <input type="date" id="task-due" />
-          </div>
+          <div class="form-group"><label>Priority</label><select id="task-priority"><option>Urgent</option><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+          <div class="form-group"><label>Category</label><select id="task-category"><option>Hiring</option><option>Training</option><option>Orientation</option><option>Meetings</option><option>Other</option></select></div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Priority</label>
-            <select id="task-priority">
-              <option>Urgent</option>
-              <option>High</option>
-              <option selected>Medium</option>
-              <option>Low</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Category</label>
-            <select id="task-category">
-              <option>Hiring</option>
-              <option>Training</option>
-              <option>Orientation</option>
-              <option>Meetings</option>
-              <option>Other</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <textarea id="task-notes" rows="3" placeholder="Additional notes..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Resources / Links</label>
-          <input type="text" id="task-resources" placeholder="e.g. Indeed job post" />
-        </div>
+        <div class="form-group"><label>Notes</label><textarea id="task-notes" rows="3" placeholder="Additional notes..."></textarea></div>
+        <div class="form-group"><label>Resources / Links</label><input type="text" id="task-resources" placeholder="e.g. Indeed job post" /></div>
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeAddTask()">Cancel</button>
@@ -199,19 +526,748 @@
     </div>
   </div>
 
-  <!-- STEP DETAIL MODAL -->
-  <div id="step-modal-overlay" class="modal-overlay hidden" onclick="closeStepModal(event)">
-    <div class="modal modal-wide">
-      <div class="modal-header">
-        <h3 id="step-modal-title"></h3>
-        <button class="modal-close" onclick="closeStepModal()">✕</button>
-      </div>
-      <div class="modal-body" id="step-modal-body"></div>
-    </div>
-  </div>
-
   <div id="toast" class="toast hidden"></div>
 
-  <script src="app.js"></script>
+  <script>
+// ============================================================
+//  ONBOARDING HUB — app.js
+// ============================================================
+
+let supabase = null;
+let currentView = 'dashboard';
+let weeklyTasks = [];
+let filterCategory = 'All';
+let searchQuery = '';
+
+// ---- STATIC DATA (from Excel) ----
+
+const RESPONSIBILITIES = [
+  {
+    trigger: "New candidate applications available in Indeed under 'New' status.",
+    title: "Screen New Candidates (Indeed)",
+    timing: "Multiple times per month, as needed, based on hiring demand.",
+    owner: "Brenda, Paula, Natalia",
+    steps: [
+      "Open Indeed → Go to Jobs (briefcase icon) → Select relevant job post → Focus on New applicants (oldest to newest).",
+      "Verify the candidate is located within one hour of a major airport or major city. Confirm location using Google Maps.",
+      "Review mandatory screener questions — candidate should ideally answer 'Yes' to all required questions.",
+      "Confirm a resume is attached. Review experience: manual/hands-on work, HVAC experience, stable work history, adequate professional maturity.",
+      "Review Status and Activity Fit on the right-hand panel. Check if the candidate applied to multiple job posts.",
+      "If the candidate was previously rejected for another role → reject again to maintain consistency.",
+      "If candidate does NOT meet criteria → Reject. If candidate meets criteria → select the Question Mark (?) icon next to their name."
+    ],
+    notes: "Pre-Interview Questions"
+  },
+  {
+    trigger: "One week prior to remote orientation, after receiving Brenda's ORIENTATION email.",
+    title: "Prepare & Send Consolidated Onboarding Checklists",
+    timing: "One week prior to the scheduled remote orientation date.",
+    owner: "Paula",
+    steps: [
+      "PRE-STEP: Confirm cell phone number and mailing address via Indeed messaging at the same time.",
+      "Reply ALL to Brenda's ORIENTATION email.",
+      "Create a checklist for each new technician in the orientation group.",
+      "Verify digital onboarding is complete (confirmed in the New Hire Spreadsheet). If unclear, follow up with Lisa.",
+      "Verify OSHA 10 or OSHA 30 Construction certificate is on file.",
+      "Verify high school diploma, transcript, or GED certificate is on file.",
+      "Indicate clearly on each checklist: what is completed vs. what is still pending prior to Day 1.",
+      "Combine all individual checklists into one single email for that orientation group.",
+      "Send the email to Brenda and the onboarding team."
+    ],
+    notes: "Train X on the pre-screening process and provide live support while she practices."
+  },
+  {
+    trigger: "Friday morning before orientation week.",
+    title: "Email Follow-Up — Update Onboarding Status via Reply All",
+    timing: "Friday morning before the scheduled orientation week.",
+    owner: "Paula",
+    steps: [
+      "Reply ALL to Brenda's original ORIENTATION email.",
+      "Update onboarding status for each technician: confirm all checklist items completed, flag any items still pending.",
+      "Include final status on: Digital onboarding completion, OSHA 10/30 certificate on file, Diploma/GED on file, any outstanding follow-ups with Lisa.",
+      "This is the final status update before orientation week begins."
+    ],
+    notes: "Final check before orientation week. Ensure all onboarding items are resolved or clearly flagged as pending."
+  },
+  {
+    trigger: "Monday of Orientation week.",
+    title: "Send Orientation Link to Ana & Joe for IT Onboarding + Set up Meet & Greet",
+    timing: "Monday of Orientation week.",
+    owner: "Paula",
+    steps: [
+      "Send Orientation link to Ana for IT Onboarding: Post the link in the Onboarding Thread in RC, then set up a 1-hour placeholder in Outlook Calendar.",
+      "Set up Meet & Greet with the ATA Team: Participants: Brian, Brenda, Techs, Paula. Use the same Orientation link.",
+      "Check calendars and try to schedule the Meet & Greet for Wednesday of that week."
+    ],
+    notes: "Meet & Greet: try to schedule on Wednesday. Check team availability."
+  },
+  {
+    trigger: "ORIENTATION – Once Brenda confirms in the Onboarding thread that the new technician's RC account is active and working.",
+    title: "Add New Team Members to RC Threads, Create TEAM, Set Up Recurring Meetings",
+    timing: "As soon as Brenda confirms the RC account is active in the Onboarding thread.",
+    owner: "Paula",
+    steps: [
+      "Add the new technician to: Company Social RC Thread, Field Tech Resources RC Thread, Training Touch Base / BZ Info Thread, Competition GROUP RC Thread.",
+      "Create their TEAM: Include the assigned PM, Lead Tech (Brenda), and the new technician.",
+      "Add the new technician to all recurring meetings.",
+      "Post a message in the Orientation thread confirming all steps above are complete.",
+      "Ask the new technician to confirm attendance for the scheduled meetings."
+    ],
+    notes: "Recurring meetings: New Tech Update (Wednesdays), TTB (Thursdays). ⚠ If the technician is a SURVEY tech, do NOT add them to the Wednesday meeting."
+  }
+];
+
+const ORIENTATION_PHASES = [
+  {
+    title: "PHASE 1: PRE-ORIENTATION PREP (NOW – May 11)",
+    tasks: [
+      { date: "Ongoing", timeframe: "As needed", name: "Screen New Candidates (Indeed)", steps: "1) Review New applicants (oldest → newest)\n2) Verify location within 1 hr of major airport/city\n3) Check screener questions (all \"Yes\")\n4) Resume review: manual/HVAC exp, stable work history\n5) Check Indeed indicators & prior rejections\n6) Reject or mark with (?) for next step", owner: "Brenda, Paula, Natalia", notes: "Pre-interview questions as needed" },
+      { date: "Ongoing", timeframe: "As needed", name: "Conduct Pre-Screening Interviews", steps: "Shadow/conduct pre-screening interviews for qualified candidates. Check Brenda's calendar for interview links.", owner: "Natalia & Paula", notes: "Focus on DFW and active pipeline" },
+      { date: "Ongoing", timeframe: "As candidates are hired", name: "Ensure Candidate Documentation is Complete", steps: "1) Confirm digital onboarding is complete (New Hire Spreadsheet)\n2) Verify OSHA 10/30 Construction certificate on file\n3) Verify high school diploma/transcript/GED on file\n4) Upload docs to SharePoint (OSHA folder & Education folder)\n5) Follow up with Lisa if completion status is unclear", owner: "Paula", notes: "Docs requested after offer letter via Indeed messages" },
+      { date: "Mon, May 4", timeframe: "May 4", name: "Confirm Cell Phone Numbers & Mailing Addresses", steps: "Via Indeed messaging, confirm each candidate's:\n• Cell phone number\n• Current mailing address", owner: "Paula / Natalia", notes: "Do this at the same time as address confirmation" },
+      { date: "Wed, May 6", timeframe: "May 6", name: "Follow Up on Any Missing Documents", steps: "Check for any outstanding OSHA, Diploma/GED, or digital onboarding items. Follow up directly with candidates or Lisa.", owner: "Paula", notes: "Ensure everything is on track before checklist prep" },
+      { date: "Fri, May 8", timeframe: "May 8", name: "Update Office Calendar & Anniversary Tracker", steps: "Add all May 19 orientation hires to:\n1) Office Calendar (Outlook)\n2) Anniversary/Birthday Tracker spreadsheet", owner: "Natalia", notes: "" }
+    ]
+  },
+  {
+    title: "PHASE 2: ONE WEEK BEFORE ORIENTATION (May 11 – May 15)",
+    tasks: [
+      { date: "Mon, May 11", timeframe: "May 11", name: "Prepare & Send Consolidated Onboarding Checklists", steps: "1) Reply ALL to Brenda's ORIENTATION email\n2) Create a checklist for each new technician:\n   • Digital onboarding complete? (check New Hire Spreadsheet)\n   • OSHA 10/30 certificate on file?\n   • Diploma/GED on file?\n3) Mark what is completed vs. still pending\n4) Combine all checklists into ONE email\n5) Send to Brenda and onboarding team", owner: "Paula", notes: "One week prior to orientation — triggered by Brenda's ORIENTATION email" },
+      { date: "Tue, May 12", timeframe: "May 12", name: "Prepare ATA Enrollment Materials", steps: "1) Prepare Airadigm Technical Academy accounts (Airadigm emails)\n2) Identify courses for enrollment: Basics, ATA Getting Started, Safety\n3) Prepare individual Digital ATA Scores spreadsheets (Last, First format)", owner: "Paula / Natalia", notes: "Techs will be enrolled on Day 1 of orientation" },
+      { date: "Wed, May 13", timeframe: "May 13", name: "Review OSHA & Diploma Certifications (Final Check)", steps: "Final verification that all documentation is uploaded to SharePoint:\n• OSHA 10 & 30 Cards - Certificates folder (by region)\n• Tech Education Certs folder (Last, First format)", owner: "Natalia", notes: "Last chance before orientation week" },
+      { date: "Fri, May 15", timeframe: "May 15", name: "Update Onboarding Status (Reply All)", steps: "Friday before orientation — update onboarding status via Reply All to Brenda's original orientation email. Confirm all items completed or flag pending items.", owner: "Paula", notes: "Final status update before orientation week" }
+    ]
+  },
+  {
+    title: "PHASE 3: ORIENTATION WEEK (May 18 – May 22)",
+    tasks: [
+      { date: "Mon, May 18", timeframe: "May 18", name: "Send Orientation Link to Ana & Joe (IT Onboarding)", steps: "1) Post Orientation link in the Onboarding Thread in RC\n2) Set up 1-hour placeholder in Outlook Calendar\n3) Send link to Ana for IT Onboarding", owner: "Paula", notes: "" },
+      { date: "Mon, May 18", timeframe: "May 18", name: "Schedule Meet & Greet with ATA Team", steps: "1) Schedule Meet & Greet: Brian, Brenda, Techs, Paula\n2) Use the same Orientation link\n3) Check calendars — target Wednesday May 20\n4) Send calendar invite", owner: "Paula", notes: "Try to schedule for Wednesday of orientation week" },
+      { date: "⭐ Tue, May 19", timeframe: "May 19", name: "⭐ ORIENTATION DAY", steps: "Orientation takes place. Observe/support as needed.\n• Tools testing observation (8:15 AM EST with Ana)\n• IT Onboarding session\n• Enroll technicians in ATA courses (Basics, Getting Started, Safety)\n• Create individual ATA tracking spreadsheets", owner: "Brenda, Paula, Natalia", notes: "Key milestone day — all prep should be complete" },
+      { date: "Tue, May 19", timeframe: "May 19", name: "Create Tracking Spreadsheets for New Hires", steps: "Create individual spreadsheets for each new technician who attended orientation (Digital ATA Scores format).", owner: "Paula", notes: "Save to SharePoint: Digital ATA Scores folder" }
+    ]
+  },
+  {
+    title: "PHASE 4: POST-ORIENTATION / RC & SYSTEMS SETUP (May 19 – May 22)",
+    tasks: [
+      { date: "May 19–20", timeframe: "Once RC account is active", name: "Add New Techs to RC Threads", steps: "Once Brenda confirms RC account is active, add new technicians to:\n1) Company Social RC Thread\n2) Field Tech Resources RC Thread\n3) Training Touch Base / BZ Info Thread\n4) Competition GROUP RC Thread", owner: "Paula", notes: "Wait for Brenda's confirmation in Onboarding thread" },
+      { date: "May 19–20", timeframe: "Once RC account is active", name: "Create TEAM & Add to Recurring Meetings", steps: "1) Create TEAM: assigned PM + Lead Tech (Brenda) + new tech\n2) Add new tech to recurring meetings:\n   • New Tech Update (Wednesdays)\n   • TTB (Thursdays)\n3) Post confirmation in Orientation thread\n4) Ask new tech to confirm meeting attendance\n\n⚠ If SURVEY tech → do NOT add to Wednesday meeting", owner: "Paula", notes: "Survey techs excluded from New Tech Update (Wed)" },
+      { date: "May 20–22", timeframe: "Post-Orientation week", name: "Update Onboarding Information in Systems", steps: "Update records in:\n• WEX\n• USA Balancing\n• QAD (coordinate with Lisa for missing info)", owner: "Natalia", notes: "Follow up with Lisa on any missing QAD info" },
+      { date: "May 20–22", timeframe: "Post-Orientation week", name: "Update Maps Group", steps: "Add new technicians to the AirSolutions & Balancing Employee Location Map (Google My Maps).", owner: "Natalia", notes: "" }
+    ]
+  },
+  {
+    title: "PHASE 5: ONGOING TRAINING TRACKING (May 22 – Jun 12)",
+    tasks: [
+      { date: "Every Monday", timeframe: "Weekly", name: "Update ATA Hours Report", steps: "1) Collect weekly timelog data from PM assistants (ATA Training Cost - WEEKLY REPORTS)\n2) Paste training hours into TIMELOGS TRAINING sheet\n3) Verify compliance with 2-hour weekly guideline\n4) Flag any exceptions", owner: "Paula", notes: "Data shared by PM assistants in ATA Training Cost thread" },
+      { date: "Every Friday", timeframe: "Weekly", name: "Review ATA Lesson Progress", steps: "1) Review ATA Progress sheet (color-coded: green/yellow/blue)\n2) Update individual Digital ATA Scores spreadsheets\n3) Identify techs who are behind\n4) Document PM approval where applicable", owner: "Paula", notes: "Use Airadigm Technical Academy admin dashboard" },
+      { date: "Weekly", timeframe: "Ongoing", name: "Attend Recurring Meetings", steps: "• New Tech Update (Wednesdays)\n• Training Touch Base / TTB (Thursdays)", owner: "Paula", notes: "" }
+    ]
+  },
+  {
+    title: "PHASE 6: BOOTCAMP PREP (Jun 8 – Jun 15)",
+    tasks: [
+      { date: "Mon, Jun 8", timeframe: "Jun 8", name: "Verify All ATA Enrollment & Progress", steps: "Confirm all May 19 orientation hires are enrolled and progressing in ATA courses before bootcamp. Flag anyone behind to PM.", owner: "Paula / Natalia", notes: "One week before bootcamp" },
+      { date: "Wed, Jun 10", timeframe: "Jun 10", name: "Send Pre-Bootcamp Questionnaire", steps: "Send questionnaire/survey to new technicians in preparation for bootcamp.", owner: "Brenda / Paula", notes: "Coordinate with Brenda on timing" },
+      { date: "Fri, Jun 12", timeframe: "Jun 12", name: "Final Documentation & Systems Check", steps: "1) All OSHA/Diploma docs uploaded to SharePoint\n2) ATA tracking spreadsheets current\n3) RC threads and meetings confirmed\n4) Office Calendar & Anniversary Tracker updated\n5) Onboarding info in WEX/USA B/QAD complete", owner: "Paula / Natalia", notes: "Final check before bootcamp" },
+      { date: "⭐ Mon, Jun 15", timeframe: "Jun 15", name: "⭐ BOOTCAMP BEGINS", steps: "Bootcamp starts. Ensure all new technicians are fully set up and tracking is in place.", owner: "Brenda", notes: "Key milestone — all onboarding should be complete" }
+    ]
+  }
+];
+
+const LINKS_DATA = [
+  { category: "Hiring / Onboarding", name: "New Hire Checklist", description: "Centralized checklist with detailed info for each new hire (office and field staff). Used to track onboarding completion and access required information.", link: "New hire checklist - Updated File Sept. 2025.xlsx" },
+  { category: "Hiring / Onboarding", name: "Diploma / GED / OSHA List", description: "Confirms whether each technician has submitted required documents: OSHA 10/30 and Diploma or GED. Required for NEBB exam eligibility.", link: "Diploma_GED_OSHA List.xlsx" },
+  { category: "Hiring / Onboarding", name: "OSHA 10 & 30 Cards – SharePoint", description: "SharePoint location for storing OSHA 10 and OSHA 30 cards/certificates, organized by region. Stores actual documents (not just Yes/No status).", link: "company documents - Documents - OSHA 10 & 30 Cards - Certificates - All Documents" },
+  { category: "Hiring / Onboarding", name: "Tech Education Certs (SharePoint)", description: "SharePoint location for technicians' education documents (Diploma, GED, transcripts). Files saved as LastName, FirstName. Required for certification.", link: "High School or GED Diplomas - OneDrive" },
+  { category: "ATA / Training", name: "ATA Progress Since Feb 2025 (ATA Hours Sheet)", description: "Tracks technician training hours by region, including start date and tenure. Reviewed every Monday using data shared by PM assistants.", link: "ATA progress since Feb 2025.xlsx" },
+  { category: "ATA / Training", name: "ATA Progress (TIMELOGS TRAINING Sheet)", description: "Sheet used to paste training hours each technician punches under the Training Cost Code. Updated every Monday.", link: "ATA progress since Feb 2025.xlsx" },
+  { category: "ATA / Training", name: "ATA Progress (Progress Sheet)", description: "Tracks ATA lesson status using color coding (green, yellow, blue). Reviewed and updated every Friday.", link: "ATA progress since Feb 2025.xlsx" },
+  { category: "ATA / Training", name: "Airadigm Technical Academy", description: "Training platform where technicians complete ATA lessons. Technicians enrolled on Day 1 of orientation. Lesson progress reviewed every Friday.", link: "https://joe-balancer.teachable.com/admin/dashboard" },
+  { category: "ATA / Training", name: "Digital ATA Scores", description: "SharePoint location with individual spreadsheets for each technician (Last Name, First Name – Digital ATA Scores). Created at orientation start, updated every Friday.", link: "Digital ATA Scores" }
+];
+
+const INITIAL_WEEKLY = [
+  { id: 1, task: "Onboarding Courses x Solvo", owner: "Natalia", due: "2026-02-09", status: "Completed", priority: "Medium", category: "Training", resources: "Solvo University", notes: "" },
+  { id: 2, task: "ATA Hours Report", owner: "Paula", due: "2026-02-09", status: "Not started", priority: "High", category: "Training", resources: "ATA Training Cost Codes Thread", notes: "" },
+  { id: 3, task: "Follow up about Careers Inbox", owner: "Paula", due: "2026-02-09", status: "Completed", priority: "Medium", category: "Hiring", resources: "Ring Central", notes: "Pending - follow up message sent to Jean" },
+  { id: 4, task: "ATA Report", owner: "Paula", due: "2026-02-09", status: "Completed", priority: "Urgent", category: "Training", resources: "Admin", notes: "" },
+  { id: 5, task: "ATA Self Assessment Results Analysis", owner: "Paula", due: "2026-02-09", status: "In progress", priority: "Urgent", category: "Training", resources: "TAB Skills Self-Assessment", notes: "Still working on it — missing a few SW techs and RM areas." },
+  { id: 6, task: "Tool List Justin Bowman", owner: "Natalia", due: "2026-02-09", status: "Completed", priority: "Urgent", category: "Hiring", resources: "USA Balancing", notes: "" },
+  { id: 7, task: "Pre-Interviews Shadowing", owner: "Natalia", due: "2026-02-09", status: "Completed", priority: "High", category: "Hiring", resources: "Indeed job post", notes: "Check Brenda's Calendar for links" },
+  { id: 8, task: "Orientation – Tools Testing", owner: "Natalia", due: "2026-02-10", status: "Completed", priority: "High", category: "Orientation", resources: "Location/Link", notes: "Observe Ana 8:15 AM EST" },
+  { id: 9, task: "Natalia's Access to Diploma & OSHA SharePoints", owner: "Paula (Lisa)", due: "2026-02-10", status: "Completed", priority: "Medium", category: "Hiring", resources: "Links shared on RC to Natalia", notes: "" },
+  { id: 10, task: "Meeting with James", owner: "Natalia", due: "2026-02-12", status: "Completed", priority: "Medium", category: "Meetings", resources: "", notes: "Ask if we can create a shared email to receive notifications from Indeed" },
+  { id: 11, task: "Justin Holton – User Creation", owner: "Natalia", due: "2026-02-12", status: "Completed", priority: "Medium", category: "Hiring", resources: "QAD", notes: "Users creation" },
+  { id: 12, task: "Friday Before Orientation – Update Onboarding Status via Reply All", owner: "Paula", due: "2026-02-13", status: "Not started", priority: "Medium", category: "Orientation", resources: "Email", notes: "Reply all to Brenda's original orientation email." },
+  { id: 13, task: "Office Calendar Review", owner: "Natalia", due: "2026-02-13", status: "Completed", priority: "Medium", category: "Hiring", resources: "", notes: "People that started Feb 10 need to be added" },
+  { id: 14, task: "Anniversary Tracker Review", owner: "Natalia", due: "2026-02-13", status: "Completed", priority: "Medium", category: "Hiring", resources: "", notes: "People that started Feb 10 need to be added" },
+  { id: 15, task: "Fireflies Access", owner: "Natalia and Paula", due: "2026-02-16", status: "In progress", priority: "High", category: "Meetings", resources: "Fireflies", notes: "Access requested" },
+  { id: 16, task: "Indeed Messages Update", owner: "Natalia", due: "2026-02-17", status: "In progress", priority: "High", category: "Hiring", resources: "Indeed", notes: "Level 2 and Level 3" },
+  { id: 17, task: "Maps Group Update", owner: "Natalia", due: "2026-02-17", status: "Not started", priority: "High", category: "Hiring", resources: "AirSolutions & Balancing - Employee Location Map - Google My Maps", notes: "Justin Holton & Justin Bowman" },
+  { id: 18, task: "Pre-Screening", owner: "Natalia", due: "2026-02-18", status: "In progress", priority: "Medium", category: "Hiring", resources: "Indeed job post", notes: "Focus on DFW" },
+  { id: 19, task: "Onboarding Information Update", owner: "Natalia", due: "2026-02-18", status: "Not started", priority: "High", category: "Orientation", resources: "", notes: "WEX, USA B, QAD (Missing information from Lisa)" }
+];
+
+// ---- SUPABASE CONFIG ----
+
+function getConfig() {
+  try {
+    const cfg = JSON.parse(localStorage.getItem('onboarding_cfg') || '{}');
+    return cfg;
+  } catch { return {}; }
+}
+
+function saveConfig() {
+  const url = document.getElementById('setup-url').value.trim();
+  const key = document.getElementById('setup-key').value.trim();
+  const status = document.getElementById('setup-status');
+
+  if (!url || !key) {
+    status.textContent = 'Please enter both URL and key.';
+    status.className = 'setup-status error';
+    return;
+  }
+
+  status.textContent = 'Connecting...';
+  status.className = 'setup-status';
+
+  localStorage.setItem('onboarding_cfg', JSON.stringify({ url, key }));
+  initSupabase(url, key).then(ok => {
+    if (ok) {
+      status.textContent = '✓ Connected! Loading app...';
+      status.className = 'setup-status success';
+      setTimeout(() => showApp(), 700);
+    } else {
+      status.textContent = '✗ Could not connect. Check your credentials.';
+      status.className = 'setup-status error';
+    }
+  });
+}
+
+function resetConfig() {
+  if (confirm('Reset Supabase connection? You will need to re-enter your credentials.')) {
+    localStorage.removeItem('onboarding_cfg');
+    location.reload();
+  }
+}
+
+async function initSupabase(url, key) {
+  try {
+    supabase = window.supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+    // Always return true — connection errors handled later per operation
+    return true;
+  } catch (e) {
+    console.error('Supabase init error:', e);
+    return false;
+  }
+}
+
+async function createTablesIfNeeded() {
+  // Use SQL to create tables
+  try {
+    await supabase.rpc('exec_sql', {
+      sql: `
+        CREATE TABLE IF NOT EXISTS weekly_tasks (
+          id BIGSERIAL PRIMARY KEY,
+          task TEXT NOT NULL,
+          owner TEXT,
+          due DATE,
+          status TEXT DEFAULT 'Not started',
+          priority TEXT DEFAULT 'Medium',
+          category TEXT,
+          resources TEXT,
+          notes TEXT,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+        CREATE TABLE IF NOT EXISTS orientation_checks (
+          id TEXT PRIMARY KEY,
+          checked BOOLEAN DEFAULT FALSE,
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+        CREATE TABLE IF NOT EXISTS step_checks (
+          id TEXT PRIMARY KEY,
+          checked BOOLEAN DEFAULT FALSE,
+          updated_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      `
+    });
+  } catch (e) {
+    // rpc might not exist; tables might already exist — that's fine
+  }
+}
+
+async function ensureWeeklyData() {
+  const { data, error } = await supabase.from('weekly_tasks').select('id').limit(1);
+  if (error || !data || data.length === 0) {
+    // Insert initial data
+    const rows = INITIAL_WEEKLY.map(t => ({
+      task: t.task, owner: t.owner, due: t.due,
+      status: t.status, priority: t.priority, category: t.category,
+      resources: t.resources, notes: t.notes
+    }));
+    await supabase.from('weekly_tasks').insert(rows);
+  }
+}
+
+// ---- APP INIT ----
+
+async function showApp() {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('main-content').innerHTML += ''; // trigger repaint
+
+  await createTablesIfNeeded();
+  await loadWeeklyTasks();
+  renderDashboard();
+  renderOrientationView();
+  renderResponsibilities();
+  renderLinks();
+  renderFilterBar();
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const cfg = getConfig();
+  if (cfg.url && cfg.key) {
+    const ok = await initSupabase(cfg.url, cfg.key);
+    if (ok) {
+      showApp();
+    } else {
+      showSetup();
+    }
+  } else {
+    showSetup();
+  }
+});
+
+function showSetup() {
+  document.getElementById('setup-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+
+// ---- WEEKLY TASKS ----
+
+async function loadWeeklyTasks() {
+  const { data, error } = await supabase
+    .from('weekly_tasks')
+    .select('*')
+    .order('due', { ascending: true });
+
+  if (error) {
+    // Fallback to local
+    weeklyTasks = [...INITIAL_WEEKLY];
+  } else {
+    weeklyTasks = data && data.length > 0 ? data : [...INITIAL_WEEKLY];
+    if (!data || data.length === 0) await ensureWeeklyData();
+  }
+  renderWeeklyBoard();
+}
+
+async function updateTaskStatus(id, newStatus) {
+  weeklyTasks = weeklyTasks.map(t => t.id === id ? { ...t, status: newStatus } : t);
+  await supabase.from('weekly_tasks').update({ status: newStatus }).eq('id', id);
+  renderWeeklyBoard();
+  renderDashboard();
+}
+
+async function saveTask() {
+  const task = document.getElementById('task-name').value.trim();
+  if (!task) { showToast('Please enter a task name.', 'error'); return; }
+
+  const row = {
+    task,
+    owner: document.getElementById('task-owner').value.trim(),
+    due: document.getElementById('task-due').value || null,
+    status: 'Not started',
+    priority: document.getElementById('task-priority').value,
+    category: document.getElementById('task-category').value,
+    notes: document.getElementById('task-notes').value.trim(),
+    resources: document.getElementById('task-resources').value.trim()
+  };
+
+  const { data, error } = await supabase.from('weekly_tasks').insert([row]).select();
+  if (error) {
+    showToast('Error saving task.', 'error');
+    return;
+  }
+  weeklyTasks.push(data[0]);
+  closeAddTask();
+  renderWeeklyBoard();
+  renderDashboard();
+  showToast('Task added!', 'success');
+}
+
+// ---- ORIENTATION CHECKS ----
+
+async function getOrientCheck(id) {
+  try {
+    const { data } = await supabase.from('orientation_checks').select('checked').eq('id', id).single();
+    return data?.checked || false;
+  } catch { return false; }
+}
+
+async function toggleOrientCheck(id, el) {
+  const current = el.classList.contains('checked');
+  el.classList.toggle('checked', !current);
+  el.closest('.orient-task').classList.toggle('done', !current);
+  try {
+    await supabase.from('orientation_checks').upsert({ id, checked: !current, updated_at: new Date().toISOString() });
+  } catch(e) { console.warn(e); }
+  updateOrientationProgress();
+}
+
+// ---- STEP CHECKS ----
+
+async function toggleStepCheck(id, el) {
+  const current = el.classList.contains('done');
+  el.classList.toggle('done', !current);
+  const txt = el.nextElementSibling;
+  if (txt) txt.classList.toggle('done', !current);
+  const cb = el.previousElementSibling;
+  if (cb) { cb.classList.toggle('done', !current); }
+  try {
+    await supabase.from('step_checks').upsert({ id, checked: !current, updated_at: new Date().toISOString() });
+  } catch(e) { console.warn(e); }
+}
+
+// ---- RENDER DASHBOARD ----
+
+function renderDashboard() {
+  const tasks = weeklyTasks;
+  const total = tasks.length;
+  const done = tasks.filter(t => t.status === 'Completed').length;
+  const inProg = tasks.filter(t => t.status === 'In progress').length;
+  const notStarted = tasks.filter(t => t.status === 'Not started').length;
+  const urgent = tasks.filter(t => t.priority === 'Urgent' || t.priority === 'High').length;
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Tasks</div></div>
+    <div class="stat-card green"><div class="stat-value">${done}</div><div class="stat-label">Completed</div></div>
+    <div class="stat-card gold"><div class="stat-value">${inProg}</div><div class="stat-label">In Progress</div></div>
+    <div class="stat-card red"><div class="stat-value">${notStarted}</div><div class="stat-label">Not Started</div></div>
+  `;
+
+  // Urgent list
+  const urgentTasks = tasks.filter(t => (t.priority === 'Urgent' || t.priority === 'High') && t.status !== 'Completed').slice(0, 6);
+  document.getElementById('urgent-list').innerHTML = urgentTasks.length
+    ? urgentTasks.map(t => `
+        <div class="task-mini ${t.priority.toLowerCase()}" onclick="switchView('weekly',null)">
+          <span class="task-mini-name">${t.task}</span>
+          <span class="task-mini-owner">${t.owner || ''}</span>
+        </div>`).join('')
+    : '<div class="empty-state">🎉 No urgent tasks!</div>';
+
+  // Upcoming orientation
+  const orientTasks = ORIENTATION_PHASES.flatMap(p => p.tasks).slice(0, 5);
+  document.getElementById('upcoming-list').innerHTML = orientTasks.map(t => `
+    <div class="task-mini" onclick="switchView('orientation',null)">
+      <span class="task-mini-name">${t.name}</span>
+      <span class="task-mini-owner">${t.date}</span>
+    </div>`).join('');
+}
+
+// ---- RENDER WEEKLY BOARD ----
+
+function renderWeeklyBoard() {
+  const statuses = ['Not started', 'In progress', 'Completed'];
+  const filtered = weeklyTasks.filter(t => {
+    const catMatch = filterCategory === 'All' || t.category === filterCategory;
+    const searchMatch = !searchQuery || t.task.toLowerCase().includes(searchQuery) || (t.owner || '').toLowerCase().includes(searchQuery);
+    return catMatch && searchMatch;
+  });
+
+  document.getElementById('weekly-board').innerHTML = statuses.map(status => {
+    const col = filtered.filter(t => t.status === status);
+    return `
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <h4>${status}</h4>
+          <span class="col-count">${col.length}</span>
+        </div>
+        ${col.map(t => taskCard(t)).join('') || '<div class="empty-state" style="font-size:12px;padding:20px">No tasks</div>'}
+      </div>`;
+  }).join('');
+}
+
+function taskCard(t) {
+  const pri = (t.priority || 'medium').toLowerCase();
+  const cat = (t.category || '').toLowerCase();
+  const isComplete = t.status === 'Completed';
+  return `
+    <div class="task-card ${pri}">
+      <div class="task-checkbox ${isComplete ? 'checked' : ''}" onclick="cycleStatus(${t.id}, event)"></div>
+      <div class="task-card-title">${t.task}</div>
+      <div class="task-card-meta">
+        <span class="tag ${pri}">${t.priority || 'Medium'}</span>
+        ${t.category ? `<span class="tag ${cat}">${t.category}</span>` : ''}
+        <span class="task-owner">${t.owner || ''}</span>
+        ${t.due ? `<span class="task-due">📅 ${formatDate(t.due)}</span>` : ''}
+      </div>
+      ${t.notes ? `<div style="margin-top:8px;font-size:11px;color:var(--text-muted);line-height:1.4">${t.notes}</div>` : ''}
+    </div>`;
+}
+
+function cycleStatus(id, e) {
+  e.stopPropagation();
+  const task = weeklyTasks.find(t => t.id === id);
+  if (!task) return;
+  const order = ['Not started', 'In progress', 'Completed'];
+  const next = order[(order.indexOf(task.status) + 1) % order.length];
+  updateTaskStatus(id, next);
+  showToast(`Task marked: ${next}`);
+}
+
+// ---- RENDER ORIENTATION ----
+
+function renderOrientationView() {
+  const container = document.getElementById('orientation-phases');
+  container.innerHTML = ORIENTATION_PHASES.map((phase, pi) => `
+    <div class="phase-section">
+      <div class="phase-title">${phase.title}</div>
+      ${phase.tasks.map((task, ti) => {
+        const id = `orient-${pi}-${ti}`;
+        return `
+          <div class="orient-task" id="task-${id}">
+            <div class="orient-check" id="check-${id}" onclick="toggleOrientCheck('${id}', this)"></div>
+            <div class="orient-task-body">
+              <div class="orient-task-name">${task.name}</div>
+              <div class="orient-task-meta">
+                <span class="orient-date">📅 ${task.date}</span>
+                <span class="orient-owner">👤 ${task.owner}</span>
+                <span class="expand-btn" onclick="toggleOrientSteps('${id}', event)">▼ Steps</span>
+              </div>
+              <div class="orient-steps" id="steps-${id}">${task.steps}${task.notes ? '\n\n📝 ' + task.notes : ''}</div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  // Load saved checks
+  loadOrientChecks();
+  updateOrientationProgress();
+}
+
+async function loadOrientChecks() {
+  try {
+    const { data } = await supabase.from('orientation_checks').select('*');
+    if (data) {
+      data.forEach(row => {
+        if (row.checked) {
+          const el = document.getElementById(`check-${row.id}`);
+          if (el) {
+            el.classList.add('checked');
+            el.closest('.orient-task')?.classList.add('done');
+          }
+        }
+      });
+    }
+  } catch(e) { console.warn('Could not load orient checks', e); }
+  updateOrientationProgress();
+}
+
+function toggleOrientSteps(id, e) {
+  e.stopPropagation();
+  const steps = document.getElementById(`steps-${id}`);
+  steps.classList.toggle('open');
+  const btn = e.target;
+  btn.textContent = steps.classList.contains('open') ? '▲ Steps' : '▼ Steps';
+}
+
+function updateOrientationProgress() {
+  const checks = document.querySelectorAll('.orient-check');
+  const done = document.querySelectorAll('.orient-check.checked');
+  const total = checks.length;
+  const pct = total > 0 ? Math.round((done.length / total) * 100) : 0;
+  document.getElementById('orientation-progress-bar').innerHTML = `
+    <div class="progress-bar-fill" style="width:${pct}%"></div>`;
+}
+
+// ---- RENDER RESPONSIBILITIES ----
+
+function renderResponsibilities() {
+  const container = document.getElementById('responsibilities-list');
+  container.innerHTML = RESPONSIBILITIES.map((r, i) => `
+    <div class="proc-card" id="proc-${i}">
+      <div class="proc-header" onclick="toggleProc(${i})">
+        <div class="proc-num">${i + 1}</div>
+        <div class="proc-trigger">
+          <div class="proc-trigger-label">Trigger / Cue</div>
+          <div class="proc-trigger-text">${r.trigger}</div>
+        </div>
+        <div class="proc-meta">
+          <span class="tag hiring">${r.owner}</span>
+          <span class="proc-arrow">▶</span>
+        </div>
+      </div>
+      <div class="proc-body">
+        <div class="proc-section">
+          <div class="proc-section-label">Responsibility</div>
+          <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">${r.title}</div>
+        </div>
+        <div class="proc-section">
+          <div class="proc-section-label">Step-by-Step Action</div>
+          <ul class="proc-steps-checklist">
+            ${r.steps.map((s, si) => `
+              <li onclick="toggleStepCheck('proc-${i}-step-${si}', this)">
+                <div class="step-cb" id="scb-proc-${i}-step-${si}"></div>
+                <span class="step-text" id="stxt-proc-${i}-step-${si}">${s}</span>
+              </li>`).join('')}
+          </ul>
+        </div>
+        <div class="proc-section">
+          <div class="proc-section-label">Timing</div>
+          <div class="proc-steps">${r.timing}</div>
+        </div>
+        ${r.notes ? `<div class="proc-section"><div class="proc-section-label">Notes</div><div class="proc-steps">${r.notes}</div></div>` : ''}
+      </div>
+    </div>`).join('');
+  loadStepChecks();
+}
+
+async function loadStepChecks() {
+  try {
+    const { data } = await supabase.from('step_checks').select('*');
+    if (data) {
+      data.forEach(row => {
+        if (row.checked) {
+          const cb = document.getElementById(`scb-${row.id}`);
+          const txt = document.getElementById(`stxt-${row.id}`);
+          if (cb) cb.classList.add('done');
+          if (txt) txt.classList.add('done');
+        }
+      });
+    }
+  } catch(e) { console.warn('Could not load step checks', e); }
+}
+
+function toggleStepCheck(id, li) {
+  const cb = li.querySelector('.step-cb');
+  const txt = li.querySelector('.step-text');
+  const current = cb.classList.contains('done');
+  cb.classList.toggle('done', !current);
+  txt.classList.toggle('done', !current);
+  try {
+    supabase.from('step_checks').upsert({ id, checked: !current, updated_at: new Date().toISOString() });
+  } catch(e) {}
+}
+
+function toggleProc(i) {
+  document.getElementById(`proc-${i}`).classList.toggle('open');
+}
+
+// ---- RENDER LINKS ----
+
+function renderLinks() {
+  const q = searchQuery;
+  const filtered = LINKS_DATA.filter(l =>
+    !q || l.name.toLowerCase().includes(q) || l.category.toLowerCase().includes(q) || l.description.toLowerCase().includes(q)
+  );
+  document.getElementById('links-grid').innerHTML = filtered.map(l => {
+    const isUrl = l.link.startsWith('http');
+    return `
+      <div class="link-card">
+        <div class="link-category">${l.category}</div>
+        <div class="link-name">${l.name}</div>
+        <div class="link-desc">${l.description}</div>
+        ${isUrl
+          ? `<a class="link-url" href="${l.link}" target="_blank" rel="noopener">🔗 Open Resource</a>`
+          : `<span class="link-url">📄 ${l.link}</span>`}
+      </div>`;
+  }).join('') || '<div class="empty-state">No resources match your search.</div>';
+}
+
+// ---- FILTER BAR ----
+
+function renderFilterBar() {
+  const cats = ['All', 'Hiring', 'Training', 'Orientation', 'Meetings'];
+  document.getElementById('weekly-filters').innerHTML = cats.map(c => `
+    <span class="pill ${filterCategory === c ? 'active' : ''}" onclick="setFilter('${c}')">${c}</span>`).join('');
+}
+
+function setFilter(cat) {
+  filterCategory = cat;
+  renderFilterBar();
+  renderWeeklyBoard();
+}
+
+// ---- SEARCH ----
+
+function handleSearch(val) {
+  searchQuery = val.toLowerCase().trim();
+  if (currentView === 'weekly') renderWeeklyBoard();
+  if (currentView === 'links') renderLinks();
+}
+
+// ---- NAVIGATION ----
+
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+
+  const titles = { dashboard: 'Dashboard', weekly: 'Weekly Tasks', orientation: 'May 2026 Orientation', responsibilities: 'Responsibilities', links: 'Resources & Links' };
+  document.getElementById('view-title').textContent = titles[view] || view;
+
+  // Clear search on view change
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
+
+  if (view === 'weekly') renderWeeklyBoard();
+  if (view === 'links') renderLinks();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ---- MODAL ----
+
+function openAddTask() {
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  document.getElementById('task-name').focus();
+}
+
+function closeAddTask() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  ['task-name','task-owner','task-due','task-notes','task-resources'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeAddTask();
+}
+
+function closeStepModal(e) {
+  if (!e || e.target === document.getElementById('step-modal-overlay')) {
+    document.getElementById('step-modal-overlay').classList.add('hidden');
+  }
+}
+
+// ---- TOAST ----
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  t.classList.remove('hidden');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+// ---- HELPERS ----
+
+function formatDate(d) {
+  if (!d) return '';
+  try {
+    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch { return d; }
+}
+  </script>
 </body>
 </html>
