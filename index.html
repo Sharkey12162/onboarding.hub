@@ -1690,22 +1690,16 @@ function printUnchecked() {
     document.head.appendChild(style);
   }
 
-  // Collect IDs of checked items and empty categories
+  // Collect IDs of checked items (they have class "done") and empty categories
   const checkedIds = [];
-  document.querySelectorAll('.cl-item').forEach(item => {
-    const cb = item.querySelector('.cl-cb');
-    if (cb && cb.classList.contains('checked')) {
-      if (!item.id) item.id = 'ci_' + Math.random().toString(36).substr(2,9);
-      checkedIds.push('#' + item.id);
-    }
+  document.querySelectorAll('.cl-item.done').forEach(item => {
+    if (!item.id) item.id = 'ci_' + Math.random().toString(36).substr(2,9);
+    checkedIds.push('#' + item.id);
   });
 
   const hiddenCats = [];
   document.querySelectorAll('.cl-category').forEach(cat => {
-    const unchecked = Array.from(cat.querySelectorAll('.cl-item')).filter(item => {
-      const cb = item.querySelector('.cl-cb');
-      return !(cb && cb.classList.contains('checked'));
-    });
+    const unchecked = cat.querySelectorAll('.cl-item:not(.done)');
     if (unchecked.length === 0) {
       if (!cat.id) cat.id = 'cc_' + Math.random().toString(36).substr(2,9);
       hiddenCats.push('#' + cat.id);
