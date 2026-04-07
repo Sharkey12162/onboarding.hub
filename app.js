@@ -223,12 +223,10 @@ function resetConfig() {
 
 async function initSupabase(url, key) {
   try {
-    supabase = window.supabase.createClient(url, key);
-    // Test connection
-    const { error } = await supabase.from('weekly_tasks').select('id').limit(1);
-    if (error && error.code !== 'PGRST116' && !error.message.includes('does not exist')) {
-      console.warn('Supabase test error:', error);
-    }
+    supabase = window.supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+    // Always return true — connection errors handled later per operation
     return true;
   } catch (e) {
     console.error('Supabase init error:', e);
