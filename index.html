@@ -794,6 +794,88 @@
     .wt-table th, .wt-table td { padding: 10px 10px; }
     .cards-grid { grid-template-columns: 1fr; }
   }
+
+  /* ══════════════════════════════════
+     WEEKLY TASKS — UPGRADED
+  ══════════════════════════════════ */
+  .wt-wrap { display:flex; gap:20px; align-items:flex-start; }
+  .wt-main { flex:1; min-width:0; }
+  .wt-sidebar { width:300px; flex-shrink:0; display:flex; flex-direction:column; gap:16px; }
+
+  /* Metrics */
+  .wt-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+  .wt-metric { background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .wt-metric-val { font-size:28px; font-weight:800; color:var(--navy); line-height:1; }
+  .wt-metric-label { font-size:11px; font-weight:600; color:var(--muted); margin-top:5px; text-transform:uppercase; letter-spacing:.4px; }
+  .wt-metric.m-done { border-left:4px solid #3b6d11; }
+  .wt-metric.m-pending { border-left:4px solid #854f0b; }
+  .wt-metric.m-blocked { border-left:4px solid #a32d2d; }
+
+  /* Week selector */
+  .wt-week-nav { display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .wt-week-nav h3 { font-size:15px; font-weight:700; color:var(--navy); flex:1; }
+  .wt-week-nav button { padding:6px 14px; border-radius:8px; border:1.5px solid var(--border); background:#fff; cursor:pointer; font-weight:600; color:var(--navy); font-size:13px; }
+  .wt-week-nav button:hover { border-color:var(--sky); color:var(--sky); }
+  .btn-add-task { background:var(--navy) !important; color:#fff !important; border-color:var(--navy) !important; }
+  .btn-add-task:hover { background:#0f1f3d !important; }
+
+  /* Day columns */
+  .wt-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+  .wt-day-col { background:#fff; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; }
+  .wt-day-header { background:#1a2744; color:#fff; padding:10px 12px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; display:flex; justify-content:space-between; align-items:center; }
+  .wt-day-date { font-size:10px; font-weight:400; opacity:.7; }
+  .wt-day-body { padding:8px; min-height:120px; }
+  .wt-task-card { background:#f8fafc; border:1.5px solid var(--border); border-radius:8px; padding:9px 10px; margin-bottom:8px; cursor:pointer; }
+  .wt-task-card:hover { border-color:#94a3b8; }
+  .wt-task-title { font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:5px; line-height:1.35; }
+  .wt-task-owner { font-size:10.5px; color:var(--muted); margin-bottom:5px; }
+  .wt-task-recur { font-size:10px; color:#185fa5; background:#e6f1fb; padding:1px 7px; border-radius:10px; display:inline-block; margin-bottom:4px; }
+  .wt-empty-day { font-size:11px; color:#cbd5e1; text-align:center; padding:16px 0; }
+
+  /* Status pills */
+  .sp { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:700; letter-spacing:.3px; }
+  .sp-done      { background:#eaf3de; color:#3b6d11; }
+  .sp-pending   { background:#faeeda; color:#854f0b; }
+  .sp-blocked   { background:#fcebeb; color:#a32d2d; }
+  .sp-recurring { background:#e6f1fb; color:#185fa5; }
+
+  /* Legend */
+  .wt-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; padding:10px 14px; background:#fff; border:1.5px solid var(--border); border-radius:10px; }
+  .wt-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--text); }
+
+  /* Add Task Form */
+  .wt-add-form { background:#fff; border:1.5px solid var(--border); border-radius:10px; padding:18px; margin-bottom:16px; display:none; }
+  .wt-add-form.open { display:block; }
+  .wt-form-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:14px; }
+  .wt-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .wt-form-field { display:flex; flex-direction:column; gap:4px; }
+  .wt-form-field label { font-size:11px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.4px; }
+  .wt-form-field input, .wt-form-field select { padding:8px 10px; border:1.5px solid var(--border); border-radius:7px; font-size:13px; color:var(--text); outline:none; font-family:inherit; }
+  .wt-form-field input:focus, .wt-form-field select:focus { border-color:var(--sky); }
+  .wt-form-full { grid-column:1/-1; }
+  .wt-form-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+  /* Sidebar cards */
+  .wt-sidebar-card { background:#fff; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; }
+  .wt-sidebar-card-header { background:#1a2744; color:#fff; padding:11px 14px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; display:flex; justify-content:space-between; align-items:center; }
+  .wt-sidebar-card-body { padding:12px; max-height:280px; overflow-y:auto; }
+  .reminder-item { padding:9px 0; border-bottom:1px solid var(--border); }
+  .reminder-item:last-child { border-bottom:none; }
+  .reminder-title { font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:2px; }
+  .reminder-recur { font-size:11px; color:var(--muted); }
+  .reminder-urgent { display:inline-block; background:#fcebeb; color:#a32d2d; font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; }
+  .activity-item { display:flex; flex-direction:column; padding:7px 0; border-bottom:1px solid var(--border); }
+  .activity-item:last-child { border-bottom:none; }
+  .activity-title { font-size:12px; font-weight:600; color:var(--navy); }
+  .activity-meta { font-size:10.5px; color:var(--muted); margin-top:1px; }
+  .wt-sidebar-empty { font-size:12px; color:var(--muted); text-align:center; padding:16px; }
+
+  /* Add reminder form */
+  .add-reminder-form { display:none; padding:10px; border-top:1px solid var(--border); background:#f8fafc; }
+  .add-reminder-form.open { display:block; }
+  .add-reminder-form input, .add-reminder-form select { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; margin-bottom:7px; outline:none; font-family:inherit; }
+  .add-reminder-form input:focus { border-color:var(--sky); }
+
 </style>
 </head>
 <body>
@@ -1345,38 +1427,130 @@
 <!-- ═══════════ WEEKLY TASKS ═══════════ -->
   <section id="weekly" class="section">
     <div class="section-header">
-      <h2>Weekly Tasks Log</h2>
-      <p>Full task history for Paula and Natalia. Filter by owner or status. &nbsp;<span style="background:#eff6ff;color:#1d4ed8;font-size:0.78rem;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid #bfdbfe;">✏️ Click any cell to edit it</span></p>
+      <h2>Weekly Tasks</h2>
+      <p>5-day week view with status tracking, reminders, and activity log.</p>
     </div>
 
-    <div class="wt-filters">
-      <button class="filter-btn active" onclick="filterTasks('all', this)">All Tasks</button>
-      <button class="filter-btn" onclick="filterTasks('Paula', this)">Paula</button>
-      <button class="filter-btn" onclick="filterTasks('Natalia', this)">Natalia</button>
-      <button class="filter-btn" onclick="filterTasks('Completed', this)">✅ Completed</button>
-      <button class="filter-btn" onclick="filterTasks('Not started', this)">⬜ Not Started</button>
-      <button class="filter-btn" onclick="filterTasks('In progress', this)">🔄 In Progress</button>
-    </div>
-    <div class="wt-save-note" id="wt-save-note">✓ Changes saved</div>
+    <!-- Metrics Row -->
+    <div class="wt-metrics" id="wt-metrics"></div>
 
-    <div class="wt-table-wrap">
-      <table class="wt-table" id="wt-table">
-        <thead>
-          <tr>
-            <th style="width:38%">Task</th>
-            <th style="width:10%">Owner</th>
-            <th style="width:11%">Due Date</th>
-            <th style="width:9%">Priority</th>
-            <th style="width:10%">Status</th>
-            <th style="width:10%">Category</th>
-            <th style="width:10%">Notes</th>
-            <th style="width:8%">Link</th>
-          </tr>
-        </thead>
-        <tbody id="wt-body"></tbody>
-      </table>
+    <!-- Add Task Form -->
+    <div class="wt-add-form" id="wt-add-form">
+      <div class="wt-form-title">+ Add New Task</div>
+      <div class="wt-form-grid">
+        <div class="wt-form-field wt-form-full">
+          <label>Task Title *</label>
+          <input type="text" id="wt-f-title" placeholder="e.g. Update ATA Hours Report" />
+        </div>
+        <div class="wt-form-field">
+          <label>Day</label>
+          <select id="wt-f-day">
+            <option value="Mon">Monday</option>
+            <option value="Tue">Tuesday</option>
+            <option value="Wed">Wednesday</option>
+            <option value="Thu">Thursday</option>
+            <option value="Fri">Friday</option>
+          </select>
+        </div>
+        <div class="wt-form-field">
+          <label>Status</label>
+          <select id="wt-f-status">
+            <option value="pending">Pending</option>
+            <option value="done">Done</option>
+            <option value="blocked">Blocked</option>
+            <option value="recurring">Recurring</option>
+          </select>
+        </div>
+        <div class="wt-form-field">
+          <label>Owner (optional)</label>
+          <select id="wt-f-owner">
+            <option value="">— No owner —</option>
+          </select>
+        </div>
+        <div class="wt-form-field">
+          <label>Recurrence (optional)</label>
+          <input type="text" id="wt-f-recur" placeholder="e.g. Every Monday" />
+        </div>
+      </div>
+      <div class="wt-form-actions">
+        <button onclick="closeAddTaskForm()" style="padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-weight:600;font-size:13px;">Cancel</button>
+        <button onclick="submitTask()" style="padding:8px 18px;border-radius:8px;border:none;background:var(--navy);color:#fff;cursor:pointer;font-weight:700;font-size:13px;">Save Task</button>
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div class="wt-wrap">
+
+      <!-- Left: Week Grid -->
+      <div class="wt-main">
+        <div class="wt-week-nav">
+          <button onclick="prevWeek()">◀</button>
+          <h3 id="wt-week-label"></h3>
+          <button onclick="nextWeek()">▶</button>
+          <button onclick="goToday()">Today</button>
+          <button class="btn-add-task" onclick="toggleAddTaskForm()">+ Add Task</button>
+        </div>
+        <div class="wt-grid" id="wt-grid"></div>
+        <div class="wt-legend">
+          <span class="wt-legend-item"><span class="sp sp-done">done</span> Completed</span>
+          <span class="wt-legend-item"><span class="sp sp-pending">pending</span> In Progress / To Do</span>
+          <span class="wt-legend-item"><span class="sp sp-blocked">blocked</span> Blocked / At Risk</span>
+          <span class="wt-legend-item"><span class="sp sp-recurring">recurring</span> Recurring Task</span>
+        </div>
+      </div>
+
+      <!-- Right: Sidebar -->
+      <div class="wt-sidebar">
+
+        <!-- Reminders -->
+        <div class="wt-sidebar-card">
+          <div class="wt-sidebar-card-header">
+            🔔 Reminders
+            <button onclick="toggleReminderForm()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700;">+ Add</button>
+          </div>
+          <div class="add-reminder-form" id="reminder-form">
+            <input type="text" id="rm-title" placeholder="Reminder title *" />
+            <input type="text" id="rm-recur" placeholder='Recurrence (e.g. "Every Friday at 4 PM")' />
+            <input type="date" id="rm-date" />
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <input type="checkbox" id="rm-urgent" style="width:auto;margin:0;" />
+              <label for="rm-urgent" style="font-size:12px;font-weight:600;color:var(--navy);">Mark as Urgent</label>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="toggleReminderForm()" style="flex:1;padding:7px;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-weight:600;">Cancel</button>
+              <button onclick="saveReminder()" style="flex:1;padding:7px;border-radius:7px;border:none;background:var(--navy);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">Save</button>
+            </div>
+          </div>
+          <div class="wt-sidebar-card-body" id="reminders-list"></div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="wt-sidebar-card">
+          <div class="wt-sidebar-card-header">📋 Activity Log <span style="font-size:10px;font-weight:400;opacity:.7;">Last 10 completed</span></div>
+          <div class="wt-sidebar-card-body" id="activity-list"></div>
+        </div>
+
+        <!-- Team Members -->
+        <div class="wt-sidebar-card">
+          <div class="wt-sidebar-card-header">
+            👥 Team Members
+            <button onclick="toggleMemberForm()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700;">+ Add</button>
+          </div>
+          <div class="add-reminder-form" id="member-form">
+            <input type="text" id="mb-name" placeholder="Full name *" />
+            <div style="display:flex;gap:6px;">
+              <button onclick="toggleMemberForm()" style="flex:1;padding:7px;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:12px;font-weight:600;">Cancel</button>
+              <button onclick="saveMember()" style="flex:1;padding:7px;border-radius:7px;border:none;background:var(--navy);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">Save</button>
+            </div>
+          </div>
+          <div class="wt-sidebar-card-body" id="members-list"></div>
+        </div>
+
+      </div>
     </div>
   </section>
+
+
   <!-- ═══════════ NEW HIRE CHECKLIST ═══════════ -->
   <section id="checklist" class="section">
     <div class="section-header">
@@ -1747,201 +1921,349 @@ function toggleResp(card) {
   card.classList.toggle('open');
 }
 
-// ── WEEKLY TASKS DATA ──
-const tasks = [
-  {task:"Onboarding Courses x Solvo",owner:"Natalia",due:"2026-02-09",priority:"Medium",status:"Completed",category:"Training",notes:""},
-  {task:"ATA Hours Report",owner:"Paula",due:"2026-02-09",priority:"High",status:"Not started",category:"Training",notes:""},
-  {task:"Follow up about Careers Inbox",owner:"Paula",due:"2026-02-09",priority:"Medium",status:"Completed",category:"Hiring",notes:"Pending - follow up message sent to Jean"},
-  {task:"ATA Report",owner:"Paula",due:"2026-02-09",priority:"Urgent",status:"Completed",category:"Training",notes:""},
-  {task:"ATA Self assessment results analysis",owner:"Paula",due:"2026-02-09",priority:"Urgent",status:"In progress",category:"Training",notes:"Still working — missing a few SW techs and RM areas"},
-  {task:"Tool list Justin Bowman",owner:"Natalia",due:"2026-02-09",priority:"Urgent",status:"Completed",category:"Hiring",notes:""},
-  {task:"Pre-interviews shadowing",owner:"Natalia",due:"2026-02-09",priority:"High",status:"Completed",category:"Hiring",notes:"Check Brenda's Calendar for links"},
-  {task:"Orientation – Tools testing",owner:"Natalia",due:"2026-02-10",priority:"High",status:"Completed",category:"Orientation",notes:"Observe Ana 8:15 AM EST"},
-  {task:"Natalia's Access to Diploma & OSHA SharePoints",owner:"Paula (Lisa)",due:"2026-02-10",priority:"Medium",status:"Completed",category:"Hiring",notes:"Links shared on RC to Natalia"},
-  {task:"Meeting with James",owner:"Natalia",due:"2026-02-12",priority:"Medium",status:"Completed",category:"Meetings",notes:"Ask if we can create a shared email address for Indeed notifications"},
-  {task:"Justin Holton – Users creation",owner:"Natalia",due:"2026-02-12",priority:"Medium",status:"Completed",category:"Hiring",notes:"Users creation (QAD)"},
-  {task:"Friday before orientation – update onboarding status via Reply All",owner:"Paula",due:"2026-02-13",priority:"Medium",status:"Not started",category:"Orientation",notes:"Reply all to Brenda's original orientation email"},
-  {task:"Office Calendar review",owner:"Natalia",due:"2026-02-13",priority:"Medium",status:"Completed",category:"Hiring",notes:"People that started Feb 10 need to be added"},
-  {task:"Anniversary Tracker review",owner:"Natalia",due:"2026-02-13",priority:"Medium",status:"Completed",category:"Hiring",notes:"People that started Feb 10 need to be added"},
-  {task:"Fireflies access",owner:"Natalia and Paula",due:"2026-02-16",priority:"High",status:"In progress",category:"",notes:"Access requested"},
-  {task:"Indeed messages update",owner:"Natalia",due:"2026-02-17",priority:"High",status:"In progress",category:"Hiring",notes:"Level 2 and Level 3"},
-  {task:"Maps Group update",owner:"Natalia",due:"2026-02-17",priority:"High",status:"Not started",category:"Hiring",notes:"Justin Holton & Justin Bowman"},
-  {task:"Pre-screening",owner:"Natalia",due:"2026-02-18",priority:"Medium",status:"In progress",category:"Hiring",notes:"Focus on DFW"},
-  {task:"Onboarding information update",owner:"Natalia",due:"2026-02-18",priority:"High",status:"Not started",category:"Orientation",notes:"WEX, USA B, QAD (Missing info from Lisa)"},
-  {task:"Office Calendar update",owner:"Natalia",due:"2026-02-18",priority:"High",status:"Not started",category:"Hiring",notes:"Justin Holton & Justin Bowman"},
-  {task:"Anniversary tracker update",owner:"Natalia",due:"2026-02-18",priority:"High",status:"Not started",category:"Hiring",notes:"Justin Holton & Justin Bowman"},
-  {task:"Review OSHA & Diploma certifications",owner:"Natalia",due:"2026-02-20",priority:"High",status:"Not started",category:"Hiring",notes:"Justin Holton & Justin Bowman"},
-  {task:"Justin Holton – IT set up",owner:"Natalia",due:"2026-02-24",priority:"High",status:"Not started",category:"Orientation",notes:"Ask Brenda what time can I join? 8:15"},
-  {task:"RC Channels access",owner:"Natalia",due:"2026-02-24",priority:"High",status:"Not started",category:"Orientation",notes:"Justin Holton & Justin Bowman"},
-  {task:"HR & Training playbook",owner:"Natalia & Paula",due:"2026-02-27",priority:"Medium",status:"Not started",category:"Hiring",notes:"Shared video library for user training and process documentation"},
-  {task:"Pre-hire quizzes review",owner:"Natalia",due:"2026-02-28",priority:"High",status:"Not started",category:"Hiring",notes:"Check with Brenda if there's someone we can send screening interview"},
-  {task:"Prepare ATA Hours report",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Completed",category:"Onboarding",notes:"No comments, all good – Wilson Rice and Andrew Lacobee were added"},
-  {task:"Conduct pre-screening interviews (if applicable)",owner:"Natalia & Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Hiring",notes:""},
-  {task:"Follow up with upcoming candidates",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Hiring",notes:""},
-  {task:"Ensure all candidate documentation is complete",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Hiring",notes:""},
-  {task:"Send onboarding emails and follow up on missing documents",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Hiring",notes:""},
-  {task:"Pre-interview for Salesforce Programming position",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"In progress",category:"Hiring",notes:""},
-  {task:"Interview with Sara – 10:30 AM",owner:"Natalia & Paula",due:"2026-02-16",priority:"Medium",status:"Completed",category:"Hiring",notes:"Interview went well, we moved forward"},
-  {task:"Advance pending Solvo security courses",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Hiring",notes:""},
-  {task:"Create spreadsheets for candidates who attended Orientation",owner:"Paula",due:"2026-02-16",priority:"Medium",status:"Not started",category:"Onboarding",notes:""},
-  {task:"CT Tracker iPad Check",owner:"Paula",due:"2026-02-18",priority:"Urgent",status:"Completed",category:"Training",notes:"CT Tracker - iPad Check.xlsx"},
-  {task:"Send questionnaire on Wednesday",owner:"Brenda Paula",due:"2026-02-25",priority:"Medium",status:"In progress",category:"Training",notes:""},
-  {task:"Survey Spreadsheets",owner:"Paula",due:"2026-02-23",priority:"Medium",status:"Completed",category:"Training",notes:"Missing deadlines confirmation"},
-  {task:"Reviewed and validated training hours, confirmed approvals",owner:"Paula",due:"2026-02-23",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Updated lesson scores and maintained training tracking",owner:"Paula",due:"2026-02-24",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Managed onboarding setup for new hires (access, checklists, threads)",owner:"Paula",due:"2026-02-23",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Coordinated with Lisa re: diploma collection and document access",owner:"Paula",due:"2026-02-24",priority:"",status:"In progress",category:"",notes:""},
-  {task:"Candidate screening and recruitment follow-ups",owner:"Paula",due:"2026-02-25",priority:"",status:"In progress",category:"",notes:""},
-  {task:"Attend Think AI Project meetings and support coordination",owner:"Paula",due:"2026-03-02",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Distribute TAB assessment results and ensure follow-up",owner:"Paula",due:"2026-03-05",priority:"",status:"In progress",category:"",notes:""},
-  {task:"Airadigm Solutions & ThinkAI Champions – meeting and dev task",owner:"Paula",due:"2026-03-02",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Add New Survey Member to NH Checklist",owner:"Paula",due:"2026-03-05",priority:"",status:"",category:"",notes:""},
-  {task:"Upload Andres' Diploma to SharePoint",owner:"Paula",due:"",priority:"",status:"",category:"",notes:""},
-  {task:"Sent Survey ATA Progress (March 27)",owner:"Paula",due:"",priority:"",status:"In progress",category:"",notes:""},
-  {task:"Replied to the Careers inbox",owner:"Paula",due:"",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Responded to Orientation email",owner:"Paula",due:"",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Conducted candidate screening",owner:"Paula",due:"",priority:"",status:"In progress",category:"",notes:""},
-  {task:"Created Andres' ATA profile and enrolled in courses",owner:"Paula",due:"",priority:"",status:"Completed",category:"",notes:"Basics, ATA Getting Started, Safety"},
-  {task:"Created tracking spreadsheet (Andres Bohorquez – Digital ATA Scores)",owner:"Paula",due:"",priority:"",status:"Completed",category:"",notes:""},
-  {task:"Reply ALL to Brenda's ORIENTATION email – Prepare onboarding checklists",owner:"Paula",due:"2026-05-11",priority:"High",status:"Not started",category:"Orientation",notes:"Triggered by Brenda's ORIENTATION email"},
-  {task:"Friday before orientation – Email follow-up updating onboarding status",owner:"Paula",due:"2026-05-15",priority:"High",status:"Not started",category:"Orientation",notes:"Reply All to original orientation email. Flag any pending items."},
-];
+// ══════════════════════════════════
+//  WEEKLY TASKS — UPGRADED
+// ══════════════════════════════════
 
-function priorityClass(p) {
-  if (!p) return '';
-  if (p.toLowerCase() === 'urgent') return 'p-urgent';
-  if (p.toLowerCase() === 'high') return 'p-high';
-  if (p.toLowerCase() === 'medium') return 'p-medium';
-  return 'p-low';
-}
-function statusClass(s) {
-  if (!s) return '';
-  if (s.toLowerCase() === 'completed') return 's-completed';
-  if (s.toLowerCase() === 'not started') return 's-notstarted';
-  if (s.toLowerCase() === 'in progress') return 's-inprogress';
-  return '';
+const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+const DAY_FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday'};
+let wtWeekOffset = 0;
+let wtTasks = [];
+let wtMembers = [];
+let wtReminders = [];
+let wtSupabase = null;
+
+// ── Supabase init (reuse global if available) ──
+function getWtSb() {
+  if (wtSupabase) return wtSupabase;
+  try {
+    const cfg = JSON.parse(localStorage.getItem('onboarding_cfg') || '{}');
+    if (cfg.url && cfg.key) wtSupabase = window.supabase.createClient(cfg.url, cfg.key);
+  } catch(e) {}
+  return wtSupabase;
 }
 
-// Load task overrides from localStorage
-function getTaskOverrides() {
-  try { return JSON.parse(localStorage.getItem('wt_overrides') || '{}'); } catch { return {}; }
-}
-function saveTaskOverrides(obj) { localStorage.setItem('wt_overrides', JSON.stringify(obj)); }
-
-function getTaskData(idx) {
-  const overrides = getTaskOverrides();
-  return Object.assign({}, tasks[idx], overrides[idx] || {});
-}
-
-function showSaved() {
-  const el = document.getElementById('wt-save-note');
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2000);
-}
-
-let currentFilter = 'all';
-
-function renderTable(filter) {
-  if (filter !== undefined) currentFilter = filter;
-  const tbody = document.getElementById('wt-body');
-  tbody.innerHTML = '';
-  tasks.forEach((_, idx) => {
-    const t = getTaskData(idx);
-    const hidden = currentFilter !== 'all' && !(
-      t.owner.toLowerCase().includes(currentFilter.toLowerCase()) ||
-      (t.status && t.status.toLowerCase() === currentFilter.toLowerCase())
-    );
-    const tr = document.createElement('tr');
-    tr.setAttribute('data-idx', idx);
-    if (hidden) tr.setAttribute('data-hidden', 'true');
-    tr.innerHTML = `
-      <td class="editable" onclick="editCell(this,${idx},'task')">${t.task}</td>
-      <td class="editable" onclick="editCell(this,${idx},'owner')" style="font-size:0.78rem;font-weight:600;color:var(--navy)">${t.owner}</td>
-      <td class="editable" onclick="editCell(this,${idx},'due')" style="font-size:0.77rem;color:var(--muted)">${t.due || '—'}</td>
-      <td class="editable" onclick="editCell(this,${idx},'priority')">${t.priority ? `<span class="priority-badge ${priorityClass(t.priority)}">${t.priority}</span>` : '<span style="color:var(--muted);font-size:0.75rem">click to set</span>'}</td>
-      <td class="editable" onclick="editCell(this,${idx},'status')">${t.status ? `<span class="status-badge ${statusClass(t.status)}">${t.status}</span>` : '<span style="color:var(--muted);font-size:0.75rem">click to set</span>'}</td>
-      <td class="editable" onclick="editCell(this,${idx},'category')" style="font-size:0.77rem;color:var(--muted)">${t.category || ''}</td>
-      <td class="editable" onclick="editCell(this,${idx},'notes')" style="font-size:0.76rem;color:var(--muted);font-style:italic">${t.notes || ''}</td>
-      <td style="text-align:center">${t.link ? `<a href="${t.link}" target="_blank" style="font-size:0.78rem;color:var(--sky);font-weight:600;text-decoration:none;background:#eff6ff;padding:3px 9px;border-radius:6px;white-space:nowrap;">🔗 Open</a>` : `<button onclick="editCell(this.closest('td'),${idx},'link')" style="background:none;border:1px dashed var(--border);color:var(--muted);font-size:0.72rem;padding:3px 8px;border-radius:6px;cursor:pointer;">+ add</button>`}</td>
-    `;
-    tbody.appendChild(tr);
+// ── Week helpers ──
+function getWeekDates(offset) {
+  const today = new Date();
+  const day = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1) + offset * 7);
+  return DAYS.map((_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
   });
 }
 
-function editCell(td, idx, field) {
-  if (td.classList.contains('editing')) return;
-  td.classList.add('editing');
-  const t = getTaskData(idx);
-  const current = t[field] || '';
+function fmtDate(d) {
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
 
-  let input;
-  if (field === 'priority') {
-    input = document.createElement('select');
-    input.className = 'cell-select';
-    ['','Urgent','High','Medium','Low'].forEach(v => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = v || '— none —';
-      if (v === current) o.selected = true;
-      input.appendChild(o);
-    });
-  } else if (field === 'status') {
-    input = document.createElement('select');
-    input.className = 'cell-select';
-    ['','Not started','In progress','Completed'].forEach(v => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = v || '— none —';
-      if (v === current) o.selected = true;
-      input.appendChild(o);
-    });
-  } else if (field === 'due') {
-    input = document.createElement('input');
-    input.type = 'date';
-    input.className = 'cell-input';
-    input.value = (current === '—' ? '' : current);
-  } else if (field === 'link') {
-    input = document.createElement('input');
-    input.type = 'url';
-    input.className = 'cell-input';
-    input.value = current;
-    input.placeholder = 'Paste URL then Enter';
-  } else {
-    input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'cell-input';
-    input.value = current;
-  }
+function isoDate(d) {
+  return d.toISOString().split('T')[0];
+}
 
-  td.innerHTML = '';
-  td.appendChild(input);
-  input.focus();
-  if (input.tagName === 'INPUT') { input.select(); }
+function weekLabel(dates) {
+  return `Week of ${fmtDate(dates[0])} – ${fmtDate(dates[4])}`;
+}
 
-  function commit() {
-    const newVal = input.value.trim();
-    const overrides = getTaskOverrides();
-    if (!overrides[idx]) overrides[idx] = {};
-    overrides[idx][field] = newVal;
-    saveTaskOverrides(overrides);
-    showSaved();
-    renderTable();
-  }
+function prevWeek() { wtWeekOffset--; renderWeekly(); }
+function nextWeek() { wtWeekOffset++; renderWeekly(); }
+function goToday()  { wtWeekOffset = 0; renderWeekly(); }
 
-  input.addEventListener('blur', commit);
-  input.addEventListener('change', () => { if (input.tagName === 'SELECT') commit(); });
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { input.blur(); }
-    if (e.key === 'Escape') { td.classList.remove('editing'); renderTable(); }
+// ── Load data ──
+async function loadWtData() {
+  const sb = getWtSb();
+  if (!sb) { loadWtLocal(); return; }
+
+  try {
+    // Tasks
+    const { data: tdata } = await sb.from('weekly_tasks').select('*');
+    wtTasks = tdata || [];
+  } catch(e) { wtTasks = []; }
+
+  try {
+    // Members
+    const { data: mdata } = await sb.from('team_members').select('*').order('name');
+    wtMembers = mdata || [];
+  } catch(e) { wtMembers = loadMembersLocal(); }
+
+  try {
+    // Reminders
+    const { data: rdata } = await sb.from('reminders').select('*').order('due_date');
+    wtReminders = rdata || [];
+  } catch(e) { wtReminders = loadRemindersLocal(); }
+
+  renderWeekly();
+  renderSidebar();
+  populateOwnerDropdown();
+}
+
+function loadWtLocal() {
+  try { wtTasks = JSON.parse(localStorage.getItem('wt_tasks_v2') || '[]'); } catch(e) { wtTasks = []; }
+  wtMembers = loadMembersLocal();
+  wtReminders = loadRemindersLocal();
+  renderWeekly();
+  renderSidebar();
+  populateOwnerDropdown();
+}
+
+function loadMembersLocal() {
+  try { return JSON.parse(localStorage.getItem('wt_members') || '[]'); } catch(e) { return []; }
+}
+function loadRemindersLocal() {
+  try { return JSON.parse(localStorage.getItem('wt_reminders') || '[]'); } catch(e) { return []; }
+}
+function saveMembersLocal() { localStorage.setItem('wt_members', JSON.stringify(wtMembers)); }
+function saveRemindersLocal() { localStorage.setItem('wt_reminders', JSON.stringify(wtReminders)); }
+function saveTasksLocal() { localStorage.setItem('wt_tasks_v2', JSON.stringify(wtTasks)); }
+
+// ── Render week grid ──
+function renderWeekly() {
+  const dates = getWeekDates(wtWeekOffset);
+  document.getElementById('wt-week-label').textContent = weekLabel(dates);
+
+  // Filter tasks for this week
+  const weekDates = dates.map(d => isoDate(d));
+  const weekTasks = wtTasks.filter(t => {
+    if (t.recurrence) return true; // recurring always show
+    return weekDates.includes(t.due) || DAYS.includes(t.day);
   });
+
+  // Metrics
+  const total = weekTasks.length;
+  const done = weekTasks.filter(t => t.status === 'done').length;
+  const pending = weekTasks.filter(t => t.status === 'pending').length;
+  const blocked = weekTasks.filter(t => t.status === 'blocked').length;
+  document.getElementById('wt-metrics').innerHTML = `
+    <div class="wt-metric"><div class="wt-metric-val">${total}</div><div class="wt-metric-label">Total This Week</div></div>
+    <div class="wt-metric m-done"><div class="wt-metric-val" style="color:#3b6d11">${done}</div><div class="wt-metric-label">Completed</div></div>
+    <div class="wt-metric m-pending"><div class="wt-metric-val" style="color:#854f0b">${pending}</div><div class="wt-metric-label">Pending</div></div>
+    <div class="wt-metric m-blocked"><div class="wt-metric-val" style="color:#a32d2d">${blocked}</div><div class="wt-metric-label">Blocked</div></div>
+  `;
+
+  // Grid
+  const grid = document.getElementById('wt-grid');
+  grid.innerHTML = DAYS.map((day, i) => {
+    const date = dates[i];
+    const dayTasks = weekTasks.filter(t => t.day === day ||
+      (t.due && t.due === isoDate(date)));
+    return `
+      <div class="wt-day-col">
+        <div class="wt-day-header">
+          ${day}<span class="wt-day-date">${fmtDate(date)}</span>
+        </div>
+        <div class="wt-day-body">
+          ${dayTasks.length === 0
+            ? '<div class="wt-empty-day">No tasks</div>'
+            : dayTasks.map(t => taskCard(t)).join('')}
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function filterTasks(filter, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable(filter);
+function taskCard(t) {
+  const statusMap = { done:'sp-done', pending:'sp-pending', blocked:'sp-blocked', recurring:'sp-recurring' };
+  const sc = statusMap[t.status] || 'sp-pending';
+  const ownerName = t.owner_id ? (wtMembers.find(m => m.id === t.owner_id)?.name || '') : (t.owner || '');
+  return `
+    <div class="wt-task-card" onclick="cycleTaskStatus('${t.id}')">
+      ${t.recurrence ? `<div class="wt-task-recur">↻ ${t.recurrence}</div>` : ''}
+      <div class="wt-task-title">${t.title || t.task || ''}</div>
+      ${ownerName ? `<div class="wt-task-owner">👤 ${ownerName}</div>` : ''}
+      <span class="sp ${sc}">${t.status || 'pending'}</span>
+    </div>`;
 }
 
-renderTable('all');
+async function cycleTaskStatus(id) {
+  const order = ['pending','done','blocked','recurring'];
+  const task = wtTasks.find(t => String(t.id) === String(id));
+  if (!task) return;
+  const next = order[(order.indexOf(task.status) + 1) % order.length];
+  task.status = next;
+  task.updated_at = new Date().toISOString();
+  const sb = getWtSb();
+  if (sb) {
+    try { await sb.from('weekly_tasks').update({ status: next, updated_at: task.updated_at }).eq('id', id); } catch(e) {}
+  } else { saveTasksLocal(); }
+  renderWeekly();
+  renderActivityLog();
+}
+
+// ── Add task ──
+function toggleAddTaskForm() {
+  const form = document.getElementById('wt-add-form');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) document.getElementById('wt-f-title').focus();
+}
+function closeAddTaskForm() {
+  document.getElementById('wt-add-form').classList.remove('open');
+  ['wt-f-title','wt-f-recur'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+}
+
+async function submitTask() {
+  const title = document.getElementById('wt-f-title').value.trim();
+  if (!title) { alert('Please enter a task title.'); return; }
+  const day = document.getElementById('wt-f-day').value;
+  const status = document.getElementById('wt-f-status').value;
+  const recur = document.getElementById('wt-f-recur').value.trim() || null;
+  const ownerEl = document.getElementById('wt-f-owner');
+  const owner_id = ownerEl.value || null;
+
+  const dates = getWeekDates(wtWeekOffset);
+  const dayIdx = DAYS.indexOf(day);
+  const due = isoDate(dates[dayIdx]);
+
+  const newTask = {
+    id: 'local_' + Date.now(),
+    title, day, status, recurrence: recur, owner_id,
+    due, updated_at: new Date().toISOString()
+  };
+
+  const sb = getWtSb();
+  if (sb) {
+    try {
+      const { data } = await sb.from('weekly_tasks').insert([{
+        task: title, day, status, recurrence: recur, owner_id, due,
+        updated_at: new Date().toISOString()
+      }]).select();
+      if (data && data[0]) newTask.id = data[0].id;
+    } catch(e) {}
+  }
+  wtTasks.push(newTask);
+  saveTasksLocal();
+  closeAddTaskForm();
+  renderWeekly();
+  showWtToast('Task added!');
+}
+
+// ── Sidebar ──
+function renderSidebar() {
+  renderRemindersList();
+  renderActivityLog();
+  renderMembersList();
+}
+
+function renderRemindersList() {
+  const el = document.getElementById('reminders-list');
+  if (!el) return;
+  if (!wtReminders.length) { el.innerHTML = '<div class="wt-sidebar-empty">No reminders yet.</div>'; return; }
+  el.innerHTML = wtReminders.map(r => `
+    <div class="reminder-item">
+      <div class="reminder-title">${r.title}${r.is_urgent ? '<span class="reminder-urgent">URGENT</span>' : ''}</div>
+      <div class="reminder-recur">${r.recurrence || (r.due_date ? '📅 ' + r.due_date : '')}</div>
+    </div>`).join('');
+}
+
+function renderActivityLog() {
+  const el = document.getElementById('activity-list');
+  if (!el) return;
+  const done = wtTasks
+    .filter(t => t.status === 'done')
+    .sort((a,b) => new Date(b.updated_at||0) - new Date(a.updated_at||0))
+    .slice(0, 10);
+  if (!done.length) { el.innerHTML = '<div class="wt-sidebar-empty">No completed tasks yet.</div>'; return; }
+  el.innerHTML = done.map(t => {
+    const ts = t.updated_at ? new Date(t.updated_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    return `<div class="activity-item">
+      <div class="activity-title">✓ ${t.title || t.task || ''}</div>
+      <div class="activity-meta">${ts}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderMembersList() {
+  const el = document.getElementById('members-list');
+  if (!el) return;
+  if (!wtMembers.length) { el.innerHTML = '<div class="wt-sidebar-empty">No team members yet.</div>'; return; }
+  el.innerHTML = wtMembers.map(m => `
+    <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);">
+      👤 ${m.name}
+    </div>`).join('');
+}
+
+function populateOwnerDropdown() {
+  const sel = document.getElementById('wt-f-owner');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— No owner —</option>' +
+    wtMembers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+}
+
+// ── Reminders ──
+function toggleReminderForm() {
+  document.getElementById('reminder-form').classList.toggle('open');
+}
+async function saveReminder() {
+  const title = document.getElementById('rm-title').value.trim();
+  if (!title) return;
+  const r = {
+    id: 'local_' + Date.now(),
+    title,
+    recurrence: document.getElementById('rm-recur').value.trim() || null,
+    due_date: document.getElementById('rm-date').value || null,
+    is_urgent: document.getElementById('rm-urgent').checked,
+    created_at: new Date().toISOString()
+  };
+  const sb = getWtSb();
+  if (sb) {
+    try {
+      const { data } = await sb.from('reminders').insert([r]).select();
+      if (data?.[0]) r.id = data[0].id;
+    } catch(e) {}
+  }
+  wtReminders.push(r);
+  saveRemindersLocal();
+  toggleReminderForm();
+  document.getElementById('rm-title').value = '';
+  document.getElementById('rm-recur').value = '';
+  document.getElementById('rm-date').value = '';
+  document.getElementById('rm-urgent').checked = false;
+  renderRemindersList();
+  showWtToast('Reminder saved!');
+}
+
+// ── Team members ──
+function toggleMemberForm() {
+  document.getElementById('member-form').classList.toggle('open');
+}
+async function saveMember() {
+  const name = document.getElementById('mb-name').value.trim();
+  if (!name) return;
+  const m = { id: 'local_' + Date.now(), name, created_at: new Date().toISOString() };
+  const sb = getWtSb();
+  if (sb) {
+    try {
+      const { data } = await sb.from('team_members').insert([{ name }]).select();
+      if (data?.[0]) m.id = data[0].id;
+    } catch(e) {}
+  }
+  wtMembers.push(m);
+  saveMembersLocal();
+  toggleMemberForm();
+  document.getElementById('mb-name').value = '';
+  renderMembersList();
+  populateOwnerDropdown();
+  showWtToast('Member added!');
+}
+
+function showWtToast(msg) {
+  let t = document.getElementById('wt-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'wt-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a2744;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._wtToast);
+  window._wtToast = setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+// ── Init ──
+loadWtData();
+
 
 // ══════════════════════════════════
 //  RESOURCES — editable links
