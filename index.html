@@ -1410,7 +1410,16 @@
             <p>${t.desc}</p>
             <span class="task-owner">${t.owner}</span>
           </div>
-          <div class="task-status">Not Started</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px;">
+            <div class="task-status">Not Started</div>
+            <button onclick="addToOutlook(this.dataset.name, this.dataset.date, this.dataset.desc, 60)"
+              data-name="${t.name.replace(/"/g,'&quot;')}"
+              data-date="${t.date}"
+              data-desc="${t.desc.substring(0,120).replace(/"/g,'&quot;')}"
+              style="background:#e6f1fb;color:#185fa5;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;width:100%;">
+              📅 Add to Outlook
+            </button>
+          </div>
         </div>`).join('')}
     `).join('');
   }
@@ -1463,9 +1472,13 @@
         </div>
         <div class="wt-form-field">
           <label>Owner (optional)</label>
-          <select id="wt-f-owner">
+          <select id="wt-f-owner" onchange="handleOwnerChange(this)">
             <option value="">— No owner —</option>
+            <option value="paula">Paula</option>
+            <option value="brenda">Brenda</option>
+            <option value="__other__">+ Type a name...</option>
           </select>
+          <input type="text" id="wt-f-owner-custom" placeholder="Enter name..." style="display:none;margin-top:6px;" />
         </div>
         <div class="wt-form-field">
           <label>Recurrence (optional)</label>
@@ -2067,12 +2080,21 @@ function taskCard(t) {
   const statusMap = { done:'sp-done', pending:'sp-pending', blocked:'sp-blocked', recurring:'sp-recurring' };
   const sc = statusMap[t.status] || 'sp-pending';
   const ownerName = t.owner_id ? (wtMembers.find(m => m.id === t.owner_id)?.name || '') : (t.owner || '');
+  const taskTitle = t.title || t.task || '';
+  const taskDue = t.due || '';
+  const taskDesc = t.recurrence ? 'Recurring: ' + t.recurrence : '';
   return `
     <div class="wt-task-card" onclick="cycleTaskStatus('${t.id}')">
       ${t.recurrence ? `<div class="wt-task-recur">↻ ${t.recurrence}</div>` : ''}
-      <div class="wt-task-title">${t.title || t.task || ''}</div>
+      <div class="wt-task-title">${taskTitle}</div>
       ${ownerName ? `<div class="wt-task-owner">👤 ${ownerName}</div>` : ''}
-      <span class="sp ${sc}">${t.status || 'pending'}</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;">
+        <span class="sp ${sc}">${t.status || 'pending'}</span>
+        <button onclick="event.stopPropagation();addToOutlook('${taskTitle.replace(/'/g,"\'")}','${taskDue}','${taskDesc.replace(/'/g,"\'")}',60)"
+          style="background:#e6f1fb;color:#185fa5;border:none;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          📅 Outlook
+        </button>
+      </div>
     </div>`;
 }
 
@@ -2099,7 +2121,7 @@ function toggleAddTaskForm() {
 }
 function closeAddTaskForm() {
   document.getElementById('wt-add-form').classList.remove('open');
-  ['wt-f-title','wt-f-recur'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['wt-f-title','wt-f-recur','wt-f-owner-custom'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; }); const ownerSel = document.getElementById('wt-f-owner'); if(ownerSel) ownerSel.value=''; document.getElementById('wt-f-owner-custom').style.display='none';
 }
 
 async function submitTask() {
@@ -2109,7 +2131,25 @@ async function submitTask() {
   const status = document.getElementById('wt-f-status').value;
   const recur = document.getElementById('wt-f-recur').value.trim() || null;
   const ownerEl = document.getElementById('wt-f-owner');
-  const owner_id = ownerEl.value || null;
+  const customOwner = document.getElementById('wt-f-owner-custom');
+  let owner_id = ownerEl.value || null;
+  let ownerName = null;
+  if (owner_id === '__other__') {
+    ownerName = customOwner.value.trim();
+    owner_id = ownerName || null;
+    // Add to wtMembers locally if new
+    if (ownerName && !wtMembers.find(m => m.name.toLowerCase() === ownerName.toLowerCase())) {
+      const nm = {id: 'local_' + Date.now(), name: ownerName, created_at: new Date().toISOString()};
+      wtMembers.push(nm);
+      saveMembersLocal();
+      populateOwnerDropdown();
+      renderMembersList();
+      owner_id = nm.id;
+    } else if (ownerName) {
+      const existing = wtMembers.find(m => m.name.toLowerCase() === ownerName.toLowerCase());
+      if (existing) owner_id = existing.id;
+    }
+  }
 
   const dates = getWeekDates(wtWeekOffset);
   const dayIdx = DAYS.indexOf(day);
@@ -2183,11 +2223,31 @@ function renderMembersList() {
     </div>`).join('');
 }
 
+function handleOwnerChange(sel) {
+  const custom = document.getElementById('wt-f-owner-custom');
+  if (sel.value === '__other__') {
+    custom.style.display = 'block';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
+}
+
 function populateOwnerDropdown() {
   const sel = document.getElementById('wt-f-owner');
   if (!sel) return;
+  const defaults = [
+    {id:'paula', name:'Paula'},
+    {id:'brenda', name:'Brenda'}
+  ];
+  // Merge defaults with team members, avoiding duplicates by name
+  const allNames = new Set(defaults.map(d => d.name.toLowerCase()));
+  const extraMembers = wtMembers.filter(m => !allNames.has(m.name.toLowerCase()));
+  const all = [...defaults, ...extraMembers];
   sel.innerHTML = '<option value="">— No owner —</option>' +
-    wtMembers.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    all.map(m => `<option value="${m.id}">${m.name}</option>`).join('') +
+    '<option value="__other__">+ Type a name...</option>';
 }
 
 // ── Reminders ──
@@ -2259,6 +2319,40 @@ function showWtToast(msg) {
   t.style.display = 'block';
   clearTimeout(window._wtToast);
   window._wtToast = setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+// ── OUTLOOK CALENDAR HELPER ──
+function addToOutlook(title, dateStr, description, duration) {
+  // Parse date - dateStr can be "Mon, May 4", "2026-05-04", "Ongoing", "Every Monday" etc.
+  let startDate = null;
+  let endDate = null;
+
+  // Try ISO date first
+  if (dateStr && dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
+    startDate = new Date(dateStr + 'T09:00:00');
+  } else if (dateStr && dateStr.match(/May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr/i)) {
+    // Try to parse "Mon, May 4" style
+    const cleaned = dateStr.replace(/^[A-Za-z]+,\s*/, '') + ' 2026';
+    const parsed = new Date(cleaned + ' 09:00:00');
+    if (!isNaN(parsed)) startDate = parsed;
+  }
+
+  if (!startDate) startDate = new Date(); // fallback to today
+
+  endDate = new Date(startDate.getTime() + (duration || 60) * 60000);
+
+  function fmtOutlook(d) {
+    return d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  }
+
+  const subject = encodeURIComponent(title);
+  const body = encodeURIComponent(description || '');
+  const start = fmtOutlook(startDate);
+  const end = fmtOutlook(endDate);
+
+  // Outlook web deep link
+  const url = `https://outlook.office.com/calendar/action/compose?subject=${subject}&body=${body}&startdt=${start}&enddt=${end}&allday=false`;
+  window.open(url, '_blank');
 }
 
 // ── Init ──
