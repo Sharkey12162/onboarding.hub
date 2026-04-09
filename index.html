@@ -1937,6 +1937,7 @@ let lookupHireId = null;
 let lookupMatchedRow = null;
 let lookupHeaders = [];
 let lookupRows = [];
+let lookupAllRows = [];
 
 function openLookupImport(hireId) {
   lookupHireId = hireId;
@@ -1963,6 +1964,7 @@ function resetLookup() {
   lookupMatchedRow = null;
   lookupHeaders = [];
   lookupRows = [];
+  lookupAllRows = [];
 }
 
 function handleLookupDrop(e) {
@@ -1996,6 +1998,8 @@ function processLookupFile(file) {
           document.getElementById('lookup-file-status').textContent = '❌ No data found.';
           return;
         }
+        // Store ALL rows — header detection happens in findHireInSpreadsheet
+        lookupAllRows = data;
         lookupHeaders = data[0].map(h => String(h).trim());
         lookupRows = data.slice(1).filter(r => r.some(c => c !== ''));
         findHireInSpreadsheet();
@@ -2027,6 +2031,7 @@ function parseLookupCSV(text) {
     result.push(cur.trim());
     return result;
   }
+  lookupAllRows = lines.map(parseLine);
   lookupHeaders = parseLine(lines[0]);
   lookupRows = lines.slice(1).map(parseLine).filter(r => r.some(c => c));
   findHireInSpreadsheet();
@@ -2039,14 +2044,60 @@ function findHireInSpreadsheet() {
 
   const hireName = hire.name.toLowerCase().trim();
 
-  // Find name column — look for header containing "name"
-  const nameColIdx = lookupHeaders.findIndex(h =>
-    h.toLowerCase().includes('name') || h.toLowerCase().includes('nombre')
-  );
+  // ── Auto-detect header row ──
+  // Scan all rows (not just row 0) to find the one that looks like a header
+  // with a "name" column — handles spreadsheets where headers are not in row 1
+  let headerRowIdx = 0;
+  let nameColIdx = -1;
+
+  for (let i = 0; i < Math.min(lookupAllRows.length, 30); i++) {
+    const row = lookupAllRows[i];
+    const idx = row.findIndex(cell =>
+      String(cell||'').toLowerCase().trim() === 'name' ||
+      String(cell||'').toLowerCase().trim() === 'full name' ||
+      String(cell||'').toLowerCase().trim() === 'nombre' ||
+      String(cell||'').toLowerCase().includes('first name') ||
+      String(cell||'').toLowerCase().includes('employee name') ||
+      String(cell||'').toLowerCase().includes('hire name')
+    );
+    if (idx !== -1) {
+      headerRowIdx = i;
+      nameColIdx = idx;
+      // Re-set headers and data rows based on detected header row
+      lookupHeaders = lookupAllRows[headerRowIdx].map(h => String(h||'').trim());
+      lookupRows = lookupAllRows.slice(headerRowIdx + 1).filter(r => r.some(c => String(c||'').trim() !== ''));
+      break;
+    }
+  }
 
   if (nameColIdx === -1) {
-    document.getElementById('lookup-file-status').textContent = '❌ Could not find a "Name" column in your spreadsheet.';
-    return;
+    // Last attempt: check if any cell in first 30 rows contains a name match directly
+    // (spreadsheet might not have a "name" header but still have names)
+    let foundInRow = -1;
+    for (let i = 0; i < Math.min(lookupAllRows.length, 50); i++) {
+      const row = lookupAllRows[i];
+      const hasMatch = row.some(cell => {
+        const v = String(cell||'').toLowerCase().trim();
+        const parts = hireName.split(/\s+/);
+        return parts.length > 1 && parts.every(p => v.includes(p));
+      });
+      if (hasMatch) { foundInRow = i; break; }
+    }
+    if (foundInRow === -1) {
+      document.getElementById('lookup-file-status').textContent = '❌ Could not find a "Name" column. Check that your spreadsheet has a column labeled "Name".';
+      // Show first few rows to help debug
+      const sample = lookupAllRows.slice(0,5).map(r => r.slice(0,5).join(' | ')).join('\n');
+      console.log('First 5 rows sample:\n' + sample);
+      return;
+    }
+    // Use the row before the match as header, or just use col 0
+    nameColIdx = lookupAllRows[foundInRow].findIndex(cell => {
+      const v = String(cell||'').toLowerCase().trim();
+      const parts = hireName.split(/\s+/);
+      return parts.every(p => v.includes(p));
+    });
+    lookupHeaders = lookupAllRows[Math.max(0, foundInRow - 1)].map(h => String(h||'').trim());
+    lookupRows = lookupAllRows.slice(foundInRow).filter(r => r.some(c => String(c||'').trim() !== ''));
   }
 
   // Try exact match first, then partial
