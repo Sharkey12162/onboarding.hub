@@ -1405,22 +1405,22 @@
   }
 
   function addOrientNoteToWeeklyTasks(note, year, month, day) {
-    // Build ISO date
+    // Build EXACT ISO date for this specific day only
     const mm = String(month + 1).padStart(2, '0');
     const dd = String(day).padStart(2, '0');
     const due = year + '-' + mm + '-' + dd;
 
-    // Get day of week label
+    // Get day of week label for the column
     const d = new Date(year, month, day);
     const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const dayLabel = dayLabels[d.getDay()];
-    // Only add if Mon-Fri
     const validDays = ['Mon','Tue','Wed','Thu','Fri'];
+    // Use exact day if weekday, otherwise closest Monday
     const taskDay = validDays.includes(dayLabel) ? dayLabel : 'Mon';
 
-    // Check if already added (avoid duplicates)
+    // Strict duplicate check: same exact date AND same note
     const exists = typeof wtTasks !== 'undefined' && wtTasks.find(t =>
-      t.due === due && (t.title || t.task || '').includes(note.substring(0, 30))
+      t.due === due && (t.title || t.task || '') === ('📅 [Orientation] ' + note)
     );
     if (exists) return;
 
@@ -1428,27 +1428,25 @@
       id: 'orient_' + Date.now(),
       title: '📅 [Orientation] ' + note,
       day: taskDay,
-      due: due,
+      due: due,           // EXACT date — no recurrence
       status: 'pending',
-      recurrence: null,
+      recurrence: null,   // never recurring from orientation notes
       owner_id: null,
       updated_at: new Date().toISOString()
     };
 
     if (typeof wtTasks !== 'undefined') {
       wtTasks.push(newTask);
-      // Save locally
       try { localStorage.setItem('wt_tasks_v2', JSON.stringify(wtTasks)); } catch(e) {}
-      // Save to Supabase if available
       const sb = typeof getWtSb === 'function' ? getWtSb() : null;
       if (sb) {
         sb.from('weekly_tasks').insert([{
           task: newTask.title, title: newTask.title,
           day: taskDay, due: due, status: 'pending',
+          recurrence: null,
           updated_at: newTask.updated_at
         }]).then(() => {});
       }
-      // Re-render if weekly view active
       if (typeof renderWeekly === 'function') renderWeekly();
     }
   }
@@ -1537,7 +1535,22 @@
         </div>
         <div class="wt-form-field">
           <label>Recurrence (optional)</label>
-          <input type="text" id="wt-f-recur" placeholder="e.g. Every Monday" />
+          <select id="wt-f-recur" onchange="handleRecurChange(this)">
+            <option value="">— No recurrence —</option>
+            <option value="Every Monday">Every Monday</option>
+            <option value="Every Tuesday">Every Tuesday</option>
+            <option value="Every Wednesday">Every Wednesday</option>
+            <option value="Every Thursday">Every Thursday</option>
+            <option value="Every Friday">Every Friday</option>
+            <option value="Every week">Every week (same day)</option>
+            <option value="Every other week">Every other week</option>
+            <option value="First Monday of each month">First Monday of each month</option>
+            <option value="Last Thursday of each month">Last Thursday of each month</option>
+            <option value="Last Friday of each month">Last Friday of each month</option>
+            <option value="Monthly">Monthly (same date)</option>
+            <option value="__custom__">✏️ Type custom rule...</option>
+          </select>
+          <input type="text" id="wt-f-recur-custom" placeholder='e.g. "Every 2nd Friday"' style="display:none;margin-top:6px;" />
         </div>
       </div>
       <div class="wt-form-actions">
@@ -2095,8 +2108,13 @@ function renderWeekly() {
   // Filter tasks for this week
   const weekDates = dates.map(d => isoDate(d));
   const weekTasks = wtTasks.filter(t => {
-    if (t.recurrence) return true; // recurring always show
-    return weekDates.includes(t.due) || DAYS.includes(t.day);
+    // For tasks with a specific due date → only show in their exact week
+    if (t.due && weekDates.includes(t.due)) return true;
+    // For recurring tasks → show only on matching day columns (no due date or recurrence-only)
+    if (!t.due && t.day && DAYS.includes(t.day)) return true;
+    // Recurring with recurrence text but no due → show every week on matching day
+    if (t.recurrence && !t.due && t.day) return true;
+    return false;
   });
 
   // Metrics
@@ -2176,7 +2194,11 @@ function toggleAddTaskForm() {
 }
 function closeAddTaskForm() {
   document.getElementById('wt-add-form').classList.remove('open');
-  ['wt-f-title','wt-f-recur','wt-f-owner-custom'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; }); const ownerSel = document.getElementById('wt-f-owner'); if(ownerSel) ownerSel.value=''; document.getElementById('wt-f-owner-custom').style.display='none';
+  ['wt-f-title','wt-f-recur-custom','wt-f-owner-custom'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  const ownerSel = document.getElementById('wt-f-owner'); if(ownerSel) ownerSel.value='';
+  const recurSel = document.getElementById('wt-f-recur'); if(recurSel) recurSel.value='';
+  document.getElementById('wt-f-owner-custom').style.display='none';
+  document.getElementById('wt-f-recur-custom').style.display='none';
 }
 
 async function submitTask() {
@@ -2184,7 +2206,14 @@ async function submitTask() {
   if (!title) { alert('Please enter a task title.'); return; }
   const day = document.getElementById('wt-f-day').value;
   const status = document.getElementById('wt-f-status').value;
-  const recur = document.getElementById('wt-f-recur').value.trim() || null;
+  const recurSel = document.getElementById('wt-f-recur');
+  const recurCustom = document.getElementById('wt-f-recur-custom');
+  let recur = null;
+  if (recurSel.value === '__custom__') {
+    recur = recurCustom.value.trim() || null;
+  } else {
+    recur = recurSel.value || null;
+  }
   const ownerEl = document.getElementById('wt-f-owner');
   const customOwner = document.getElementById('wt-f-owner-custom');
   let owner_id = ownerEl.value || null;
@@ -2317,6 +2346,17 @@ async function deleteMember(id) {
   renderMembersList();
   populateOwnerDropdown();
   showWtToast('Member removed.');
+}
+
+function handleRecurChange(sel) {
+  const custom = document.getElementById('wt-f-recur-custom');
+  if (sel.value === '__custom__') {
+    custom.style.display = 'block';
+    custom.focus();
+  } else {
+    custom.style.display = 'none';
+    custom.value = '';
+  }
 }
 
 function handleOwnerChange(sel) {
