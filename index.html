@@ -905,11 +905,47 @@
   <section id="resources" class="section active">
     <div class="section-header">
       <h2>Onboarding Resources</h2>
-      <p>Key files, platforms, and tools used throughout the hiring and onboarding process. Click ✏️ next to any link to edit it.</p>
+      <p>Key files, platforms, and tools used throughout the hiring and onboarding process. Click ✏️ to edit, 🗑 to delete, or add a new resource below.</p>
     </div>
-    <div class="cards-grid">
 
-      <div class="card" data-res-id="r1">
+    <!-- Add Resource Form -->
+    <div id="res-add-form" style="display:none;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px;">+ New Resource</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Title *</label>
+          <input type="text" id="res-new-title" placeholder="e.g. New Hire Checklist" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;font-family:inherit;" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Category</label>
+          <input type="text" id="res-new-cat" placeholder="e.g. Hiring / Onboarding" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;font-family:inherit;" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Description</label>
+          <textarea id="res-new-desc" rows="2" placeholder="What is this resource and when to use it?" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Link Text</label>
+          <input type="text" id="res-new-linktext" placeholder="e.g. 📄 filename.xlsx" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;font-family:inherit;" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">URL (optional)</label>
+          <input type="url" id="res-new-url" placeholder="https://..." style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;outline:none;font-family:inherit;" />
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button onclick="toggleResForm()" style="padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-weight:600;font-size:13px;">Cancel</button>
+        <button onclick="saveNewResource()" style="padding:8px 18px;border-radius:8px;border:none;background:#1a2744;color:#fff;cursor:pointer;font-weight:700;font-size:13px;">Save Resource</button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button onclick="toggleResForm()" id="res-add-btn" style="background:#1a2744;color:#fff;border:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">+ Add Resource</button>
+    </div>
+
+    <div class="cards-grid" id="cards-grid">
+
+      <div class="card" data-res-id="r1" style="position:relative;"><button onclick="deleteResource('r1')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">Hiring / Onboarding</div>
         <h3>New Hire Checklist</h3>
         <p class="card-desc"><strong>What:</strong> Centralized checklist with detailed information for each new hire — office and field staff.<br><br><strong>Why:</strong> Track onboarding completion and quickly access required info for team members.<br><br><strong>When:</strong> Used during the hiring and onboarding process, and as an ongoing reference.</p>
@@ -923,7 +959,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r2">
+      <div class="card" data-res-id="r2" style="position:relative;"><button onclick="deleteResource('r2')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">Hiring / Onboarding</div>
         <h3>Diploma / GED / OSHA List</h3>
         <p class="card-desc"><strong>What:</strong> Confirms whether each technician has submitted OSHA 10/30 certification and a Diploma or GED.<br><br><strong>Why:</strong> Required to verify eligibility for NEBB exam certification and ensure compliance.<br><br><strong>When:</strong> Requested immediately after the offer letter is sent via Indeed messages.</p>
@@ -937,7 +973,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r3">
+      <div class="card" data-res-id="r3" style="position:relative;"><button onclick="deleteResource('r3')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">Hiring / Onboarding</div>
         <h3>OSHA 10 &amp; 30 Cards – Certificates</h3>
         <p class="card-desc"><strong>What:</strong> SharePoint location storing OSHA 10 and 30 cards/certificates, organized by region.<br><br><strong>Why:</strong> Centralized official record of OSHA certifications — stores actual documents, not just Yes/No status.<br><br><strong>When:</strong> Uploaded as soon as documents are received via Indeed message or email.</p>
@@ -951,7 +987,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r4">
+      <div class="card" data-res-id="r4" style="position:relative;"><button onclick="deleteResource('r4')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">Hiring / Onboarding</div>
         <h3>Tech Education Certs (SharePoint)</h3>
         <p class="card-desc"><strong>What:</strong> SharePoint location for technicians' education documents (Diploma, GED, transcripts). Files saved as LastName, FirstName.<br><br><strong>Why:</strong> Education records required for future technician certification.<br><br><strong>When:</strong> Requested immediately after the offer letter — same message as OSHA request.</p>
@@ -965,7 +1001,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r5">
+      <div class="card" data-res-id="r5" style="position:relative;"><button onclick="deleteResource('r5')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">ATA / Training</div>
         <h3>ATA Progress – ATA Hours Sheet</h3>
         <p class="card-desc"><strong>What:</strong> Tracks technician training hours by region, including start date and calculated tenure.<br><br><strong>Why:</strong> Monitor weekly Costcode Training hours and validate the 2-hour weekly guideline.<br><br><strong>When:</strong> Reviewed every <strong>Monday</strong> using data from PM assistants in the ATA Training Cost – Weekly Reports.</p>
@@ -979,7 +1015,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r6">
+      <div class="card" data-res-id="r6" style="position:relative;"><button onclick="deleteResource('r6')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">ATA / Training</div>
         <h3>ATA Progress – Timelogs Training Sheet</h3>
         <p class="card-desc"><strong>What:</strong> Sheet used to paste training hours each technician punches under the Training Cost Code.<br><br><strong>Why:</strong> Capture and consolidate weekly training time data for tracking and reporting.<br><br><strong>When:</strong> Updated every <strong>Monday</strong> using weekly timelog data.</p>
@@ -993,7 +1029,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r7">
+      <div class="card" data-res-id="r7" style="position:relative;"><button onclick="deleteResource('r7')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">ATA / Training</div>
         <h3>ATA Progress – ATA Progress Sheet</h3>
         <p class="card-desc"><strong>What:</strong> Tracks ATA lesson status for each technician using color coding (green, yellow, blue).<br><br><strong>Why:</strong> Monitor lesson progress, identify technicians behind, and document PM approval.<br><br><strong>When:</strong> Reviewed and updated every <strong>Friday</strong>.</p>
@@ -1007,7 +1043,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r8">
+      <div class="card" data-res-id="r8" style="position:relative;"><button onclick="deleteResource('r8')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">ATA / Training</div>
         <h3>Airadigm Technical Academy</h3>
         <p class="card-desc"><strong>What:</strong> Training platform where technicians complete ATA lessons. Accounts use Airadigm emails.<br><br><strong>Why:</strong> Manage and track technician training, ensure course completion, support ATA requirements.<br><br><strong>When:</strong> Enrolled on first day of orientation; progress reviewed every Friday.</p>
@@ -1021,7 +1057,7 @@
         </div>
       </div>
 
-      <div class="card" data-res-id="r9">
+      <div class="card" data-res-id="r9" style="position:relative;"><button onclick="deleteResource('r9')" title="Delete resource" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
         <div class="card-category">ATA / Training</div>
         <h3>Digital ATA Scores</h3>
         <p class="card-desc"><strong>What:</strong> SharePoint location with individual spreadsheets per technician (Last Name, First Name – Digital ATA Scores) tracking ATA scores and learning progress.<br><br><strong>Why:</strong> Centralized record of each technician's ATA performance over time.<br><br><strong>When:</strong> New spreadsheet created at orientation start; updated every Friday.</p>
@@ -1035,7 +1071,7 @@
         </div>
       </div>
 
-    </div>
+    </div><!-- /cards-grid -->
   </section>
 
   <!-- ═══════════ RESPONSIBILITIES ═══════════ -->
@@ -2526,6 +2562,101 @@ loadWtData();
 //  RESOURCES — editable links
 // ══════════════════════════════════
 
+// ── Custom resources (user-added) stored in localStorage ──
+function getCustomResources() {
+  try { return JSON.parse(localStorage.getItem('custom_resources') || '[]'); } catch { return []; }
+}
+function saveCustomResources(arr) { localStorage.setItem('custom_resources', JSON.stringify(arr)); }
+
+function toggleResForm() {
+  const form = document.getElementById('res-add-form');
+  const btn = document.getElementById('res-add-btn');
+  const open = form.style.display === 'block';
+  form.style.display = open ? 'none' : 'block';
+  btn.textContent = open ? '+ Add Resource' : '✕ Cancel';
+  if (!open) document.getElementById('res-new-title').focus();
+}
+
+function saveNewResource() {
+  const title = document.getElementById('res-new-title').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const cat = document.getElementById('res-new-cat').value.trim() || 'General';
+  const desc = document.getElementById('res-new-desc').value.trim();
+  const linkText = document.getElementById('res-new-linktext').value.trim() || title;
+  const url = document.getElementById('res-new-url').value.trim();
+
+  const id = 'custom_' + Date.now();
+  const resource = { id, title, cat, desc, linkText, url };
+  const all = getCustomResources();
+  all.push(resource);
+  saveCustomResources(all);
+  toggleResForm();
+  // Reset form
+  ['res-new-title','res-new-cat','res-new-desc','res-new-linktext','res-new-url'].forEach(fid => {
+    document.getElementById(fid).value = '';
+  });
+  renderCustomResources();
+  showResToast('Resource added!');
+}
+
+function renderCustomResources() {
+  // Remove existing custom cards
+  document.querySelectorAll('.card.custom-res-card').forEach(c => c.remove());
+  const grid = document.getElementById('cards-grid');
+  if (!grid) return;
+  const all = getCustomResources();
+  all.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'card custom-res-card';
+    card.style.position = 'relative';
+    card.innerHTML = `
+      <button onclick="deleteCustomResource('${r.id}')" title="Delete"
+        style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#a32d2d;font-size:14px;opacity:0.6;padding:2px 5px;"
+        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑</button>
+      <div class="card-category">${r.cat}</div>
+      <h3>${r.title}</h3>
+      <p class="card-desc">${r.desc || ''}</p>
+      <div class="link-wrap">
+        ${r.url
+          ? `<a class="card-link" href="${r.url}" target="_blank">${r.linkText}</a>`
+          : `<span class="card-link">${r.linkText}</span>`}
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function deleteCustomResource(id) {
+  if (!confirm('Delete this resource?')) return;
+  const all = getCustomResources().filter(r => r.id !== id);
+  saveCustomResources(all);
+  renderCustomResources();
+  showResToast('Resource deleted.');
+}
+
+function deleteResource(id) {
+  if (!confirm('Delete this resource? This cannot be undone.')) return;
+  // For built-in resources, hide the card
+  const card = document.querySelector('[data-res-id="' + id + '"]');
+  if (card) card.style.display = 'none';
+  // Save hidden list
+  const hidden = JSON.parse(localStorage.getItem('hidden_resources') || '[]');
+  if (!hidden.includes(id)) hidden.push(id);
+  localStorage.setItem('hidden_resources', JSON.stringify(hidden));
+  showResToast('Resource removed.');
+}
+
+function applyHiddenResources() {
+  const hidden = JSON.parse(localStorage.getItem('hidden_resources') || '[]');
+  hidden.forEach(id => {
+    const card = document.querySelector('[data-res-id="' + id + '"]');
+    if (card) card.style.display = 'none';
+  });
+}
+
+function showResToast(msg) {
+  showWtToast && showWtToast(msg);
+}
+
 const RES_DEFAULTS = {
   r1:{ text:'📄 New hire checklist – Updated File Sept. 2025.xlsx', url:'' },
   r2:{ text:'📄 Diploma_GED_OSHA List.xlsx', url:'' },
@@ -2566,6 +2697,8 @@ function applyResLink(id) {
 
 function initResources() {
   Object.keys(RES_DEFAULTS).forEach(applyResLink);
+  applyHiddenResources();
+  renderCustomResources();
 }
 
 function toggleLinkEdit(id, e, forceClose) {
