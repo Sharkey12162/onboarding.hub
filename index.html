@@ -2273,11 +2273,46 @@ function renderRemindersList() {
   const el = document.getElementById('reminders-list');
   if (!el) return;
   if (!wtReminders.length) { el.innerHTML = '<div class="wt-sidebar-empty">No reminders yet.</div>'; return; }
-  el.innerHTML = wtReminders.map(r => `
-    <div class="reminder-item">
-      <div class="reminder-title">${r.title}${r.is_urgent ? '<span class="reminder-urgent">URGENT</span>' : ''}</div>
-      <div class="reminder-recur">${r.recurrence || (r.due_date ? '📅 ' + r.due_date : '')}</div>
-    </div>`).join('');
+  el.innerHTML = wtReminders.map(r => {
+    const done = r.completed || false;
+    return `
+    <div class="reminder-item" style="opacity:${done ? '0.45' : '1'};">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div onclick="toggleReminder('${r.id}')" style="
+          width:20px;height:20px;border-radius:50%;border:2px solid ${done ? '#3b6d11' : '#854f0b'};
+          background:${done ? '#eaf3de' : 'white'};flex-shrink:0;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.15s;
+        ">${done ? '<span style="color:#3b6d11;font-size:11px;font-weight:800;">✓</span>' : ''}</div>
+        <div style="flex:1;">
+          <div class="reminder-title" style="${done ? 'text-decoration:line-through;color:#94a3b8;' : ''}">${r.title}${r.is_urgent && !done ? '<span class="reminder-urgent">URGENT</span>' : ''}</div>
+          <div class="reminder-recur">${r.recurrence || (r.due_date ? '📅 ' + r.due_date : '')}</div>
+        </div>
+        <button onclick="deleteReminder('${r.id}')" style="background:none;border:none;cursor:pointer;color:#a32d2d;font-size:12px;padding:2px 4px;opacity:0.6;" title="Remove">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleReminder(id) {
+  const r = wtReminders.find(r => String(r.id) === String(id));
+  if (!r) return;
+  r.completed = !r.completed;
+  saveRemindersLocal();
+  const sb = getWtSb();
+  if (sb) {
+    try { sb.from('reminders').update({completed: r.completed}).eq('id', id).then(()=>{}); } catch(e) {}
+  }
+  renderRemindersList();
+}
+
+async function deleteReminder(id) {
+  if (!confirm('Remove this reminder?')) return;
+  wtReminders = wtReminders.filter(r => String(r.id) !== String(id));
+  saveRemindersLocal();
+  const sb = getWtSb();
+  if (sb) { try { await sb.from('reminders').delete().eq('id', id); } catch(e) {} }
+  renderRemindersList();
+  showWtToast('Reminder removed.');
 }
 
 function renderActivityLog() {
