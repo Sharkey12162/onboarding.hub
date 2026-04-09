@@ -1717,19 +1717,56 @@
     <h3 style="margin-bottom:6px;">📥 Import from Spreadsheet</h3>
     <p style="font-size:13px;color:#64748b;margin-bottom:18px;">Upload an Excel (.xlsx) or CSV file. Map the columns below to the hire fields.</p>
 
-    <!-- Step 1: Upload -->
+    <!-- Step 1: Upload or SharePoint link -->
     <div id="import-step-1">
-      <div id="import-dropzone" onclick="document.getElementById('import-file-input').click()"
-        style="border:2px dashed #b3d4f5;border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#f0f7ff;margin-bottom:16px;transition:border-color 0.15s;"
-        ondragover="event.preventDefault();this.style.borderColor='#185fa5'"
-        ondragleave="this.style.borderColor='#b3d4f5'"
-        ondrop="handleImportDrop(event)">
-        <div style="font-size:32px;margin-bottom:8px;">📂</div>
-        <div style="font-size:14px;font-weight:700;color:#1a2744;">Click to upload or drag & drop</div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px;">Supports .xlsx, .xls, .csv</div>
+
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border:1.5px solid #dce4f5;border-radius:9px;overflow:hidden;">
+        <button id="tab-sp" onclick="switchImportTab('sp')"
+          style="flex:1;padding:9px;border:none;background:#1a2744;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">
+          🔗 SharePoint Link
+        </button>
+        <button id="tab-file" onclick="switchImportTab('file')"
+          style="flex:1;padding:9px;border:none;background:#f0f4ff;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;">
+          📂 Upload File
+        </button>
       </div>
-      <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)" />
-      <div id="import-file-name" style="font-size:12px;color:#185fa5;font-weight:600;margin-bottom:8px;"></div>
+
+      <!-- SharePoint Link Panel -->
+      <div id="import-sp-panel">
+        <p style="font-size:12px;color:#64748b;margin-bottom:10px;">
+          Make sure you are <strong>logged into SharePoint</strong> in this browser, then paste the file link below.
+        </p>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input type="url" id="sp-link-input"
+            placeholder="https://yourcompany.sharepoint.com/..."
+            style="flex:1;padding:9px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;outline:none;font-family:inherit;" />
+          <button onclick="fetchFromSharePoint()"
+            style="padding:9px 16px;background:#1a2744;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+            Fetch →
+          </button>
+        </div>
+        <div style="background:#eaf3de;border-radius:8px;padding:10px 14px;font-size:12px;color:#3b6d11;margin-bottom:10px;">
+          💡 <strong>Tip:</strong> Open your SharePoint file in another tab first so your browser session is active, then paste the link here.
+        </div>
+        <div id="sp-status" style="font-size:12px;font-weight:600;min-height:18px;"></div>
+      </div>
+
+      <!-- File Upload Panel -->
+      <div id="import-file-panel" style="display:none;">
+        <div id="import-dropzone" onclick="document.getElementById('import-file-input').click()"
+          style="border:2px dashed #b3d4f5;border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#f0f7ff;margin-bottom:16px;transition:border-color 0.15s;"
+          ondragover="event.preventDefault();this.style.borderColor='#185fa5'"
+          ondragleave="this.style.borderColor='#b3d4f5'"
+          ondrop="handleImportDrop(event)">
+          <div style="font-size:32px;margin-bottom:8px;">📂</div>
+          <div style="font-size:14px;font-weight:700;color:#1a2744;">Click to upload or drag & drop</div>
+          <div style="font-size:12px;color:#64748b;margin-top:4px;">Supports .xlsx, .xls, .csv</div>
+        </div>
+        <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)" />
+        <div id="import-file-name" style="font-size:12px;color:#185fa5;font-weight:600;margin-bottom:8px;"></div>
+      </div>
+
     </div>
 
     <!-- Step 2: Column Mapping -->
@@ -2197,6 +2234,117 @@ function closeImportModal() {
   resetImport();
 }
 
+
+function switchImportTab(tab) {
+  const spPanel   = document.getElementById('import-sp-panel');
+  const filePanel = document.getElementById('import-file-panel');
+  const tabSp     = document.getElementById('tab-sp');
+  const tabFile   = document.getElementById('tab-file');
+  if (tab === 'sp') {
+    spPanel.style.display   = 'block';
+    filePanel.style.display = 'none';
+    tabSp.style.background   = '#1a2744'; tabSp.style.color   = '#fff';
+    tabFile.style.background = '#f0f4ff'; tabFile.style.color = '#64748b';
+  } else {
+    spPanel.style.display   = 'none';
+    filePanel.style.display = 'block';
+    tabSp.style.background   = '#f0f4ff'; tabSp.style.color   = '#64748b';
+    tabFile.style.background = '#1a2744'; tabFile.style.color = '#fff';
+  }
+}
+
+async function fetchFromSharePoint() {
+  const rawUrl = document.getElementById('sp-link-input').value.trim();
+  if (rawUrl) localStorage.setItem('sp_import_link', rawUrl);
+  const status = document.getElementById('sp-status');
+  if (!rawUrl) { status.innerHTML = '<span style="color:#a32d2d;">Please paste a SharePoint link.</span>'; return; }
+
+  status.innerHTML = '<span style="color:#185fa5;">⏳ Fetching file...</span>';
+
+  // Convert SharePoint view URL to a direct download URL
+  // SharePoint links can be converted to download links by changing the action parameter
+  let downloadUrl = rawUrl;
+
+  // Handle common SharePoint URL formats
+  if (rawUrl.includes('sharepoint.com')) {
+    if (rawUrl.includes('/_layouts/15/Doc.aspx')) {
+      // Convert Doc.aspx link to download link
+      downloadUrl = rawUrl.replace('action=default', 'action=download').replace('mobileredirect=true', '');
+      // Alternative: use the direct download endpoint
+      const baseUrl = rawUrl.split('/_layouts')[0];
+      const sourcedocMatch = rawUrl.match(/sourcedoc=%7B([^%]+)%7D/i) || rawUrl.match(/sourcedoc=\{([^}]+)\}/i);
+      if (sourcedocMatch) {
+        downloadUrl = rawUrl.replace('action=default&mobileredirect=true', 'action=download');
+      }
+    } else if (rawUrl.includes(':x:/')) {
+      // Sharing link format — append download=1
+      downloadUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'download=1';
+    }
+  }
+
+  try {
+    const resp = await fetch(downloadUrl, { credentials: 'include', mode: 'cors' });
+
+    if (!resp.ok) {
+      throw new Error('HTTP ' + resp.status);
+    }
+
+    const contentType = resp.headers.get('content-type') || '';
+
+    if (contentType.includes('text/html')) {
+      // Got login page instead of file — not authenticated
+      status.innerHTML = '<span style="color:#a32d2d;">⚠️ Please open the SharePoint file in another tab first (to log in), then try again.</span>';
+      return;
+    }
+
+    const buffer = await resp.arrayBuffer();
+
+    // Try to parse with SheetJS
+    if (!window.XLSX) {
+      await loadSheetJS();
+    }
+
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    if (!data || data.length < 2) {
+      status.innerHTML = '<span style="color:#a32d2d;">No data found in spreadsheet.</span>';
+      return;
+    }
+
+    importHeaders = data[0].map(h => String(h).trim());
+    importRows = data.slice(1).filter(r => r.some(c => c !== ''));
+
+    status.innerHTML = `<span style="color:#3b6d11;">✅ Loaded ${importRows.length} rows from SharePoint!</span>`;
+    setTimeout(() => showImportStep2(), 800);
+
+  } catch(err) {
+    console.error('SharePoint fetch error:', err);
+    // If CORS blocks it, guide user
+    if (err.message.includes('Failed to fetch') || err.message.includes('CORS') || err.message.includes('NetworkError')) {
+      status.innerHTML = `
+        <div style="background:#fcebeb;border-radius:8px;padding:10px 14px;color:#a32d2d;font-size:12px;line-height:1.6;">
+          ⚠️ <strong>Browser blocked the request (CORS).</strong><br>
+          SharePoint requires you to be on the same network or use the file upload option instead.<br><br>
+          <strong>Quick fix:</strong> Open the file in SharePoint → <em>File → Save As → Download a Copy</em> → then use the 📂 Upload File tab.
+        </div>`;
+    } else {
+      status.innerHTML = '<span style="color:#a32d2d;">Error: ' + err.message + '. Try the Upload File tab instead.</span>';
+    }
+  }
+}
+
+function loadSheetJS() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
 function resetImport() {
   importRows = [];
   importHeaders = [];
@@ -2204,6 +2352,12 @@ function resetImport() {
   document.getElementById('import-step-2').style.display = 'none';
   document.getElementById('import-file-name').textContent = '';
   document.getElementById('import-file-input').value = '';
+  document.getElementById('sp-status').innerHTML = '';
+  // Restore saved SharePoint link if exists
+  const saved = localStorage.getItem('sp_import_link');
+  const input = document.getElementById('sp-link-input');
+  if (saved && input) input.value = saved;
+  switchImportTab('sp');
 }
 
 function handleImportDrop(e) {
