@@ -876,6 +876,10 @@
   .add-reminder-form input, .add-reminder-form select { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:7px; font-size:12px; margin-bottom:7px; outline:none; font-family:inherit; }
   .add-reminder-form input:focus { border-color:var(--sky); }
 
+
+  .hi-field { display:flex; flex-direction:column; gap:1px; }
+  .hi-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; opacity:0.6; }
+  .hi-val   { font-size:12px; font-weight:600; color:white; word-break:break-word; }
 </style>
 </head>
 <body>
@@ -1707,29 +1711,82 @@
 
 <!-- ── ADD HIRE MODAL ── -->
 <div class="modal-bg" id="modal-bg">
-  <div class="modal">
+  <div class="modal" style="max-width:560px;width:95%;">
     <h3>Add New Hire</h3>
-    <div class="field-group">
-      <label>Full Name *</label>
-      <input type="text" id="f-name" placeholder="e.g. Justin Holton" />
-    </div>
-    <div class="field-group">
-      <label>Role / Position</label>
-      <select id="f-role">
-        <option value="Field Technician">Field Technician</option>
-        <option value="Survey Technician">Survey Technician</option>
-        <option value="Lead Technician">Lead Technician</option>
-        <option value="Office Staff">Office Staff</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-    <div class="field-group">
-      <label>Region</label>
-      <input type="text" id="f-region" placeholder="e.g. DFW, Southeast, etc." />
-    </div>
-    <div class="field-group">
-      <label>Orientation / Start Date</label>
-      <input type="date" id="f-date" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field-group" style="grid-column:1/-1;">
+        <label>Full Name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Justin Holton" />
+      </div>
+      <div class="field-group">
+        <label>Role / Position</label>
+        <select id="f-role">
+          <option value="Field Technician">Field Technician</option>
+          <option value="Survey Technician">Survey Technician</option>
+          <option value="Lead Technician">Lead Technician</option>
+          <option value="Office Staff">Office Staff</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Region</label>
+        <input type="text" id="f-region" placeholder="e.g. DFW, Southeast" />
+      </div>
+      <div class="field-group">
+        <label>Orientation / Start Date</label>
+        <input type="date" id="f-date" />
+      </div>
+      <div class="field-group">
+        <label>Phone Number</label>
+        <input type="tel" id="f-phone" placeholder="e.g. (555) 123-4567" />
+      </div>
+      <div class="field-group">
+        <label>Personal Email</label>
+        <input type="email" id="f-email" placeholder="e.g. name@email.com" />
+      </div>
+      <div class="field-group">
+        <label>Company Email</label>
+        <input type="email" id="f-company-email" placeholder="e.g. name@airadigm.com" />
+      </div>
+      <div class="field-group">
+        <label>Assigned PM</label>
+        <input type="text" id="f-pm" placeholder="e.g. Brenda" />
+      </div>
+      <div class="field-group" style="grid-column:1/-1;">
+        <label>Mailing Address</label>
+        <input type="text" id="f-address" placeholder="e.g. 123 Main St, Dallas TX 75001" />
+      </div>
+      <div class="field-group">
+        <label>Emergency Contact Name</label>
+        <input type="text" id="f-emerg-name" placeholder="e.g. Maria Holton" />
+      </div>
+      <div class="field-group">
+        <label>Emergency Contact Phone</label>
+        <input type="tel" id="f-emerg-phone" placeholder="e.g. (555) 987-6543" />
+      </div>
+      <div class="field-group">
+        <label>OSHA Certification</label>
+        <select id="f-osha">
+          <option value="">— Not submitted —</option>
+          <option value="OSHA 10">OSHA 10</option>
+          <option value="OSHA 30">OSHA 30</option>
+          <option value="Both">Both OSHA 10 & 30</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Education Document</label>
+        <select id="f-edu">
+          <option value="">— Not submitted —</option>
+          <option value="High School Diploma">High School Diploma</option>
+          <option value="GED">GED</option>
+          <option value="Transcript">Transcript</option>
+          <option value="College Degree">College Degree</option>
+        </select>
+      </div>
+      <div class="field-group" style="grid-column:1/-1;">
+        <label>Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Any additional notes..." style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit;outline:none;"></textarea>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -1876,6 +1933,19 @@ function loadHire(id) {
 
   const dateStr = hire.date ? new Date(hire.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
 
+  // Build info panel HTML
+  const infoFields = [
+    hire.phone        ? `<div class="hi-field"><span class="hi-label">📞 Phone</span><span class="hi-val">${hire.phone}</span></div>` : '',
+    hire.email        ? `<div class="hi-field"><span class="hi-label">✉️ Personal Email</span><span class="hi-val">${hire.email}</span></div>` : '',
+    hire.companyEmail ? `<div class="hi-field"><span class="hi-label">🏢 Company Email</span><span class="hi-val">${hire.companyEmail}</span></div>` : '',
+    hire.pm           ? `<div class="hi-field"><span class="hi-label">👤 Assigned PM</span><span class="hi-val">${hire.pm}</span></div>` : '',
+    hire.address      ? `<div class="hi-field"><span class="hi-label">📍 Address</span><span class="hi-val">${hire.address}</span></div>` : '',
+    hire.osha         ? `<div class="hi-field"><span class="hi-label">🦺 OSHA</span><span class="hi-val">${hire.osha}</span></div>` : '',
+    hire.edu          ? `<div class="hi-field"><span class="hi-label">🎓 Education</span><span class="hi-val">${hire.edu}</span></div>` : '',
+    (hire.emergName || hire.emergPhone) ? `<div class="hi-field"><span class="hi-label">🚨 Emergency</span><span class="hi-val">${hire.emergName || ''}${hire.emergPhone ? ' · ' + hire.emergPhone : ''}</span></div>` : '',
+    hire.notes        ? `<div class="hi-field" style="grid-column:1/-1"><span class="hi-label">📝 Notes</span><span class="hi-val">${hire.notes}</span></div>` : '',
+  ].filter(Boolean).join('');
+
   document.getElementById('hire-display').innerHTML = `
     <div class="hire-card">
       <div class="hire-card-header">
@@ -1925,15 +1995,31 @@ function saveHire() {
   const hire = {
     id: 'h_' + Date.now(),
     name,
-    role:   document.getElementById('f-role').value,
-    region: document.getElementById('f-region').value.trim(),
-    date:   document.getElementById('f-date').value,
+    role:          document.getElementById('f-role').value,
+    region:        document.getElementById('f-region').value.trim(),
+    date:          document.getElementById('f-date').value,
+    phone:         document.getElementById('f-phone').value.trim(),
+    email:         document.getElementById('f-email').value.trim(),
+    companyEmail:  document.getElementById('f-company-email').value.trim(),
+    pm:            document.getElementById('f-pm').value.trim(),
+    address:       document.getElementById('f-address').value.trim(),
+    emergName:     document.getElementById('f-emerg-name').value.trim(),
+    emergPhone:    document.getElementById('f-emerg-phone').value.trim(),
+    osha:          document.getElementById('f-osha').value,
+    edu:           document.getElementById('f-edu').value,
+    notes:         document.getElementById('f-notes').value.trim(),
     checked: {}
   };
   const hires = getHires();
   hires.push(hire);
   saveHires(hires);
   closeModal();
+  // Reset extra fields
+  ['f-phone','f-email','f-company-email','f-pm','f-address','f-emerg-name','f-emerg-phone','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('f-osha').value='';
+  document.getElementById('f-edu').value='';
   populateSelect(hire.id);
   loadHire(hire.id);
 }
