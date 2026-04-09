@@ -1392,10 +1392,65 @@
     if (!noteDay) return;
     const key = calYear + '-' + (calMonth+1) + '-' + noteDay;
     const val = document.getElementById('note-input').value.trim();
-    if (val) { calNotes[key] = val; } else { delete calNotes[key]; }
+    if (val) {
+      calNotes[key] = val;
+      // Also add to Weekly Tasks as a reminder
+      addOrientNoteToWeeklyTasks(val, calYear, calMonth, noteDay);
+    } else {
+      delete calNotes[key];
+    }
     localStorage.setItem('orient_notes', JSON.stringify(calNotes));
     closeNoteModal();
     renderCalendar();
+  }
+
+  function addOrientNoteToWeeklyTasks(note, year, month, day) {
+    // Build ISO date
+    const mm = String(month + 1).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    const due = year + '-' + mm + '-' + dd;
+
+    // Get day of week label
+    const d = new Date(year, month, day);
+    const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const dayLabel = dayLabels[d.getDay()];
+    // Only add if Mon-Fri
+    const validDays = ['Mon','Tue','Wed','Thu','Fri'];
+    const taskDay = validDays.includes(dayLabel) ? dayLabel : 'Mon';
+
+    // Check if already added (avoid duplicates)
+    const exists = typeof wtTasks !== 'undefined' && wtTasks.find(t =>
+      t.due === due && (t.title || t.task || '').includes(note.substring(0, 30))
+    );
+    if (exists) return;
+
+    const newTask = {
+      id: 'orient_' + Date.now(),
+      title: '📅 [Orientation] ' + note,
+      day: taskDay,
+      due: due,
+      status: 'pending',
+      recurrence: null,
+      owner_id: null,
+      updated_at: new Date().toISOString()
+    };
+
+    if (typeof wtTasks !== 'undefined') {
+      wtTasks.push(newTask);
+      // Save locally
+      try { localStorage.setItem('wt_tasks_v2', JSON.stringify(wtTasks)); } catch(e) {}
+      // Save to Supabase if available
+      const sb = typeof getWtSb === 'function' ? getWtSb() : null;
+      if (sb) {
+        sb.from('weekly_tasks').insert([{
+          task: newTask.title, title: newTask.title,
+          day: taskDay, due: due, status: 'pending',
+          updated_at: newTask.updated_at
+        }]).then(() => {});
+      }
+      // Re-render if weekly view active
+      if (typeof renderWeekly === 'function') renderWeekly();
+    }
   }
 
   function renderMayTasks() {
@@ -2218,9 +2273,50 @@ function renderMembersList() {
   if (!el) return;
   if (!wtMembers.length) { el.innerHTML = '<div class="wt-sidebar-empty">No team members yet.</div>'; return; }
   el.innerHTML = wtMembers.map(m => `
-    <div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);">
-      👤 ${m.name}
+    <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;">
+      <span id="mb-label-${m.id}" style="flex:1;font-size:13px;font-weight:600;color:var(--navy);">👤 ${m.name}</span>
+      <input id="mb-edit-${m.id}" type="text" value="${m.name}" style="display:none;flex:1;padding:4px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;outline:none;" />
+      <button onclick="editMember('${m.id}')" id="mb-btn-edit-${m.id}"
+        style="background:none;border:none;cursor:pointer;color:#185fa5;font-size:12px;padding:2px 5px;" title="Edit">✏️</button>
+      <button onclick="saveMemberEdit('${m.id}')" id="mb-btn-save-${m.id}"
+        style="display:none;background:var(--navy);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:3px 8px;">Save</button>
+      <button onclick="deleteMember('${m.id}')"
+        style="background:none;border:none;cursor:pointer;color:#a32d2d;font-size:12px;padding:2px 5px;" title="Remove">🗑</button>
     </div>`).join('');
+}
+
+function editMember(id) {
+  document.getElementById('mb-label-' + id).style.display = 'none';
+  document.getElementById('mb-edit-' + id).style.display = 'block';
+  document.getElementById('mb-btn-edit-' + id).style.display = 'none';
+  document.getElementById('mb-btn-save-' + id).style.display = 'inline-block';
+  document.getElementById('mb-edit-' + id).focus();
+}
+
+async function saveMemberEdit(id) {
+  const input = document.getElementById('mb-edit-' + id);
+  const newName = input.value.trim();
+  if (!newName) return;
+  const m = wtMembers.find(m => m.id === id);
+  if (!m) return;
+  m.name = newName;
+  saveMembersLocal();
+  const sb = getWtSb();
+  if (sb) { try { await sb.from('team_members').update({name: newName}).eq('id', id); } catch(e){} }
+  renderMembersList();
+  populateOwnerDropdown();
+  showWtToast('Member updated!');
+}
+
+async function deleteMember(id) {
+  if (!confirm('Remove this team member?')) return;
+  wtMembers = wtMembers.filter(m => m.id !== id);
+  saveMembersLocal();
+  const sb = getWtSb();
+  if (sb) { try { await sb.from('team_members').delete().eq('id', id); } catch(e){} }
+  renderMembersList();
+  populateOwnerDropdown();
+  showWtToast('Member removed.');
 }
 
 function handleOwnerChange(sel) {
@@ -2237,16 +2333,8 @@ function handleOwnerChange(sel) {
 function populateOwnerDropdown() {
   const sel = document.getElementById('wt-f-owner');
   if (!sel) return;
-  const defaults = [
-    {id:'paula', name:'Paula'},
-    {id:'brenda', name:'Brenda'}
-  ];
-  // Merge defaults with team members, avoiding duplicates by name
-  const allNames = new Set(defaults.map(d => d.name.toLowerCase()));
-  const extraMembers = wtMembers.filter(m => !allNames.has(m.name.toLowerCase()));
-  const all = [...defaults, ...extraMembers];
   sel.innerHTML = '<option value="">— No owner —</option>' +
-    all.map(m => `<option value="${m.id}">${m.name}</option>`).join('') +
+    wtMembers.map(m => `<option value="${m.id}">${m.name}</option>`).join('') +
     '<option value="__other__">+ Type a name...</option>';
 }
 
