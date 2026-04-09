@@ -1803,6 +1803,44 @@
   </div>
 </div>
 
+
+<!-- ── LOOKUP IMPORT MODAL ── -->
+<div id="lookup-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(15,31,61,0.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:16px;padding:28px;max-width:500px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="font-size:17px;font-weight:800;color:#1a2744;">📥 Import Info from Excel</h3>
+      <button onclick="closeLookupModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+    </div>
+    <p id="lookup-hire-name" style="font-size:13px;color:#64748b;margin-bottom:18px;"></p>
+
+    <!-- Step 1: Upload file -->
+    <div id="lookup-step-1">
+      <div onclick="document.getElementById('lookup-file-input').click()"
+        style="border:2px dashed #b3d4f5;border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:#f0f7ff;margin-bottom:12px;"
+        ondragover="event.preventDefault()"
+        ondrop="handleLookupDrop(event)">
+        <div style="font-size:28px;margin-bottom:6px;">📂</div>
+        <div style="font-size:14px;font-weight:700;color:#1a2744;">Click to upload or drag & drop</div>
+        <div style="font-size:12px;color:#64748b;margin-top:3px;">Supports .xlsx, .xls, .csv</div>
+      </div>
+      <input type="file" id="lookup-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleLookupFile(this)" />
+      <div id="lookup-file-status" style="font-size:12px;color:#185fa5;font-weight:600;"></div>
+    </div>
+
+    <!-- Step 2: Confirm match -->
+    <div id="lookup-step-2" style="display:none;">
+      <div id="lookup-match-result"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        <button onclick="resetLookup()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #dce4f5;background:#fff;cursor:pointer;font-size:13px;font-weight:600;">← Back</button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="closeLookupModal()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #dce4f5;background:#fff;cursor:pointer;font-size:13px;font-weight:600;">Cancel</button>
+          <button id="lookup-confirm-btn" onclick="confirmLookupImport()" style="padding:8px 18px;border-radius:8px;border:none;background:#1a2744;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">✅ Fill In Info</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── ADD HIRE MODAL ── -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal" style="max-width:560px;width:95%;">
@@ -1890,6 +1928,223 @@
 </div>
 
 <script>
+
+// ══════════════════════════════════
+//  LOOKUP IMPORT (by name)
+// ══════════════════════════════════
+
+let lookupHireId = null;
+let lookupMatchedRow = null;
+let lookupHeaders = [];
+let lookupRows = [];
+
+function openLookupImport(hireId) {
+  lookupHireId = hireId;
+  const hires = getHires();
+  const hire = hires.find(h => h.id === hireId);
+  if (!hire) return;
+  document.getElementById('lookup-hire-name').textContent =
+    'Looking up: ' + hire.name + ' — upload your spreadsheet to auto-fill their info.';
+  document.getElementById('lookup-modal-bg').style.display = 'flex';
+  resetLookup();
+}
+
+function closeLookupModal() {
+  document.getElementById('lookup-modal-bg').style.display = 'none';
+  lookupHireId = null;
+  lookupMatchedRow = null;
+}
+
+function resetLookup() {
+  document.getElementById('lookup-step-1').style.display = 'block';
+  document.getElementById('lookup-step-2').style.display = 'none';
+  document.getElementById('lookup-file-status').textContent = '';
+  document.getElementById('lookup-file-input').value = '';
+  lookupMatchedRow = null;
+  lookupHeaders = [];
+  lookupRows = [];
+}
+
+function handleLookupDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file) processLookupFile(file);
+}
+
+function handleLookupFile(input) {
+  if (input.files[0]) processLookupFile(input.files[0]);
+}
+
+function processLookupFile(file) {
+  document.getElementById('lookup-file-status').textContent = '⏳ Reading file...';
+  const name = file.name.toLowerCase();
+
+  const proceed = () => {
+    if (name.endsWith('.csv')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        parseLookupCSV(e.target.result);
+      };
+      reader.readAsText(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        if (!data || data.length < 2) {
+          document.getElementById('lookup-file-status').textContent = '❌ No data found.';
+          return;
+        }
+        lookupHeaders = data[0].map(h => String(h).trim());
+        lookupRows = data.slice(1).filter(r => r.some(c => c !== ''));
+        findHireInSpreadsheet();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  if ((name.endsWith('.xlsx') || name.endsWith('.xls')) && !window.XLSX) {
+    loadSheetJS().then(proceed).catch(() => {
+      document.getElementById('lookup-file-status').textContent = '❌ Could not load Excel parser. Try CSV.';
+    });
+  } else {
+    proceed();
+  }
+}
+
+function parseLookupCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { document.getElementById('lookup-file-status').textContent = '❌ Empty file.'; return; }
+  function parseLine(line) {
+    const result = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+  lookupHeaders = parseLine(lines[0]);
+  lookupRows = lines.slice(1).map(parseLine).filter(r => r.some(c => c));
+  findHireInSpreadsheet();
+}
+
+function findHireInSpreadsheet() {
+  const hires = getHires();
+  const hire = hires.find(h => h.id === lookupHireId);
+  if (!hire) return;
+
+  const hireName = hire.name.toLowerCase().trim();
+
+  // Find name column — look for header containing "name"
+  const nameColIdx = lookupHeaders.findIndex(h =>
+    h.toLowerCase().includes('name') || h.toLowerCase().includes('nombre')
+  );
+
+  if (nameColIdx === -1) {
+    document.getElementById('lookup-file-status').textContent = '❌ Could not find a "Name" column in your spreadsheet.';
+    return;
+  }
+
+  // Try exact match first, then partial
+  let matchedRow = lookupRows.find(r => {
+    const cellVal = String(r[nameColIdx] || '').toLowerCase().trim();
+    return cellVal === hireName;
+  });
+
+  // Partial match — check if hire name words appear in cell or vice versa
+  if (!matchedRow) {
+    const nameParts = hireName.split(/\s+/);
+    matchedRow = lookupRows.find(r => {
+      const cellVal = String(r[nameColIdx] || '').toLowerCase().trim();
+      return nameParts.every(part => cellVal.includes(part)) ||
+             cellVal.split(/\s+/).every(part => hireName.includes(part));
+    });
+  }
+
+  if (!matchedRow) {
+    // Show all names found so user can see what's available
+    const allNames = lookupRows.map(r => r[nameColIdx]).filter(Boolean).slice(0, 10).join(', ');
+    document.getElementById('lookup-step-1').style.display = 'none';
+    document.getElementById('lookup-step-2').style.display = 'block';
+    document.getElementById('lookup-match-result').innerHTML = `
+      <div style="background:#fcebeb;border-radius:10px;padding:14px;color:#a32d2d;font-size:13px;">
+        <strong>❌ No match found for "${hire.name}"</strong><br><br>
+        Names found in spreadsheet: <em>${allNames}${lookupRows.length > 10 ? '...' : ''}</em><br><br>
+        Make sure the name in the app matches exactly how it appears in the spreadsheet.
+      </div>`;
+    document.getElementById('lookup-confirm-btn').style.display = 'none';
+    return;
+  }
+
+  lookupMatchedRow = matchedRow;
+  document.getElementById('lookup-confirm-btn').style.display = 'inline-block';
+
+  // Build preview of what will be filled in
+  const preview = lookupHeaders.map((h, i) => {
+    const val = matchedRow[i];
+    if (!val || !String(val).trim()) return null;
+    return `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0f4ff;">
+      <span style="font-size:11px;font-weight:700;color:#64748b;min-width:140px;text-transform:uppercase;">${h}</span>
+      <span style="font-size:12px;color:#1a2744;font-weight:600;">${val}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+
+  document.getElementById('lookup-step-1').style.display = 'none';
+  document.getElementById('lookup-step-2').style.display = 'block';
+  document.getElementById('lookup-match-result').innerHTML = `
+    <div style="background:#eaf3de;border-radius:10px;padding:12px 14px;margin-bottom:12px;color:#3b6d11;font-size:13px;font-weight:700;">
+      ✅ Match found! Review the data below and click "Fill In Info" to apply.
+    </div>
+    <div style="max-height:280px;overflow-y:auto;border:1px solid #dce4f5;border-radius:8px;padding:8px 12px;">
+      ${preview}
+    </div>`;
+}
+
+function confirmLookupImport() {
+  if (!lookupMatchedRow || !lookupHireId) return;
+  const hires = getHires();
+  const hire = hires.find(h => h.id === lookupHireId);
+  if (!hire) return;
+
+  // Map spreadsheet columns to hire fields using auto-match
+  const fieldMap = {
+    role:         ['role','position','title','job title','cargo'],
+    region:       ['region','area','location','zona'],
+    date:         ['date','start date','orientation','fecha','start'],
+    phone:        ['phone','cell','mobile','telephone','celular','telefono'],
+    email:        ['email','personal email','correo personal','e-mail'],
+    companyEmail: ['company email','work email','airadigm','correo empresa'],
+    pm:           ['pm','project manager','manager','assigned pm'],
+    address:      ['address','mailing','street','direccion'],
+    osha:         ['osha','osha cert','certification'],
+    edu:          ['education','diploma','ged','degree','educacion'],
+    emergName:    ['emergency contact','emerg name','emergency name','contacto'],
+    emergPhone:   ['emergency phone','emerg phone','contacto telefono'],
+    notes:        ['notes','comments','remarks','notas'],
+  };
+
+  lookupHeaders.forEach((header, colIdx) => {
+    const h = header.toLowerCase().trim();
+    const val = String(lookupMatchedRow[colIdx] || '').trim();
+    if (!val) return;
+    Object.entries(fieldMap).forEach(([field, keywords]) => {
+      if (keywords.some(k => h.includes(k)) && !hire[field]) {
+        hire[field] = val;
+      }
+    });
+  });
+
+  saveHires(hires);
+  closeLookupModal();
+  loadHire(lookupHireId);
+  // Show toast
+  if (typeof showWtToast === 'function') showWtToast('✅ Info imported successfully!');
+}
+
 // ══════════════════════════════════
 //  NEW HIRE CHECKLIST
 // ══════════════════════════════════
@@ -2057,7 +2312,15 @@ function loadHire(id) {
             <div class="hire-progress-bar" id="prog-bar" style="width:${pct}%"></div>
           </div>
         </div>
+        <div style="margin-top:12px;">
+          <button onclick="openLookupImport('${id}')"
+            style="background:#f59e0b;color:#1a2744;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            📥 Import Info from Excel
+          </button>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;">Upload spreadsheet → auto-fill this hire's info</div>
+        </div>
       </div>
+      ${infoFields ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.15);">${infoFields}</div>` : ''}
       <div class="cl-categories">${catsHtml}</div>
     </div>`;
 }
@@ -2543,6 +2806,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const bg = document.getElementById('import-modal-bg');
   if (bg) bg.addEventListener('click', function(e) {
     if (e.target === bg) closeImportModal();
+  });
+  const lbg = document.getElementById('lookup-modal-bg');
+  if (lbg) lbg.addEventListener('click', function(e) {
+    if (e.target === lbg) closeLookupModal();
   });
 });
 
