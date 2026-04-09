@@ -2334,24 +2334,66 @@ function loadHire(id) {
     hire.notes        ? `<div class="hi-field"><span class="hi-label">📝 Notes</span><span class="hi-val">${hire.notes}</span></div>` : '',
   ].filter(Boolean);
 
-  // Add all raw imported fields (from spreadsheet) that aren't already shown
-  let rawFieldsHtml = '';
+  // Build grouped sections from rawData
+  let rawSectionsHtml = '';
   if (hire.rawData && Object.keys(hire.rawData).length > 0) {
-    const shownLabels = new Set(['region','home address','cell phone','personal email','airadigm','project manager','osha','diploma','referred']);
-    const extraFields = Object.entries(hire.rawData)
-      .filter(([k, v]) => v && v.trim() && v !== '0' && !Array.from(shownLabels).some(s => k.toLowerCase().includes(s)))
-      .slice(0, 30)
-      .map(([k, v]) => `<div class="hi-field"><span class="hi-label">${k}</span><span class="hi-val">${v}</span></div>`)
-      .join('');
-    if (extraFields) {
-      rawFieldsHtml = `<div style="grid-column:1/-1;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:0.5;margin-bottom:6px;">All Imported Fields</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px 14px;">${extraFields}</div>
-      </div>`;
-    }
+    // Group fields by section (A. General Info, B. Screening, etc.)
+    const SECTIONS = [
+      { key: 'A', label: '👤 General Info', icon: '👤' },
+      { key: 'B', label: '📋 Screening Paperwork', icon: '📋' },
+      { key: 'C', label: '📝 New Hire Info', icon: '📝' },
+      { key: 'D', label: '💻 IT Prep', icon: '💻' },
+      { key: 'E', label: '💰 Accounting Info', icon: '💰' },
+      { key: 'F', label: '🚗 Equipment & Vehicle', icon: '🚗' },
+      { key: 'G', label: '📱 iPad Prep', icon: '📱' },
+      { key: 'H', label: '🎓 Orientation Prep', icon: '🎓' },
+      { key: 'I', label: '⭐ Bootcamp Prep', icon: '⭐' },
+      { key: 'J', label: '📅 Calendar Reminders', icon: '📅' },
+    ];
+
+    // Determine which section each field belongs to based on section header rows
+    const entries = Object.entries(hire.rawData).filter(([k,v]) => v && v.trim() && v !== '0');
+    let currentSection = 'A';
+    const grouped = {};
+    SECTIONS.forEach(s => grouped[s.key] = []);
+
+    entries.forEach(([label, value]) => {
+      // Detect section change
+      const lc = label.toLowerCase();
+      if (lc.includes('a.  general') || lc === 'region' || lc.includes('home address') || lc.includes('cell phone') || lc.includes('personal email') || lc.includes('start date') || lc.includes('project manager') || lc.includes('referred')) currentSection = 'A';
+      else if (lc.includes('b.  screening') || lc.includes('resume') || lc.includes('application received') || lc.includes('verbal offer') || lc.includes('written offer') || lc.includes('background check')) currentSection = 'B';
+      else if (lc.includes('c.  new hire') || lc.includes('shirt size') || lc.includes('glove') || lc.includes('boot size') || lc.includes('osha') || lc.includes('diploma') || lc.includes('handbook') || lc.includes('w-4') || lc.includes('i-9') || lc.includes('direct deposit')) currentSection = 'C';
+      else if (lc.includes('d.  it') || lc.includes('ringcentral') || lc.includes('email account') || lc.includes('microsoft') || lc.includes('ipad') || lc.includes('usabalancer') || lc.includes('ata set-up')) currentSection = 'D';
+      else if (lc.includes('e.  accounting') || lc.includes('sage') || lc.includes('bill card')) currentSection = 'E';
+      else if (lc.includes('f.  equipment') || lc.includes('vehicle') || lc.includes('wex') || lc.includes('tool inventory') || lc.includes('backpack') || lc.includes('hard hat')) currentSection = 'F';
+      else if (lc.includes('g.  ipad') || lc.includes('zagg') || lc.includes('mosyle') || lc.includes('ipad credentials')) currentSection = 'G';
+      else if (lc.includes('h.  prep for orientation') || lc.includes('pm informed') || lc.includes('safety manual') || lc.includes('rc thread') || lc.includes('id badge')) currentSection = 'H';
+      else if (lc.includes('i.  prep for bootcamp') || lc.includes('hotel') || lc.includes('flights')) currentSection = 'I';
+      else if (lc.includes('j.  calendar') || lc.includes('401k') || lc.includes('anniversary') || lc.includes('health insurance')) currentSection = 'J';
+
+      // Skip section header rows themselves
+      if (label.match(/^[A-J]\.\s+(General Info|Screening|New Hire|IT Prep|Accounting|Equipment|iPad|Prep for|Calendar)/i)) return;
+
+      if (grouped[currentSection]) grouped[currentSection].push([label, value]);
+    });
+
+    rawSectionsHtml = SECTIONS.map(sec => {
+      const fields = grouped[sec.key];
+      if (!fields || fields.length === 0) return '';
+      const fieldsHtml = fields.map(([k, v]) => `
+        <div style="display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:7px;">
+          <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,0.5);">${k}</span>
+          <span style="font-size:12.5px;font-weight:600;color:#fff;line-height:1.3;">${v}</span>
+        </div>`).join('');
+      return `
+        <div style="margin-bottom:14px;">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,0.4);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.1);">${sec.label}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;">${fieldsHtml}</div>
+        </div>`;
+    }).filter(Boolean).join('');
   }
 
-  const infoFields = [...standardFields, rawFieldsHtml].filter(Boolean).join('');
+  const infoFields = [...standardFields, rawSectionsHtml ? `<div style="grid-column:1/-1">${rawSectionsHtml}</div>` : ''].filter(Boolean).join('');
 
   document.getElementById('hire-display').innerHTML = `
     <div class="hire-card">
@@ -2378,8 +2420,19 @@ function loadHire(id) {
           <div style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;">Upload spreadsheet → auto-fill this hire's info</div>
         </div>
       </div>
-      ${infoFields ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 16px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.15);">${infoFields}</div>` : ''}
-      <div class="cl-categories">${catsHtml}</div>
+      ${standardFields.length > 0 ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.12);">${standardFields.join('')}</div>` : ''}
+    </div>
+    ${rawSectionsHtml ? `
+    <div style="background:#f8fafc;border:1.5px solid #dce4f5;border-radius:0 0 12px 12px;padding:0;">
+      <button onclick="toggleImportedData(this)" style="width:100%;padding:11px 18px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;color:#1a2744;display:flex;align-items:center;justify-content:space-between;text-align:left;">
+        <span>📊 View All Imported Data (${Object.keys(hire.rawData||{}).length} fields)</span>
+        <span id="imported-toggle-icon">▼</span>
+      </button>
+      <div id="imported-data-panel" style="display:none;padding:16px 18px;border-top:1px solid #dce4f5;background:white;">
+        ${rawSectionsHtml.replace(/rgba\(255,255,255,0\.06\)/g,'#f0f4ff').replace(/rgba\(255,255,255,0\.5\)/g,'#64748b').replace(/rgba\(255,255,255,0\.4\)/g,'#94a3b8').replace(/rgba\(255,255,255,0\.1\)/g,'#dce4f5').replace(/color:#fff/g,'color:#1a2744')}
+      </div>
+    </div>` : ''}
+    <div class="cl-categories">${catsHtml}</div>
     </div>`;
 }
 
@@ -2448,6 +2501,15 @@ function deleteHire() {
   loadHire('');
 }
 
+
+function toggleImportedData(btn) {
+  const panel = document.getElementById('imported-data-panel');
+  const icon = document.getElementById('imported-toggle-icon');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (icon) icon.textContent = isOpen ? '▼' : '▲';
+}
 function togglePrintMenu(e) {
   e.stopPropagation();
   const menu = document.getElementById('print-menu');
