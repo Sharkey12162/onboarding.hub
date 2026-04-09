@@ -1684,6 +1684,7 @@
         <option value="">— Select a new hire —</option>
       </select>
       <button class="btn-primary" onclick="openModal()">+ Add New Hire</button>
+      <button class="btn-secondary" onclick="openImportModal()" style="background:#e6f1fb;color:#185fa5;border-color:#b3d4f5;font-weight:700;">📥 Import from Spreadsheet</button>
       <button class="btn-danger" id="delete-btn" onclick="deleteHire()" style="display:none">🗑 Remove</button>
       <div class="print-dropdown-wrap" id="print-btn" style="display:none;position:relative;">
       <button class="btn-print" onclick="togglePrintMenu(event)">🖨️ Print to PDF ▾</button>
@@ -1708,6 +1709,62 @@
   </section>
 
 </main>
+
+
+<!-- ── IMPORT HIRE MODAL ── -->
+<div class="modal-bg" id="import-modal-bg" style="display:none;position:fixed;inset:0;background:rgba(15,31,61,0.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal" style="max-width:580px;width:95%;max-height:90vh;overflow-y:auto;">
+    <h3 style="margin-bottom:6px;">📥 Import from Spreadsheet</h3>
+    <p style="font-size:13px;color:#64748b;margin-bottom:18px;">Upload an Excel (.xlsx) or CSV file. Map the columns below to the hire fields.</p>
+
+    <!-- Step 1: Upload -->
+    <div id="import-step-1">
+      <div id="import-dropzone" onclick="document.getElementById('import-file-input').click()"
+        style="border:2px dashed #b3d4f5;border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:#f0f7ff;margin-bottom:16px;transition:border-color 0.15s;"
+        ondragover="event.preventDefault();this.style.borderColor='#185fa5'"
+        ondragleave="this.style.borderColor='#b3d4f5'"
+        ondrop="handleImportDrop(event)">
+        <div style="font-size:32px;margin-bottom:8px;">📂</div>
+        <div style="font-size:14px;font-weight:700;color:#1a2744;">Click to upload or drag & drop</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">Supports .xlsx, .xls, .csv</div>
+      </div>
+      <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)" />
+      <div id="import-file-name" style="font-size:12px;color:#185fa5;font-weight:600;margin-bottom:8px;"></div>
+    </div>
+
+    <!-- Step 2: Column Mapping -->
+    <div id="import-step-2" style="display:none;">
+      <div style="font-size:13px;font-weight:700;color:#1a2744;margin-bottom:10px;">Step 2 — Map your columns</div>
+      <p style="font-size:12px;color:#64748b;margin-bottom:14px;">Match each field to the column in your spreadsheet. Leave blank to skip.</p>
+      <div id="import-mapping-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;"></div>
+
+      <!-- Preview -->
+      <div id="import-preview" style="display:none;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#1a2744;margin-bottom:8px;">Preview (first 3 rows):</div>
+        <div id="import-preview-table" style="overflow-x:auto;border:1px solid #dce4f5;border-radius:8px;"></div>
+      </div>
+
+      <div style="background:#faeeda;border-radius:8px;padding:10px 14px;font-size:12px;color:#854f0b;margin-bottom:14px;">
+        ⚠️ <strong>Full Name</strong> column is required. Each row will create a new hire entry.
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <button onclick="resetImport()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #dce4f5;background:#fff;cursor:pointer;font-size:13px;font-weight:600;">← Back</button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="closeImportModal()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #dce4f5;background:#fff;cursor:pointer;font-size:13px;font-weight:600;">Cancel</button>
+          <button onclick="importHires()" style="padding:8px 18px;border-radius:8px;border:none;background:#1a2744;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">✅ Import Hires</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid #dce4f5;">
+      <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Expected columns (optional):</div>
+      <div style="font-size:11px;color:#64748b;line-height:1.8;">
+        Name, Role, Region, Start Date, Phone, Personal Email, Company Email, PM, Address, OSHA, Education, Emergency Contact Name, Emergency Contact Phone, Notes
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ── ADD HIRE MODAL ── -->
 <div class="modal-bg" id="modal-bg">
@@ -2103,6 +2160,235 @@ function printUnchecked() {
     }, 500);
   }, 150);
 }
+
+
+// ══════════════════════════════════
+//  IMPORT FROM SPREADSHEET
+// ══════════════════════════════════
+
+let importRows = [];
+let importHeaders = [];
+
+const IMPORT_FIELD_MAP = [
+  { key:'name',         label:'Full Name *' },
+  { key:'role',         label:'Role / Position' },
+  { key:'region',       label:'Region' },
+  { key:'date',         label:'Start Date' },
+  { key:'phone',        label:'Phone Number' },
+  { key:'email',        label:'Personal Email' },
+  { key:'companyEmail', label:'Company Email' },
+  { key:'pm',           label:'Assigned PM' },
+  { key:'address',      label:'Mailing Address' },
+  { key:'osha',         label:'OSHA Certification' },
+  { key:'edu',          label:'Education Document' },
+  { key:'emergName',    label:'Emergency Contact Name' },
+  { key:'emergPhone',   label:'Emergency Contact Phone' },
+  { key:'notes',        label:'Notes' },
+];
+
+function openImportModal() {
+  const modal = document.getElementById('import-modal-bg');
+  modal.style.display = 'flex';
+  resetImport();
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal-bg').style.display = 'none';
+  resetImport();
+}
+
+function resetImport() {
+  importRows = [];
+  importHeaders = [];
+  document.getElementById('import-step-1').style.display = 'block';
+  document.getElementById('import-step-2').style.display = 'none';
+  document.getElementById('import-file-name').textContent = '';
+  document.getElementById('import-file-input').value = '';
+}
+
+function handleImportDrop(e) {
+  e.preventDefault();
+  document.getElementById('import-dropzone').style.borderColor = '#b3d4f5';
+  const file = e.dataTransfer.files[0];
+  if (file) processImportFile(file);
+}
+
+function handleImportFile(input) {
+  if (input.files[0]) processImportFile(input.files[0]);
+}
+
+function processImportFile(file) {
+  document.getElementById('import-file-name').textContent = '📄 ' + file.name;
+  const name = file.name.toLowerCase();
+
+  if (name.endsWith('.csv')) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      parseCSV(e.target.result);
+    };
+    reader.readAsText(file);
+  } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+    // Use SheetJS if available, otherwise guide user to use CSV
+    if (window.XLSX) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        if (data.length < 2) { alert('No data found in spreadsheet.'); return; }
+        importHeaders = data[0].map(h => String(h).trim());
+        importRows = data.slice(1).filter(r => r.some(c => c !== ''));
+        showImportStep2();
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // Dynamically load SheetJS
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      script.onload = function() { processImportFile(file); };
+      script.onerror = function() {
+        alert('Could not load Excel parser. Please save your file as CSV (File → Save As → CSV) and try again.');
+      };
+      document.head.appendChild(script);
+    }
+  } else {
+    alert('Please upload a .xlsx, .xls, or .csv file.');
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { alert('CSV file appears to be empty.'); return; }
+
+  function parseLine(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  importHeaders = parseLine(lines[0]);
+  importRows = lines.slice(1).map(parseLine).filter(r => r.some(c => c));
+  showImportStep2();
+}
+
+function showImportStep2() {
+  document.getElementById('import-step-1').style.display = 'none';
+  document.getElementById('import-step-2').style.display = 'block';
+  renderMappingGrid();
+  renderImportPreview();
+}
+
+function renderMappingGrid() {
+  const grid = document.getElementById('import-mapping-grid');
+  grid.innerHTML = IMPORT_FIELD_MAP.map(f => `
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a2744;">${f.label}</label>
+      <select id="map-${f.key}" style="padding:7px 10px;border:1.5px solid #dce4f5;border-radius:7px;font-size:12px;outline:none;font-family:inherit;">
+        <option value="">— Skip —</option>
+        ${importHeaders.map((h,i) => `<option value="${i}" ${autoMatch(h, f.key) ? 'selected' : ''}>${h}</option>`).join('')}
+      </select>
+    </div>`).join('');
+}
+
+function autoMatch(header, key) {
+  const h = header.toLowerCase();
+  const map = {
+    name: ['name','full name','employee name','hire name'],
+    role: ['role','position','title','job title'],
+    region: ['region','area','location'],
+    date: ['date','start date','orientation date','start'],
+    phone: ['phone','cell','mobile','telephone'],
+    email: ['email','personal email','e-mail'],
+    companyEmail: ['company email','work email','airadigm email'],
+    pm: ['pm','project manager','manager','assigned pm'],
+    address: ['address','mailing address','street'],
+    osha: ['osha','osha certification','osha cert'],
+    edu: ['education','diploma','ged','degree'],
+    emergName: ['emergency contact','emerg name','emergency name'],
+    emergPhone: ['emergency phone','emerg phone'],
+    notes: ['notes','comments','remarks'],
+  };
+  return (map[key] || []).some(k => h.includes(k));
+}
+
+function renderImportPreview() {
+  const preview = document.getElementById('import-preview');
+  const table = document.getElementById('import-preview-table');
+  const rows = importRows.slice(0, 3);
+  if (!rows.length) { preview.style.display='none'; return; }
+  preview.style.display = 'block';
+  table.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11px;">
+    <thead><tr>${importHeaders.map(h => `<th style="padding:6px 8px;background:#f0f4ff;color:#1a2744;font-weight:700;border:1px solid #dce4f5;white-space:nowrap;">${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map(c => `<td style="padding:5px 8px;border:1px solid #dce4f5;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function importHires() {
+  const nameColEl = document.getElementById('map-name');
+  if (!nameColEl || nameColEl.value === '') {
+    alert('Please map the "Full Name" column before importing.');
+    return;
+  }
+
+  const getCol = key => {
+    const el = document.getElementById('map-' + key);
+    return el && el.value !== '' ? parseInt(el.value) : null;
+  };
+
+  const cols = {};
+  IMPORT_FIELD_MAP.forEach(f => { cols[f.key] = getCol(f.key); });
+
+  const val = (row, col) => col !== null && row[col] !== undefined ? String(row[col]).trim() : '';
+
+  let added = 0;
+  const hires = getHires();
+
+  importRows.forEach(row => {
+    const name = val(row, cols.name);
+    if (!name) return;
+
+    const hire = {
+      id: 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+      name,
+      role:         val(row, cols.role) || 'Field Technician',
+      region:       val(row, cols.region),
+      date:         val(row, cols.date),
+      phone:        val(row, cols.phone),
+      email:        val(row, cols.email),
+      companyEmail: val(row, cols.companyEmail),
+      pm:           val(row, cols.pm),
+      address:      val(row, cols.address),
+      osha:         val(row, cols.osha),
+      edu:          val(row, cols.edu),
+      emergName:    val(row, cols.emergName),
+      emergPhone:   val(row, cols.emergPhone),
+      notes:        val(row, cols.notes),
+      checked: {}
+    };
+    hires.push(hire);
+    added++;
+  });
+
+  saveHires(hires);
+  populateSelect('');
+  closeImportModal();
+  alert(`✅ Successfully imported ${added} new hire${added !== 1 ? 's' : ''}!`);
+}
+
+// Close import modal on background click
+document.addEventListener('DOMContentLoaded', function() {
+  const bg = document.getElementById('import-modal-bg');
+  if (bg) bg.addEventListener('click', function(e) {
+    if (e.target === bg) closeImportModal();
+  });
+});
 
 // Close modal on bg click
 document.getElementById('modal-bg').addEventListener('click', function(e) {
