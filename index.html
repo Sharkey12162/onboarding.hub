@@ -2043,115 +2043,96 @@ function findHireInSpreadsheet() {
   if (!hire) return;
 
   const hireName = hire.name.toLowerCase().trim();
+  const allRows = lookupAllRows;
 
-  // ── Auto-detect header row ──
-  // Scan all rows (not just row 0) to find the one that looks like a header
-  // with a "name" column — handles spreadsheets where headers are not in row 1
-  let headerRowIdx = 0;
-  let nameColIdx = -1;
+  // ── STEP 1: Find the names row (row where col 0 = "A. General Info" or contains technician names) ──
+  // In this spreadsheet, row 13 (index) has names starting from col 2
+  let namesRowIdx = -1;
+  let techColIdx = -1;
 
-  for (let i = 0; i < Math.min(lookupAllRows.length, 30); i++) {
-    const row = lookupAllRows[i];
-    const idx = row.findIndex(cell =>
-      String(cell||'').toLowerCase().trim() === 'name' ||
-      String(cell||'').toLowerCase().trim() === 'full name' ||
-      String(cell||'').toLowerCase().trim() === 'nombre' ||
-      String(cell||'').toLowerCase().includes('first name') ||
-      String(cell||'').toLowerCase().includes('employee name') ||
-      String(cell||'').toLowerCase().includes('hire name')
-    );
-    if (idx !== -1) {
-      headerRowIdx = i;
-      nameColIdx = idx;
-      // Re-set headers and data rows based on detected header row
-      lookupHeaders = lookupAllRows[headerRowIdx].map(h => String(h||'').trim());
-      lookupRows = lookupAllRows.slice(headerRowIdx + 1).filter(r => r.some(c => String(c||'').trim() !== ''));
-      break;
+  for (let r = 0; r < Math.min(allRows.length, 30); r++) {
+    const row = allRows[r];
+    // Look for a row that has the hire name somewhere in it
+    for (let c = 1; c < row.length; c++) {
+      const cellVal = String(row[c] || '').toLowerCase().trim();
+      if (!cellVal) continue;
+      // Check for exact or partial name match
+      const nameParts = hireName.split(/\s+/).filter(p => p.length > 1);
+      const matchScore = nameParts.filter(p => cellVal.includes(p)).length;
+      if (matchScore >= Math.min(2, nameParts.length)) {
+        namesRowIdx = r;
+        techColIdx = c;
+        break;
+      }
     }
+    if (namesRowIdx !== -1) break;
   }
 
-  if (nameColIdx === -1) {
-    // Last attempt: check if any cell in first 30 rows contains a name match directly
-    // (spreadsheet might not have a "name" header but still have names)
-    let foundInRow = -1;
-    for (let i = 0; i < Math.min(lookupAllRows.length, 50); i++) {
-      const row = lookupAllRows[i];
-      const hasMatch = row.some(cell => {
-        const v = String(cell||'').toLowerCase().trim();
-        const parts = hireName.split(/\s+/);
-        return parts.length > 1 && parts.every(p => v.includes(p));
-      });
-      if (hasMatch) { foundInRow = i; break; }
+  if (namesRowIdx === -1 || techColIdx === -1) {
+    // Show all names found in row 13 area to help user
+    let allNames = [];
+    for (let r = 0; r < Math.min(allRows.length, 20); r++) {
+      const row = allRows[r];
+      for (let c = 1; c < Math.min(row.length, 10); c++) {
+        const v = String(row[c] || '').trim();
+        if (v && v.length > 3 && v.length < 50 && /[A-Z]/.test(v)) allNames.push(v);
+      }
+      if (allNames.length > 5) break;
     }
-    if (foundInRow === -1) {
-      document.getElementById('lookup-file-status').textContent = '❌ Could not find a "Name" column. Check that your spreadsheet has a column labeled "Name".';
-      // Show first few rows to help debug
-      const sample = lookupAllRows.slice(0,5).map(r => r.slice(0,5).join(' | ')).join('\n');
-      console.log('First 5 rows sample:\n' + sample);
-      return;
-    }
-    // Use the row before the match as header, or just use col 0
-    nameColIdx = lookupAllRows[foundInRow].findIndex(cell => {
-      const v = String(cell||'').toLowerCase().trim();
-      const parts = hireName.split(/\s+/);
-      return parts.every(p => v.includes(p));
-    });
-    lookupHeaders = lookupAllRows[Math.max(0, foundInRow - 1)].map(h => String(h||'').trim());
-    lookupRows = lookupAllRows.slice(foundInRow).filter(r => r.some(c => String(c||'').trim() !== ''));
-  }
-
-  // Try exact match first, then partial
-  let matchedRow = lookupRows.find(r => {
-    const cellVal = String(r[nameColIdx] || '').toLowerCase().trim();
-    return cellVal === hireName;
-  });
-
-  // Partial match — check if hire name words appear in cell or vice versa
-  if (!matchedRow) {
-    const nameParts = hireName.split(/\s+/);
-    matchedRow = lookupRows.find(r => {
-      const cellVal = String(r[nameColIdx] || '').toLowerCase().trim();
-      return nameParts.every(part => cellVal.includes(part)) ||
-             cellVal.split(/\s+/).every(part => hireName.includes(part));
-    });
-  }
-
-  if (!matchedRow) {
-    // Show all names found so user can see what's available
-    const allNames = lookupRows.map(r => r[nameColIdx]).filter(Boolean).slice(0, 10).join(', ');
     document.getElementById('lookup-step-1').style.display = 'none';
     document.getElementById('lookup-step-2').style.display = 'block';
     document.getElementById('lookup-match-result').innerHTML = `
       <div style="background:#fcebeb;border-radius:10px;padding:14px;color:#a32d2d;font-size:13px;">
-        <strong>❌ No match found for "${hire.name}"</strong><br><br>
-        Names found in spreadsheet: <em>${allNames}${lookupRows.length > 10 ? '...' : ''}</em><br><br>
+        <strong>❌ Could not find "${hire.name}" in the spreadsheet.</strong><br><br>
+        ${allNames.length ? 'Sample names found: <em>' + allNames.slice(0,8).join(', ') + '</em>' : ''}<br><br>
         Make sure the name in the app matches exactly how it appears in the spreadsheet.
       </div>`;
     document.getElementById('lookup-confirm-btn').style.display = 'none';
     return;
   }
 
-  lookupMatchedRow = matchedRow;
+  // ── STEP 2: Col A = field labels, techColIdx = this hire's data ──
+  // Build key-value map: { fieldLabel: value }
+  const fieldData = {};
+  for (let r = namesRowIdx + 1; r < allRows.length; r++) {
+    const label = String(allRows[r][0] || '').trim();
+    const value = String(allRows[r][techColIdx] || '').trim();
+    if (label && value && value !== '0') {
+      fieldData[label] = value;
+    }
+  }
+
+  // Also grab region from the row right after the names row
+  const regionRow = allRows[namesRowIdx + 1];
+  if (regionRow) {
+    const regionVal = String(regionRow[techColIdx] || '').trim();
+    if (regionVal) fieldData['Region'] = regionVal;
+  }
+
+  lookupMatchedRow = fieldData;
   document.getElementById('lookup-confirm-btn').style.display = 'inline-block';
 
-  // Build preview of what will be filled in
-  const preview = lookupHeaders.map((h, i) => {
-    const val = matchedRow[i];
-    if (!val || !String(val).trim()) return null;
-    return `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0f4ff;">
-      <span style="font-size:11px;font-weight:700;color:#64748b;min-width:140px;text-transform:uppercase;">${h}</span>
-      <span style="font-size:12px;color:#1a2744;font-weight:600;">${val}</span>
-    </div>`;
-  }).filter(Boolean).join('');
+  // ── STEP 3: Show preview ──
+  const previewHtml = Object.entries(fieldData)
+    .filter(([k, v]) => v && v !== '0')
+    .slice(0, 20)
+    .map(([k, v]) => `
+      <div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0f4ff;">
+        <span style="font-size:11px;font-weight:700;color:#64748b;min-width:200px;text-transform:uppercase;">${k}</span>
+        <span style="font-size:12px;color:#1a2744;font-weight:600;">${v}</span>
+      </div>`).join('');
+
+  const totalFields = Object.keys(fieldData).length;
 
   document.getElementById('lookup-step-1').style.display = 'none';
   document.getElementById('lookup-step-2').style.display = 'block';
   document.getElementById('lookup-match-result').innerHTML = `
     <div style="background:#eaf3de;border-radius:10px;padding:12px 14px;margin-bottom:12px;color:#3b6d11;font-size:13px;font-weight:700;">
-      ✅ Match found! Review the data below and click "Fill In Info" to apply.
+      ✅ Found ${hire.name}! ${totalFields} fields available. Click "Fill In Info" to apply.
     </div>
-    <div style="max-height:280px;overflow-y:auto;border:1px solid #dce4f5;border-radius:8px;padding:8px 12px;">
-      ${preview}
+    <div style="max-height:300px;overflow-y:auto;border:1px solid #dce4f5;border-radius:8px;padding:8px 12px;">
+      ${previewHtml}
+      ${totalFields > 20 ? `<div style="font-size:11px;color:#64748b;padding:8px 0;">...and ${totalFields - 20} more fields</div>` : ''}
     </div>`;
 }
 
@@ -2161,39 +2142,46 @@ function confirmLookupImport() {
   const hire = hires.find(h => h.id === lookupHireId);
   if (!hire) return;
 
-  // Map spreadsheet columns to hire fields using auto-match
-  const fieldMap = {
-    role:         ['role','position','title','job title','cargo'],
-    region:       ['region','area','location','zona'],
-    date:         ['date','start date','orientation','fecha','start'],
-    phone:        ['phone','cell','mobile','telephone','celular','telefono'],
-    email:        ['email','personal email','correo personal','e-mail'],
-    companyEmail: ['company email','work email','airadigm','correo empresa'],
-    pm:           ['pm','project manager','manager','assigned pm'],
-    address:      ['address','mailing','street','direccion'],
-    osha:         ['osha','osha cert','certification'],
-    edu:          ['education','diploma','ged','degree','educacion'],
-    emergName:    ['emergency contact','emerg name','emergency name','contacto'],
-    emergPhone:   ['emergency phone','emerg phone','contacto telefono'],
-    notes:        ['notes','comments','remarks','notas'],
-  };
+  // lookupMatchedRow is now { fieldLabel: value } from col A labels
+  // Map known field labels to hire object fields
+  const fieldMap = [
+    { field:'region',       keys:['region'] },
+    { field:'date',         keys:['start date','orientation, day 1','startdate'] },
+    { field:'phone',        keys:['cell phone','phone #','cell phone #'] },
+    { field:'email',        keys:['personal email','personal email address'] },
+    { field:'companyEmail', keys:['airadigm/kes email','email address','airadigm email'] },
+    { field:'pm',           keys:['assigned project manager','project manager'] },
+    { field:'address',      keys:['home address, line 1'] },
+    { field:'osha',         keys:['osha-10 certified','osha'] },
+    { field:'edu',          keys:['hs diploma','diploma'] },
+    { field:'notes',        keys:['referred by'] },
+  ];
 
-  lookupHeaders.forEach((header, colIdx) => {
-    const h = header.toLowerCase().trim();
-    const val = String(lookupMatchedRow[colIdx] || '').trim();
-    if (!val) return;
-    Object.entries(fieldMap).forEach(([field, keywords]) => {
-      if (keywords.some(k => h.includes(k)) && !hire[field]) {
-        hire[field] = val;
+  let filled = 0;
+  Object.entries(lookupMatchedRow).forEach(([label, value]) => {
+    if (!value || value === '0') return;
+    const labelLower = label.toLowerCase().trim();
+    fieldMap.forEach(({ field, keys }) => {
+      if (!hire[field] && keys.some(k => labelLower.includes(k))) {
+        hire[field] = value;
+        filled++;
       }
     });
   });
 
+  // Build full address from lines 1+2+3
+  const addr1 = lookupMatchedRow['Home address, line 1'] || '';
+  const addr2 = lookupMatchedRow['Home address, line 2'] || '';
+  const addr3 = lookupMatchedRow['Home address, line 3'] || '';
+  if (addr1) hire.address = [addr1, addr2, addr3].filter(Boolean).join(', ');
+
+  // Store all raw data as extended info for display
+  hire.rawData = lookupMatchedRow;
+
   saveHires(hires);
   closeLookupModal();
   loadHire(lookupHireId);
-  // Show toast
-  if (typeof showWtToast === 'function') showWtToast('✅ Info imported successfully!');
+  if (typeof showWtToast === 'function') showWtToast(`✅ Imported ${Object.keys(lookupMatchedRow).length} fields for ${hire.name}!`);
 }
 
 // ══════════════════════════════════
@@ -2333,8 +2321,8 @@ function loadHire(id) {
 
   const dateStr = hire.date ? new Date(hire.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
 
-  // Build info panel HTML
-  const infoFields = [
+  // Build info panel HTML — show standard fields + all raw imported data
+  const standardFields = [
     hire.phone        ? `<div class="hi-field"><span class="hi-label">📞 Phone</span><span class="hi-val">${hire.phone}</span></div>` : '',
     hire.email        ? `<div class="hi-field"><span class="hi-label">✉️ Personal Email</span><span class="hi-val">${hire.email}</span></div>` : '',
     hire.companyEmail ? `<div class="hi-field"><span class="hi-label">🏢 Company Email</span><span class="hi-val">${hire.companyEmail}</span></div>` : '',
@@ -2343,8 +2331,27 @@ function loadHire(id) {
     hire.osha         ? `<div class="hi-field"><span class="hi-label">🦺 OSHA</span><span class="hi-val">${hire.osha}</span></div>` : '',
     hire.edu          ? `<div class="hi-field"><span class="hi-label">🎓 Education</span><span class="hi-val">${hire.edu}</span></div>` : '',
     (hire.emergName || hire.emergPhone) ? `<div class="hi-field"><span class="hi-label">🚨 Emergency</span><span class="hi-val">${hire.emergName || ''}${hire.emergPhone ? ' · ' + hire.emergPhone : ''}</span></div>` : '',
-    hire.notes        ? `<div class="hi-field" style="grid-column:1/-1"><span class="hi-label">📝 Notes</span><span class="hi-val">${hire.notes}</span></div>` : '',
-  ].filter(Boolean).join('');
+    hire.notes        ? `<div class="hi-field"><span class="hi-label">📝 Notes</span><span class="hi-val">${hire.notes}</span></div>` : '',
+  ].filter(Boolean);
+
+  // Add all raw imported fields (from spreadsheet) that aren't already shown
+  let rawFieldsHtml = '';
+  if (hire.rawData && Object.keys(hire.rawData).length > 0) {
+    const shownLabels = new Set(['region','home address','cell phone','personal email','airadigm','project manager','osha','diploma','referred']);
+    const extraFields = Object.entries(hire.rawData)
+      .filter(([k, v]) => v && v.trim() && v !== '0' && !Array.from(shownLabels).some(s => k.toLowerCase().includes(s)))
+      .slice(0, 30)
+      .map(([k, v]) => `<div class="hi-field"><span class="hi-label">${k}</span><span class="hi-val">${v}</span></div>`)
+      .join('');
+    if (extraFields) {
+      rawFieldsHtml = `<div style="grid-column:1/-1;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:0.5;margin-bottom:6px;">All Imported Fields</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px 14px;">${extraFields}</div>
+      </div>`;
+    }
+  }
+
+  const infoFields = [...standardFields, rawFieldsHtml].filter(Boolean).join('');
 
   document.getElementById('hire-display').innerHTML = `
     <div class="hire-card">
