@@ -2261,23 +2261,24 @@ async function fetchFromSharePoint() {
 
   status.innerHTML = '<span style="color:#185fa5;">⏳ Fetching file...</span>';
 
-  // Convert SharePoint view URL to a direct download URL
-  // SharePoint links can be converted to download links by changing the action parameter
+  // Convert SharePoint URL to direct download URL
   let downloadUrl = rawUrl;
 
-  // Handle common SharePoint URL formats
   if (rawUrl.includes('sharepoint.com')) {
-    if (rawUrl.includes('/_layouts/15/Doc.aspx')) {
-      // Convert Doc.aspx link to download link
-      downloadUrl = rawUrl.replace('action=default', 'action=download').replace('mobileredirect=true', '');
-      // Alternative: use the direct download endpoint
-      const baseUrl = rawUrl.split('/_layouts')[0];
-      const sourcedocMatch = rawUrl.match(/sourcedoc=%7B([^%]+)%7D/i) || rawUrl.match(/sourcedoc=\{([^}]+)\}/i);
-      if (sourcedocMatch) {
-        downloadUrl = rawUrl.replace('action=default&mobileredirect=true', 'action=download');
-      }
+    if (rawUrl.includes('?web=1')) {
+      // Direct file link with ?web=1 — replace with download param
+      downloadUrl = rawUrl.replace('?web=1', '').replace('&web=1', '');
+      // Use SharePoint download endpoint
+      const urlObj = new URL(rawUrl);
+      const filePath = urlObj.pathname;
+      const baseOrigin = urlObj.origin;
+      // Try direct file path (browser session handles auth)
+      downloadUrl = baseOrigin + filePath;
+    } else if (rawUrl.includes('/_layouts/15/Doc.aspx')) {
+      downloadUrl = rawUrl.replace('action=default', 'action=download')
+                         .replace('&mobileredirect=true', '')
+                         .replace('mobileredirect=true', '');
     } else if (rawUrl.includes(':x:/')) {
-      // Sharing link format — append download=1
       downloadUrl = rawUrl + (rawUrl.includes('?') ? '&' : '?') + 'download=1';
     }
   }
@@ -2354,9 +2355,10 @@ function resetImport() {
   document.getElementById('import-file-input').value = '';
   document.getElementById('sp-status').innerHTML = '';
   // Restore saved SharePoint link if exists
-  const saved = localStorage.getItem('sp_import_link');
+  const defaultSpLink = 'https://aro365520493.sharepoint.com/sites/ATA/Shared%20Documents/Brenda\'s%20Files/New%20hire%20checklist/New%20hire%20checklist%20-%20Updated%20File%20Sept.%202025.xlsx?web=1';
+  const saved = localStorage.getItem('sp_import_link') || defaultSpLink;
   const input = document.getElementById('sp-link-input');
-  if (saved && input) input.value = saved;
+  if (input) input.value = saved;
   switchImportTab('sp');
 }
 
