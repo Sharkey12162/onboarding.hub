@@ -3578,6 +3578,19 @@ function getTaskStatus(task, weekStartStr) {
   return wtWeeklyStatus[key] !== undefined ? wtWeeklyStatus[key] : (task.status || 'pending');
 }
 
+
+async function deleteTask(id) {
+  if (!confirm('Remove this task?')) return;
+  wtTasks = wtTasks.filter(t => String(t.id) !== String(id));
+  saveTasksLocal();
+  const sb = getWtSb();
+  if (sb) {
+    try { await sb.from('weekly_tasks').delete().eq('id', id); } catch(e) {}
+  }
+  renderWeekly();
+  renderDashboard && renderDashboard();
+  showWtToast('Task removed.');
+}
 async function cycleTaskStatus(id, weekMonday) {
   const order = ['pending','done','blocked','recurring'];
   const task = wtTasks.find(t => String(t.id) === String(id));
@@ -4233,10 +4246,10 @@ function saveNewGroup() {
         done: false
       },
       {
-        id: id+'_t4', section: '📧 Week Before — Emails & Prep',
+        id: id+'_t4', section: '🗓️ Orientation Week',
         name: 'Schedule Meet & Greet with Brian',
-        dueDate: iso(friday1WeekBefore), dueLabel: 'Fri ' + fmt(friday1WeekBefore),
-        addToWeekly: true, day: 'Fri',
+        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
+        addToWeekly: true, day: 'Mon',
         note: 'Target: Wednesday of orientation week. Include Brian, Brenda, Techs, Paula.',
         done: false
       },
@@ -4314,7 +4327,11 @@ function addOrientGroupToWeeklyTasks(group) {
   }
   group.tasks.forEach(task => {
     if (!task.addToWeekly) return;
-    const exists = wtTasks.find(t => t.id === task.id);
+    // Check by ID and by title+due to prevent duplicates
+    const exists = wtTasks.find(t => 
+      t.id === task.id || 
+      ((t.title || t.task || '') === ('🎓 [' + group.techs.slice(0,2).join(', ') + (group.techs.length > 2 ? '…' : '') + '] ' + task.name) && t.due === task.dueDate)
+    );
     if (exists) return;
     const newTask = {
       id: task.id,
