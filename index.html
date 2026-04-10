@@ -1291,16 +1291,68 @@
   </section>
 
   <script>
-  // ── Global helper: derive weekday from recurrence text ──
+  // ── Global helpers: recurrence logic ──
 function getDayFromRecurrence(recurrence) {
   if (!recurrence) return null;
   const r = recurrence.toLowerCase();
-  if (r.includes('monday') || r.includes('mon')) return 'Mon';
-  if (r.includes('tuesday') || r.includes('tue')) return 'Tue';
+  if (r.includes('monday')    || r.includes('mon')) return 'Mon';
+  if (r.includes('tuesday')   || r.includes('tue')) return 'Tue';
   if (r.includes('wednesday') || r.includes('wed')) return 'Wed';
-  if (r.includes('thursday') || r.includes('thu')) return 'Thu';
-  if (r.includes('friday') || r.includes('fri')) return 'Fri';
+  if (r.includes('thursday')  || r.includes('thu')) return 'Thu';
+  if (r.includes('friday')    || r.includes('fri')) return 'Fri';
   return null;
+}
+
+// Returns true if recurrence is monthly (not every week)
+function isMonthlyRecurrence(recurrence) {
+  if (!recurrence) return false;
+  const r = recurrence.toLowerCase();
+  return r.includes('month') || r.includes('first ') || r.includes('last ') ||
+         r.includes('every other') || r.includes('1st') || r.includes('2nd') ||
+         r.includes('3rd') || r.includes('4th');
+}
+
+// Check if a given week (array of Date objects) contains the "last Xday of month"
+function weekContainsLastWeekday(dates, recurrence) {
+  const r = recurrence.toLowerCase();
+  const dayMap = { mon:1, tue:2, wed:3, thu:4, fri:5, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5 };
+  let targetDow = null;
+  for (const [k, v] of Object.entries(dayMap)) {
+    if (r.includes(k)) { targetDow = v; break; }
+  }
+  if (targetDow === null) return false;
+
+  // For "first X of month"
+  const isFirst = r.includes('first') || r.includes('1st');
+  // For "last X of month"
+  const isLast = r.includes('last');
+
+  for (const d of dates) {
+    if (d.getDay() !== targetDow) continue;
+    const month = d.getMonth();
+    const year  = d.getFullYear();
+    if (isLast) {
+      // Is this the last occurrence of this weekday in the month?
+      const nextWeek = new Date(d);
+      nextWeek.setDate(d.getDate() + 7);
+      if (nextWeek.getMonth() !== month) return true; // next occurrence is next month = this is last
+    } else if (isFirst) {
+      // Is this the first occurrence?
+      const prevWeek = new Date(d);
+      prevWeek.setDate(d.getDate() - 7);
+      if (prevWeek.getMonth() !== month) return true;
+    } else {
+      // Generic monthly — check if due date falls in this week
+      return false; // handled by due date matching
+    }
+  }
+  return false;
+}
+
+// Check if "every other week" recurrence should show this week
+function isEveryOtherWeek(recurrence, weekOffset) {
+  if (!recurrence) return false;
+  return recurrence.toLowerCase().includes('every other') && (weekOffset % 2 === 0);
 }
 
 // ── ORIENTATION CALENDAR ──
@@ -3071,7 +3123,7 @@ function renderWeekly() {
   // Filter tasks for this week
   const weekDates = dates.map(d => isoDate(d));
 
-  // Normalize tasks — ensure recurring tasks always have a correct `day` field
+  // Normalize tasks — ensure recurring tasks always have a correct day field
   wtTasks.forEach(t => {
     if (t.recurrence && t.recurrence.trim() && (!t.day || !DAYS.includes(t.day))) {
       const derived = getDayFromRecurrence(t.recurrence);
@@ -3080,17 +3132,31 @@ function renderWeekly() {
   });
 
   const weekTasks = wtTasks.filter(t => {
-    const isRecurring = !!(t.recurrence && t.recurrence.trim());
-    const effectiveDay = t.day && DAYS.includes(t.day) ? t.day : getDayFromRecurrence(t.recurrence);
+    const recur = (t.recurrence || '').trim();
+    const isRecurring = !!recur;
+    const isMonthly = isMonthlyRecurrence(recur);
+    const effectiveDay = (t.day && DAYS.includes(t.day)) ? t.day : getDayFromRecurrence(recur);
 
-    // RECURRING tasks: always show EVERY week on their day — ignore due date for filtering
-    if (isRecurring && effectiveDay) return true;
+    if (isRecurring) {
+      if (isMonthly) {
+        // MONTHLY: only show in the specific week that matches (e.g. last Thursday)
+        if (recur.toLowerCase().includes('last') || recur.toLowerCase().includes('first')) {
+          return weekContainsLastWeekday(dates, recur);
+        }
+        // "Monthly (same date)": show only if due date falls in this week
+        if (t.due) return weekDates.includes(t.due);
+        return false;
+      } else {
+        // WEEKLY recurring: show every week on the correct day column
+        return !!effectiveDay;
+      }
+    }
 
-    // ONE-TIME tasks: only show in the exact week containing their due date
-    if (t.due && !isRecurring) return weekDates.includes(t.due);
+    // ONE-TIME task with due date: only show in its exact week
+    if (t.due) return weekDates.includes(t.due);
 
-    // Tasks with only a day (no due, no recurrence): show every week
-    if (!t.due && effectiveDay) return true;
+    // Day-only task (no due, no recurrence): show every week
+    if (effectiveDay) return true;
 
     return false;
   });
@@ -3113,16 +3179,20 @@ function renderWeekly() {
     const date = dates[i];
     const dayIsoDate = isoDate(date);
       const dayTasks = weekTasks.filter(t => {
-        const isRecurring = !!(t.recurrence && t.recurrence.trim());
-        const effectiveDay = (t.day && DAYS.includes(t.day)) ? t.day : getDayFromRecurrence(t.recurrence);
+        const recur = (t.recurrence || '').trim();
+        const isRecurring = !!recur;
+        const isMonthly = isMonthlyRecurrence(recur);
+        const effectiveDay = (t.day && DAYS.includes(t.day)) ? t.day : getDayFromRecurrence(recur);
 
-        // Recurring: match by effective day column only
-        if (isRecurring) return effectiveDay === day;
-
-        // One-time with due date: match exact date
+        if (isRecurring) {
+          // Monthly: show on the exact date that matched (last Thu of month = specific date)
+          if (isMonthly) return t.due ? t.due === dayIsoDate : effectiveDay === day;
+          // Weekly: show in the correct day column
+          return effectiveDay === day;
+        }
+        // One-time: exact date match
         if (t.due) return t.due === dayIsoDate;
-
-        // Day-only task: match day column
+        // Day-only
         return effectiveDay === day;
       });
     return `
