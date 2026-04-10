@@ -1501,11 +1501,17 @@ function isEveryOtherWeek(recurrence, weekOffset) {
       // Check if this day has orientation tasks
       const hasMayTask = calMonth===4 && [4,6,8,11,12,13,15,18,19,20,21,22].includes(d);
       
-      html += `<div onclick="openNoteModal(${d})" style="
-        min-height:64px;padding:6px 8px;border-radius:10px;cursor:pointer;
+      const cellKey = calYear + '-' + (calMonth+1) + '-' + d;
+      html += `<div
+        onclick="openNoteModal(${d})"
+        ondragover="event.preventDefault();this.style.background='#e6f1fb'"
+        ondragleave="this.style.background='${isToday ? '#eff6ff' : isWeekend ? '#f8fafc' : 'white'}'"
+        ondrop="dropNoteToDay(event,${d},${calYear},${calMonth+1})"
+        style="min-height:64px;padding:6px 8px;border-radius:10px;cursor:pointer;
         border:1.5px solid ${isToday ? 'var(--sky)' : 'var(--border)'};
         background:${isToday ? '#eff6ff' : isWeekend ? '#f8fafc' : 'white'};
         position:relative;transition:all 0.15s;
+        ${isWeekend ? 'opacity:0.5;pointer-events:none;' : ''}
       " onmouseover="this.style.boxShadow='0 2px 12px rgba(15,31,61,0.12)'" onmouseout="this.style.boxShadow='none'">
         <div style="font-size:13px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--sky)':'var(--navy)'};">${d}</div>
         ${hasMayTask ? '<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);position:absolute;top:6px;right:6px;"></div>' : ''}
@@ -1521,7 +1527,11 @@ function isEveryOtherWeek(recurrence, weekOffset) {
             const noteKey = key + '_' + line.substring(0,20).replace(/[^a-zA-Z0-9]/g,'');
             const calChecks = JSON.parse(localStorage.getItem('cal_checks')||'{}');
             const isDone = calChecks[noteKey];
-            return `<span onclick="event.stopPropagation();toggleCalCheck('${noteKey}',this)" style="display:flex;align-items:flex-start;gap:3px;cursor:pointer;${isDone?'text-decoration:line-through;opacity:0.45;':''}">
+            return `<span
+              draggable="true"
+              ondragstart="startNoteDrag(event,'${key}',${lines.indexOf(line)})"
+              onclick="event.stopPropagation();toggleCalCheck('${noteKey}',this)"
+              style="display:flex;align-items:flex-start;gap:3px;cursor:grab;${isDone?'text-decoration:line-through;opacity:0.45;':''}">
               <span style="color:${isDone?'#3b6d11':'#94a3b8'};flex-shrink:0;font-size:9px;margin-top:1px;">${isDone?'✓':'○'}</span>
               <span>${line.trim()}</span>
             </span>`;
@@ -1618,11 +1628,69 @@ function clearAllOrientGroups() {
   closeNewGroupModal();
   showWtToast('All orientation data cleared.');
 }
+
+function sanitizeWeekendNotes() {
+  // Remove any notes that were accidentally saved on weekends
+  let changed = false;
+  Object.keys(calNotes).forEach(key => {
+    const parts = key.split('-');
+    if (parts.length === 3) {
+      const [y, m, d] = parts.map(Number);
+      const dow = new Date(y, m-1, d).getDay();
+      if (dow === 0 || dow === 6) {
+        delete calNotes[key];
+        changed = true;
+      }
+    }
+  });
+  if (changed) localStorage.setItem('orient_notes', JSON.stringify(calNotes));
+}
 function toggleCalCheck(key, el) {
   const checks = JSON.parse(localStorage.getItem('cal_checks') || '{}');
   checks[key] = !checks[key];
   localStorage.setItem('cal_checks', JSON.stringify(checks));
   renderCalendar();
+}
+
+let _dragSource = null;
+
+function startNoteDrag(event, fromKey, lineIndex) {
+  _dragSource = { fromKey, lineIndex };
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', fromKey + '|' + lineIndex);
+}
+
+function dropNoteToDay(event, day, year, month) {
+  event.preventDefault();
+  event.stopPropagation();
+  const data = event.dataTransfer.getData('text/plain');
+  if (!data) return;
+  const [fromKey, lineIndexStr] = data.split('|');
+  const lineIndex = parseInt(lineIndexStr);
+  
+  const toKey = year + '-' + month + '-' + day;
+  if (fromKey === toKey) return;
+  
+  // Get the line to move
+  const fromLines = (calNotes[fromKey] || '').split('\n').filter(l => l.trim());
+  if (lineIndex >= fromLines.length) return;
+  const movedLine = fromLines[lineIndex];
+  
+  // Remove from source
+  fromLines.splice(lineIndex, 1);
+  calNotes[fromKey] = fromLines.join('\n');
+  if (!calNotes[fromKey].trim()) delete calNotes[fromKey];
+  
+  // Add to target (skip if already there)
+  const toLines = (calNotes[toKey] || '').split('\n').filter(l => l.trim());
+  if (!toLines.includes(movedLine)) toLines.push(movedLine);
+  calNotes[toKey] = toLines.join('\n');
+  
+  localStorage.setItem('orient_notes', JSON.stringify(calNotes));
+  renderCalendar();
+  
+  // Reset drop target style
+  event.currentTarget.style.background = '';
 }
 function openNoteModal(day) {
     noteDay = day;
@@ -1729,6 +1797,7 @@ function openNoteModal(day) {
 
   // Auto-load May on page init
   window.addEventListener('DOMContentLoaded', function() {
+    sanitizeWeekendNotes();
     setTimeout(function() {
       document.getElementById('orient-month-select').value = '5';
       loadOrientMonth('5');
@@ -4165,6 +4234,9 @@ function addOrientGroupToWeeklyTasks(group) {
   group.tasks.forEach(task => {
     if (task.dueDate) {
       const [y, m, d] = task.dueDate.split('-').map(Number);
+      // NEVER write to weekend dates
+      const dow = new Date(y, m-1, d).getDay();
+      if (dow === 0 || dow === 6) return; // skip Sun/Sat
       const key = y + '-' + m + '-' + d;
       if (!calNotes[key]) calNotes[key] = '';
       const taskLine = '🎓 ' + task.name;
