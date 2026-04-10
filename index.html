@@ -3205,6 +3205,7 @@ function renderWeekly() {
   `;
 
   // Grid
+  const weekMonday = isoDate(dates[0]); // Monday's ISO date = unique key for this week
   const grid = document.getElementById('wt-grid');
   grid.innerHTML = DAYS.map((day, i) => {
     const date = dates[i];
@@ -3234,15 +3235,15 @@ function renderWeekly() {
         <div class="wt-day-body">
           ${dayTasks.length === 0
             ? '<div class="wt-empty-day">No tasks</div>'
-            : dayTasks.map(t => taskCard(t, weekMonday, dates)).join('')}
+            : dayTasks.map(t => taskCard(t, weekMonday)).join('')}
         </div>
       </div>`;
   }).join('');
 }
 
-function taskCard(t, weekMonday, dates) {
-  const isRecurring = !!(t.recurrence && t.recurrence.trim());
-  const effectiveStatus = isRecurring ? getTaskStatus(t, dates) : (t.status || 'pending');
+function taskCard(t, weekMonday) {
+  // Use per-week status for ALL tasks
+  const effectiveStatus = getTaskStatus(t, weekMonday);
   const statusMap = { done:'sp-done', pending:'sp-pending', blocked:'sp-blocked', recurring:'sp-recurring' };
   const sc = statusMap[effectiveStatus] || 'sp-pending';
   const ownerName = t.owner_id ? (wtMembers.find(m => m.id === t.owner_id)?.name || '') : (t.owner || '');
@@ -3277,12 +3278,12 @@ function getWeekKey(taskId, dates) {
 }
 
 // Get effective status for a task in a given week
-function getTaskStatus(task, dates) {
-  const isRecurring = !!(task.recurrence && task.recurrence.trim());
-  if (!isRecurring) return task.status || 'pending';
-  const key = getWeekKey(task.id, dates);
+function getTaskStatus(task, weekStartStr) {
+  // ALL tasks use per-week status — so marking done this week doesn't affect next week
   const statuses = getWeeklyStatuses();
-  return statuses[key] || 'pending'; // each week starts fresh as pending
+  const key = task.id + '_' + weekStartStr;
+  // Fall back to task's base status if no week-specific status set yet
+  return statuses[key] !== undefined ? statuses[key] : (task.status || 'pending');
 }
 
 async function cycleTaskStatus(id, weekMonday) {
@@ -3290,51 +3291,31 @@ async function cycleTaskStatus(id, weekMonday) {
   const task = wtTasks.find(t => String(t.id) === String(id));
   if (!task) return;
 
-  const isRecurring = !!(task.recurrence && task.recurrence.trim());
+  // ALL tasks: per-week status — marking done this week won't affect other weeks
+  const statuses = getWeeklyStatuses();
+  const key = id + '_' + weekMonday;
+  const current = statuses[key] !== undefined ? statuses[key] : (task.status || 'pending');
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  statuses[key] = next;
+  saveWeeklyStatuses(statuses);
 
-  if (isRecurring) {
-    // Use per-week status — don't touch the base task status
-    const statuses = getWeeklyStatuses();
-    const key = id + '_' + weekMonday;
-    const current = statuses[key] || 'pending';
-    const next = order[(order.indexOf(current) + 1) % order.length];
-    statuses[key] = next;
-    saveWeeklyStatuses(statuses);
-    // Track completed time for activity log
-    if (next === 'done') {
-      const doneKey = 'wt_done_log';
-      const log = JSON.parse(localStorage.getItem(doneKey) || '[]');
-      log.unshift({ id: task.id, title: task.title || task.task, updated_at: new Date().toISOString(), week: weekMonday });
-      localStorage.setItem(doneKey, JSON.stringify(log.slice(0, 50)));
-    }
-  } else {
-    // One-time task — update status normally
-    const next = order[(order.indexOf(task.status) + 1) % order.length];
-    task.status = next;
-    task.updated_at = new Date().toISOString();
-    const sb = getWtSb();
-    if (sb) {
-      try { await sb.from('weekly_tasks').update({ status: next, updated_at: task.updated_at }).eq('id', id); } catch(e) {}
-    } else { saveTasksLocal(); }
+  // Activity log
+  if (next === 'done') {
+    const log = JSON.parse(localStorage.getItem('wt_done_log') || '[]');
+    log.unshift({ id: task.id, title: task.title || task.task, updated_at: new Date().toISOString(), week: weekMonday });
+    localStorage.setItem('wt_done_log', JSON.stringify(log.slice(0, 50)));
   }
+
+  // Supabase sync (optional, best-effort)
+  const sb = getWtSb();
+  if (sb) {
+    try { await sb.from('weekly_tasks').update({ status: next, updated_at: new Date().toISOString() }).eq('id', id); } catch(e) {}
+  }
+
   renderWeekly();
   renderActivityLog();
 }
 
-// ── Add task ──
-function toggleAddTaskForm() {
-  const form = document.getElementById('wt-add-form');
-  form.classList.toggle('open');
-  if (form.classList.contains('open')) document.getElementById('wt-f-title').focus();
-}
-function closeAddTaskForm() {
-  document.getElementById('wt-add-form').classList.remove('open');
-  ['wt-f-title','wt-f-recur-custom','wt-f-owner-custom'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
-  const ownerSel = document.getElementById('wt-f-owner'); if(ownerSel) ownerSel.value='';
-  const recurSel = document.getElementById('wt-f-recur'); if(recurSel) recurSel.value='';
-  document.getElementById('wt-f-owner-custom').style.display='none';
-  document.getElementById('wt-f-recur-custom').style.display='none';
-}
 
 async function submitTask() {
   const title = document.getElementById('wt-f-title').value.trim();
