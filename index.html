@@ -3251,11 +3251,15 @@ function taskCard(t, weekMonday) {
   const taskDue = t.due || '';
   const taskDesc = t.recurrence ? 'Recurring: ' + t.recurrence : '';
   const isDone = effectiveStatus === 'done';
+  const taskNotes = t.notes || '';
+  const dueFmt = taskDue ? new Date(taskDue + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
   return `
     <div class="wt-task-card ${isDone ? 'wt-task-done' : ''}" onclick="cycleTaskStatus('${t.id}','${weekMonday}')">
       ${t.recurrence ? `<div class="wt-task-recur">↻ ${t.recurrence}</div>` : ''}
       <div class="wt-task-title" style="${isDone ? 'text-decoration:line-through;opacity:0.5;' : ''}">${taskTitle}</div>
       ${ownerName ? `<div class="wt-task-owner">👤 ${ownerName}</div>` : ''}
+      ${dueFmt && !t.recurrence ? `<div class="wt-task-owner">📅 ${dueFmt}</div>` : ''}
+      ${taskNotes ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;font-style:italic;">${taskNotes}</div>` : ''}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;">
         <span class="sp ${sc}">${effectiveStatus}</span>
         <button onclick="event.stopPropagation();addToOutlook('${taskTitle.replace(/'/g,"\'")}','${taskDue}','${taskDesc.replace(/'/g,"\'")}',60)"
