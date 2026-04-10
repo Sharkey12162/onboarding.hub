@@ -1509,13 +1509,22 @@ function isEveryOtherWeek(recurrence, weekOffset) {
       " onmouseover="this.style.boxShadow='0 2px 12px rgba(15,31,61,0.12)'" onmouseout="this.style.boxShadow='none'">
         <div style="font-size:13px;font-weight:${isToday?'800':'600'};color:${isToday?'var(--sky)':'var(--navy)'};">${d}</div>
         ${hasMayTask ? '<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);position:absolute;top:6px;right:6px;"></div>' : ''}
-        ${hasNote ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;overflow:hidden;max-height:48px;">
-          ${calNotes[key].split('\n').map(line => {
+        ${hasNote ? `<div style="font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5;overflow:hidden;max-height:56px;">
+          ${calNotes[key].split('\n').filter(line => {
+            // Filter out lines that are just IDs (short random alphanumeric strings with no spaces)
+            const trimmed = line.trim();
+            if (!trimmed) return false;
+            if (trimmed.length < 4) return false;
+            if (/^[a-z0-9]{6,15}$/.test(trimmed)) return false; // looks like an ID
+            return true;
+          }).map(line => {
             const noteKey = key + '_' + line.substring(0,20).replace(/[^a-zA-Z0-9]/g,'');
-            const isDone = (JSON.parse(localStorage.getItem('cal_checks')||'{}'))[noteKey];
-            return line ? `<span onclick="event.stopPropagation();toggleCalCheck('${noteKey}',this)" style="display:block;cursor:pointer;${isDone?'text-decoration:line-through;opacity:0.5;':''}">
-              <span style="color:${isDone?'#3b6d11':'#b3d4f5'}">${isDone?'✓':'○'}</span> ${line}
-            </span>` : '';
+            const calChecks = JSON.parse(localStorage.getItem('cal_checks')||'{}');
+            const isDone = calChecks[noteKey];
+            return `<span onclick="event.stopPropagation();toggleCalCheck('${noteKey}',this)" style="display:flex;align-items:flex-start;gap:3px;cursor:pointer;${isDone?'text-decoration:line-through;opacity:0.45;':''}">
+              <span style="color:${isDone?'#3b6d11':'#94a3b8'};flex-shrink:0;font-size:9px;margin-top:1px;">${isDone?'✓':'○'}</span>
+              <span>${line.trim()}</span>
+            </span>`;
           }).join('')}
         </div>` : '<div style="font-size:10px;color:#cbd5e1;margin-top:4px;">+ note</div>'}
       </div>`;
@@ -1542,6 +1551,19 @@ function isEveryOtherWeek(recurrence, weekOffset) {
   }
 
   
+
+function clearAllOrientGroups() {
+  if (!confirm('Clear all orientation groups and their calendar notes? This cannot be undone.')) return;
+  localStorage.removeItem('orient_groups');
+  localStorage.removeItem('orient_notes');
+  localStorage.removeItem('cal_checks');
+  // Reset calNotes
+  calNotes = {};
+  renderOrientGroups();
+  renderCalendar();
+  closeNewGroupModal();
+  showWtToast('All orientation data cleared.');
+}
 function toggleCalCheck(key, el) {
   const checks = JSON.parse(localStorage.getItem('cal_checks') || '{}');
   checks[key] = !checks[key];
@@ -4211,7 +4233,10 @@ document.addEventListener("DOMContentLoaded", function() { initResources(); });
   <div style="background:white;border-radius:16px;padding:28px;max-width:520px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
       <h3 style="font-size:17px;font-weight:800;color:#1a2744;">⭐ New Orientation Group</h3>
-      <button onclick="closeNewGroupModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="clearAllOrientGroups()" style="background:none;border:none;font-size:11px;color:#a32d2d;cursor:pointer;font-weight:600;">🗑 Clear all groups</button>
+        <button onclick="closeNewGroupModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+      </div>
     </div>
     <p style="font-size:12px;color:#64748b;margin-bottom:20px;">Enter the orientation date and the technicians attending. All prep tasks will be auto-generated.</p>
 
