@@ -1274,18 +1274,15 @@
     </div>
 
     <!-- ── ORIENTATION GROUPS ── -->
-    <div class="og-header">
-      <div>
-        <h3 style="font-size:16px;font-weight:800;color:#1a2744;margin-bottom:3px;">📋 Orientation Groups</h3>
-        <p style="font-size:12px;color:#64748b;">Each group auto-generates all prep tasks on the correct dates.</p>
-      </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;" id="og-group-pills"></div>
       <button class="og-add-btn" onclick="openNewGroupModal()">+ New Orientation Group</button>
     </div>
-    <div class="og-groups-list" id="og-groups-list">
-      <div style="text-align:center;padding:32px;color:#94a3b8;font-size:13px;">No orientation groups yet. Click <strong>+ New Orientation Group</strong> to get started.</div>
-    </div>
 
-    <hr style="border:none;border-top:1.5px solid var(--border);margin:28px 0;" />
+    <!-- Hidden groups list (not visible, used for data) -->
+    <div id="og-groups-list" style="display:none;"></div>
+
+
 
     <!-- Month Calendar -->
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
@@ -1329,7 +1326,9 @@
             <h3 id="note-modal-title" style="color:var(--navy);font-size:17px;font-weight:700;"></h3>
             <button onclick="closeNoteModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
           </div>
-          <textarea id="note-input" rows="5" placeholder="Add a note for this day..." style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;resize:vertical;font-family:inherit;outline:none;"></textarea>
+          <div id="note-modal-body-extra"></div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:6px;">📝 Personal Note</div>
+          <textarea id="note-input" rows="3" placeholder="Add a personal note for this day..." style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;resize:vertical;font-family:inherit;outline:none;"></textarea>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
             <button onclick="closeNoteModal()" style="padding:9px 20px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;font-weight:600;">Cancel</button>
             <button onclick="saveNote()" style="padding:9px 20px;border-radius:8px;border:none;background:var(--navy);color:white;cursor:pointer;font-weight:700;">Save Note</button>
@@ -1695,10 +1694,73 @@ function dropNoteToDay(event, day, year, month) {
 function openNoteModal(day) {
     noteDay = day;
     const key = calYear + '-' + (calMonth+1) + '-' + day;
-    document.getElementById('note-modal-title').textContent = MONTH_NAMES[calMonth] + ' ' + day + ', ' + calYear;
-    document.getElementById('note-input').value = calNotes[key] || '';
+    const dateStr = MONTH_NAMES[calMonth] + ' ' + day + ', ' + calYear;
+    document.getElementById('note-modal-title').textContent = dateStr;
+
+    // Check if this day has orientation group tasks
+    const groups = getOrientGroups();
+    const isoKey = calYear + '-' + (calMonth+1) + '-' + day;
+    const groupTasksForDay = [];
+    groups.forEach(g => {
+      g.tasks.forEach(t => {
+        if (t.dueDate) {
+          const [y,m,d2] = t.dueDate.split('-').map(Number);
+          if (y === calYear && m === (calMonth+1) && d2 === day) {
+            groupTasksForDay.push({group: g, task: t});
+          }
+        }
+      });
+    });
+
+    // Build modal content
+    let tasksHtml = '';
+    if (groupTasksForDay.length > 0) {
+      tasksHtml = `<div style="margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px;">🎓 Orientation Tasks</div>
+        ${groupTasksForDay.map(({group, task}) => {
+          const isDone = (group.done||{})[task.id];
+          return `<div onclick="toggleOgTaskFromCal('${group.id}','${task.id}',this)"
+            style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:${isDone?'#f0fdf4':'#f8fafc'};margin-bottom:6px;cursor:pointer;border:1.5px solid ${isDone?'#bbf7d0':'#dce4f5'};">
+            <div style="width:20px;height:20px;border-radius:50%;border:2px solid ${isDone?'#3b6d11':'#b3d4f5'};background:${isDone?'#3b6d11':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;">
+              ${isDone?'✓':''}
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#1a2744;${isDone?'text-decoration:line-through;opacity:0.5;':''}">${task.name}</div>
+              ${task.note ? `<div style="font-size:11px;color:#64748b;margin-top:3px;white-space:pre-line;">${task.note}</div>` : ''}
+              ${task.emailTemplate ? `<div style="margin-top:6px;">
+                <div style="font-size:10px;font-weight:700;color:#854f0b;text-transform:uppercase;margin-bottom:3px;">📧 Email Template</div>
+                <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:6px;padding:8px 10px;font-size:11px;white-space:pre-line;color:#1a2744;">${task.emailTemplate}</div>
+                <button onclick="event.stopPropagation();copyEmailTemplate('${group.id}','${task.id}')"
+                  style="margin-top:4px;background:#1a2744;color:white;border:none;border-radius:6px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;">📋 Copy</button>
+              </div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    // User notes section
+    const noteVal = (calNotes[key]||'').split('\n')
+      .filter(l => l.trim() && !/^[a-z0-9]{6,15}$/.test(l.trim()))
+      .filter(l => !l.includes('🎓')) // filter out auto-added orientation notes
+      .join('\n');
+
+    document.getElementById('note-modal-body-extra').innerHTML = tasksHtml;
+    document.getElementById('note-input').value = noteVal;
     const modal = document.getElementById('note-modal');
     modal.style.display = 'flex';
+  }
+
+  function toggleOgTaskFromCal(groupId, taskId, el) {
+    const groups = getOrientGroups();
+    const g = groups.find(g => g.id === groupId);
+    if (!g) return;
+    if (!g.done) g.done = {};
+    g.done[taskId] = !g.done[taskId];
+    saveOrientGroups(groups);
+    // Re-open modal to refresh
+    openNoteModal(noteDay);
+    renderCalendar();
   }
 
   function closeNoteModal() {
@@ -4248,12 +4310,37 @@ function addOrientGroupToWeeklyTasks(group) {
   localStorage.setItem('orient_notes', JSON.stringify(calNotes));
 }
 
+
+function renderGroupPills() {
+  const container = document.getElementById('og-group-pills');
+  if (!container) return;
+  const groups = getOrientGroups();
+  if (!groups.length) {
+    container.innerHTML = '<span style="font-size:12px;color:#94a3b8;">No orientation groups yet — click + to add one</span>';
+    return;
+  }
+  container.innerHTML = groups.map(g => {
+    const total = g.tasks.length;
+    const done = Object.values(g.done||{}).filter(Boolean).length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const d = new Date(g.orientationDate + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<div style="display:flex;align-items:center;gap:8px;background:white;border:1.5px solid #dce4f5;border-radius:20px;padding:6px 14px;font-size:12px;">
+      <span style="font-weight:700;color:#1a2744;">⭐ ${label}</span>
+      <span style="color:#64748b;">${g.techs.length} tech${g.techs.length!==1?'s':''}</span>
+      <span style="background:${pct===100?'#eaf3de':'#e6f1fb'};color:${pct===100?'#3b6d11':'#185fa5'};border-radius:10px;padding:1px 8px;font-weight:700;">${pct}%</span>
+      <button onclick="editOrientGroup('${g.id}')" style="background:none;border:none;cursor:pointer;color:#185fa5;font-size:12px;padding:0;">✏️</button>
+      <button onclick="deleteOrientGroup('${g.id}')" style="background:none;border:none;cursor:pointer;color:#a32d2d;font-size:12px;padding:0;">🗑</button>
+    </div>`;
+  }).join('');
+}
 function renderOrientGroups() {
+  renderGroupPills();
   const container = document.getElementById('og-groups-list');
   if (!container) return;
   const groups = getOrientGroups();
   if (!groups.length) {
-    container.innerHTML = '<div style="text-align:center;padding:32px;color:#94a3b8;font-size:13px;">No orientation groups yet. Click <strong>+ New Orientation Group</strong> to get started.</div>';
+    container.innerHTML = '';
     return;
   }
 
