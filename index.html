@@ -1552,6 +1552,60 @@ function isEveryOtherWeek(recurrence, weekOffset) {
 
   
 
+
+function editOrientGroup(id) {
+  const groups = getOrientGroups();
+  const g = groups.find(g => g.id === id);
+  if (!g) return;
+
+  // Open modal pre-filled with existing data
+  document.getElementById('og-orientation-date').value = g.orientationDate;
+  document.getElementById('og-tech-preview').innerHTML = g.techs.map(t =>
+    `<span class="og-tech-tag" data-name="${t}">${t}<span class="og-tech-remove" onclick="this.parentNode.remove()">×</span></span>`
+  ).join('');
+
+  // Set editing mode
+  window._editingGroupId = id;
+  document.querySelector('#og-new-modal h3').textContent = '✏️ Edit Orientation Group';
+  document.querySelector('#og-new-modal button[onclick="saveNewGroup()"]').textContent = '✅ Save Changes';
+  document.querySelector('#og-new-modal button[onclick="saveNewGroup()"]').setAttribute('onclick', 'saveEditGroup()');
+  openNewGroupModal();
+}
+
+function saveEditGroup() {
+  const id = window._editingGroupId;
+  if (!id) return;
+
+  const dateVal = document.getElementById('og-orientation-date').value;
+  if (!dateVal) { alert('Please select an orientation date.'); return; }
+
+  const techTags = document.querySelectorAll('#og-tech-preview .og-tech-tag');
+  const techs = Array.from(techTags).map(t => t.dataset.name).filter(Boolean);
+  if (!techs.length) { alert('Please add at least one technician.'); return; }
+
+  // Remove old group
+  let groups = getOrientGroups().filter(g => g.id !== id);
+  // Remove old tasks from weekly
+  wtTasks = wtTasks.filter(t => !String(t.id).startsWith(id));
+  // Clear old calendar notes for this group
+  Object.keys(calNotes).forEach(key => {
+    calNotes[key] = calNotes[key].split('\n').filter(line => !line.includes('[' + id + ']')).join('\n');
+  });
+
+  saveOrientGroups(groups);
+  saveTasksLocal();
+  localStorage.setItem('orient_notes', JSON.stringify(calNotes));
+
+  // Reset modal to create mode  
+  window._editingGroupId = null;
+  document.querySelector('#og-new-modal h3').textContent = '⭐ New Orientation Group';
+  const saveBtn = document.querySelector('#og-new-modal button[onclick="saveEditGroup()"]');
+  if (saveBtn) { saveBtn.textContent = '✅ Create Group'; saveBtn.setAttribute('onclick', 'saveNewGroup()'); }
+
+  // Simulate creating new group with updated data
+  document.getElementById('og-orientation-date').value = dateVal;
+  saveNewGroup();
+}
 function clearAllOrientGroups() {
   if (!confirm('Clear all orientation groups and their calendar notes? This cannot be undone.')) return;
   localStorage.removeItem('orient_groups');
@@ -3929,6 +3983,14 @@ function openNewGroupModal() {
 function closeNewGroupModal() {
   const d = document.getElementById('og-new-modal');
   if (d) d.style.display = 'none';
+  // Reset to create mode if was editing
+  if (window._editingGroupId) {
+    window._editingGroupId = null;
+    const h = document.querySelector('#og-new-modal h3');
+    if (h) h.textContent = '⭐ New Orientation Group';
+    const btn = document.querySelector('#og-new-modal button[onclick="saveEditGroup()"]');
+    if (btn) { btn.textContent = '✅ Create Group'; btn.setAttribute('onclick', 'saveNewGroup()'); }
+  }
 }
 
 function addTechToNewGroup() {
@@ -3956,26 +4018,31 @@ function saveNewGroup() {
   const orientDate = new Date(dateVal + 'T12:00:00');
   const id = 'og_' + Date.now();
 
-  // Helper: move date to nearest workday (Mon-Fri)
-  function toWorkday(d, preferEarlier) {
-    const day = d.getDay(); // 0=Sun, 6=Sat
-    if (day === 0) { // Sunday → Monday
-      const m = new Date(d); m.setDate(d.getDate() + 1); return m;
-    }
-    if (day === 6) { // Saturday → Friday (prefer earlier) or Monday
-      const m = new Date(d);
-      m.setDate(preferEarlier ? d.getDate() - 1 : d.getDate() + 2);
-      return m;
-    }
-    return d;
+  // Calculate key dates based on orientation week
+  // Find the Monday of the orientation week
+  function getMonday(d) {
+    const day = d.getDay(); // 0=Sun,1=Mon...6=Sat
+    const diff = day === 0 ? -6 : 1 - day; // Mon=0, Tue=-1, Wed=-2...
+    const m = new Date(d);
+    m.setDate(d.getDate() + diff);
+    m.setHours(12,0,0,0);
+    return m;
+  }
+  function addDays(d, n) {
+    const m = new Date(d);
+    m.setDate(d.getDate() + n);
+    return m;
   }
 
-  // Calculate key dates relative to orientation (Tuesday)
-  // Orientation is always a Tuesday per your workflow
-  const monday1WeekBefore = toWorkday(new Date(orientDate.getFullYear(), orientDate.getMonth(), orientDate.getDate() - 8), false);
-  const friday1WeekBefore = toWorkday(new Date(orientDate.getFullYear(), orientDate.getMonth(), orientDate.getDate() - 4), true);
-  const tuesdayOrientation = new Date(orientDate);
-  const mondayOrWeek = toWorkday(new Date(orientDate.getFullYear(), orientDate.getMonth(), orientDate.getDate() - 1), false);
+  const orientWeekMonday = getMonday(orientDate);  // Mon of orientation week
+  const mondayOrWeek     = orientWeekMonday;        // Mon orientation week
+  const tuesdayOrientation = addDays(orientWeekMonday, 1); // Tue = orientation day
+
+  const prevWeekMonday   = addDays(orientWeekMonday, -7); // Mon of week before
+  const prevWeekFriday   = addDays(orientWeekMonday, -3); // Fri of week before
+
+  const monday1WeekBefore = prevWeekMonday;
+  const friday1WeekBefore = prevWeekFriday;
 
   function iso(d) { return d.toISOString().split('T')[0]; }
   function fmt(d) { return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
@@ -4164,8 +4231,10 @@ function renderOrientGroups() {
           <div class="og-group-title">⭐ ${orientFmt}</div>
           <span class="og-group-badge">${g.techs.length} tech${g.techs.length!==1?'s':''}</span>
           <span class="og-group-badge">${doneTasks}/${totalTasks} done</span>
+          <button onclick="event.stopPropagation();editOrientGroup('${g.id}')"
+            style="background:rgba(255,255,255,0.1);border:none;color:white;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;margin-left:4px;">✏️</button>
           <button onclick="event.stopPropagation();deleteOrientGroup('${g.id}')"
-            style="background:rgba(255,255,255,0.1);border:none;color:white;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;margin-left:8px;">🗑</button>
+            style="background:rgba(255,255,255,0.1);border:none;color:white;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;margin-left:4px;">🗑</button>
         </div>
         <div class="og-progress"><div class="og-progress-fill" style="width:${pct}%"></div></div>
         <div class="og-group-body">
