@@ -3096,7 +3096,7 @@ function nextWeek() { wtWeekOffset++; renderWeekly(); }
 function goToday()  { wtWeekOffset = 0; renderWeekly(); }
 
 // ── Load data ──
-async function loadWtData() {
+async async function loadWtData() {
   const sb = getWtSb();
   if (!sb) { loadWtLocal(); return; }
 
@@ -3271,10 +3271,11 @@ function taskCard(t, weekMonday) {
 }
 
 // Per-week status store for recurring tasks: { "taskId_YYYY-MM-DD": "done" }
-function getWeeklyStatuses() {
-  try { return JSON.parse(localStorage.getItem('wt_week_statuses') || '{}'); } catch { return {}; }
+function getWeeklyStatuses() { return wtWeeklyStatus; }
+function saveWeeklyStatuses(obj) {
+  wtWeeklyStatus = obj;
+  localStorage.setItem('wt_weekly_status', JSON.stringify(obj));
 }
-function saveWeeklyStatuses(obj) { localStorage.setItem('wt_week_statuses', JSON.stringify(obj)); }
 
 // Get the week key for a recurring task (Monday's ISO date of current week view)
 function getWeekKey(taskId, dates) {
@@ -3283,11 +3284,8 @@ function getWeekKey(taskId, dates) {
 
 // Get effective status for a task in a given week
 function getTaskStatus(task, weekStartStr) {
-  // ALL tasks use per-week status — so marking done this week doesn't affect next week
-  const statuses = getWeeklyStatuses();
-  const key = task.id + '_' + weekStartStr;
-  // Fall back to task's base status if no week-specific status set yet
-  return statuses[key] !== undefined ? statuses[key] : (task.status || 'pending');
+  const key = String(task.id) + '_' + weekStartStr;
+  return wtWeeklyStatus[key] !== undefined ? wtWeeklyStatus[key] : (task.status || 'pending');
 }
 
 async function cycleTaskStatus(id, weekMonday) {
@@ -3296,12 +3294,11 @@ async function cycleTaskStatus(id, weekMonday) {
   if (!task) return;
 
   // ALL tasks: per-week status — marking done this week won't affect other weeks
-  const statuses = getWeeklyStatuses();
-  const key = id + '_' + weekMonday;
-  const current = statuses[key] !== undefined ? statuses[key] : (task.status || 'pending');
+  const key = String(id) + '_' + weekMonday;
+  const current = wtWeeklyStatus[key] !== undefined ? wtWeeklyStatus[key] : (task.status || 'pending');
   const next = order[(order.indexOf(current) + 1) % order.length];
-  statuses[key] = next;
-  saveWeeklyStatuses(statuses);
+  wtWeeklyStatus[key] = next;
+  localStorage.setItem('wt_weekly_status', JSON.stringify(wtWeeklyStatus));
 
   // Activity log
   if (next === 'done') {
