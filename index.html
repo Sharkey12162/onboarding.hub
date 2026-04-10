@@ -3766,12 +3766,13 @@ function saveResLinks(o) { localStorage.setItem('res_links', JSON.stringify(o));
 function applyResLink(id) {
   const saved = getResLinks()[id];
   const def   = RES_DEFAULTS[id];
+  if (!def) return;
   const text  = saved ? saved.text : def.text;
   const url   = saved ? saved.url  : def.url;
   const wrap  = document.querySelector('[data-res-id="' + id + '"] .link-wrap');
   if (!wrap) return;
   const existing = wrap.querySelector('.res-link-display');
-  if (existing) existing.remove();
+  if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
   const el = url ? document.createElement('a') : document.createElement('span');
   el.className = 'card-link res-link-display';
   el.textContent = text;
@@ -3821,7 +3822,7 @@ function resetLink(id) {
   applyResLink(id);
 }
 
-initResources();
+document.addEventListener("DOMContentLoaded", function() { initResources(); });
 </script>
 </body>
 </html>
