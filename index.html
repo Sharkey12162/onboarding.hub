@@ -881,6 +881,46 @@
   .hi-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#64748b; }
   .hi-val   { font-size:13px; font-weight:600; color:#1a2744; word-break:break-word; }
   .wt-task-done { opacity: 0.65; }
+
+  /* ══ ORIENTATION GROUPS ══ */
+  .og-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .og-groups-list { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+  .og-group-card { background:white; border-radius:12px; border:1.5px solid var(--border); overflow:hidden; box-shadow:0 2px 8px rgba(15,31,61,0.07); }
+  .og-group-header { display:flex; align-items:center; gap:12px; padding:14px 18px; cursor:pointer; background:#1a2744; color:white; }
+  .og-group-title { font-size:15px; font-weight:800; flex:1; }
+  .og-group-date { font-size:12px; opacity:0.7; }
+  .og-group-badge { background:rgba(255,255,255,0.15); border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; }
+  .og-group-body { display:none; padding:0; }
+  .og-group-card.open .og-group-body { display:block; }
+  .og-group-card.open .og-group-arrow { transform:rotate(90deg); }
+  .og-group-arrow { transition:transform 0.2s; font-size:12px; }
+
+  /* Techs list */
+  .og-techs { display:flex; gap:8px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid var(--border); background:#f8fafc; }
+  .og-tech-tag { background:#e6f1fb; color:#1a2744; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
+  .og-tech-remove { cursor:pointer; color:#a32d2d; font-size:14px; line-height:1; }
+
+  /* Checklist tasks */
+  .og-tasks { padding:14px 18px; }
+  .og-task-section { margin-bottom:16px; }
+  .og-task-section-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#64748b; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+  .og-task-item { display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border-radius:8px; margin-bottom:4px; transition:background 0.15s; cursor:pointer; }
+  .og-task-item:hover { background:#f0f4ff; }
+  .og-task-item.done { opacity:0.55; }
+  .og-task-cb { width:20px; height:20px; border-radius:50%; border:2px solid #b3d4f5; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; margin-top:1px; }
+  .og-task-item.done .og-task-cb { background:#3b6d11; border-color:#3b6d11; color:white; font-size:11px; font-weight:800; }
+  .og-task-body { flex:1; }
+  .og-task-name { font-size:13px; font-weight:600; color:#1a2744; line-height:1.4; }
+  .og-task-item.done .og-task-name { text-decoration:line-through; color:#94a3b8; }
+  .og-task-meta { font-size:11px; color:#64748b; margin-top:2px; }
+  .og-task-email { background:#fef9e7; border:1px solid #f9e79f; border-radius:8px; padding:10px 12px; margin-top:6px; font-size:11.5px; color:#1a2744; line-height:1.6; white-space:pre-line; }
+  .og-task-email-label { font-size:10px; font-weight:800; text-transform:uppercase; color:#854f0b; margin-bottom:4px; }
+  .og-add-btn { background:#1a2744; color:white; border:none; padding:10px 20px; border-radius:9px; font-size:13px; font-weight:700; cursor:pointer; }
+  .og-add-btn:hover { background:#0f1f3d; }
+  .og-sec-btn { background:#f0f4ff; color:#1a2744; border:1.5px solid #b3d4f5; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; }
+  .og-progress { height:6px; background:#dce4f5; border-radius:3px; margin:10px 18px; }
+  .og-progress-fill { height:100%; background:linear-gradient(90deg,#1a2744,#2563eb); border-radius:3px; transition:width 0.4s; }
+
 </style>
 </head>
 <body>
@@ -1230,12 +1270,26 @@
   <section id="orientation" class="section">
     <div class="section-header">
       <h2>Orientation 2026</h2>
-      <p>Select a month to view the orientation calendar and tasks</p>
+      <p>Manage orientation groups and view the monthly prep calendar.</p>
     </div>
 
-    <!-- Month Selector -->
+    <!-- ── ORIENTATION GROUPS ── -->
+    <div class="og-header">
+      <div>
+        <h3 style="font-size:16px;font-weight:800;color:#1a2744;margin-bottom:3px;">📋 Orientation Groups</h3>
+        <p style="font-size:12px;color:#64748b;">Each group auto-generates all prep tasks on the correct dates.</p>
+      </div>
+      <button class="og-add-btn" onclick="openNewGroupModal()">+ New Orientation Group</button>
+    </div>
+    <div class="og-groups-list" id="og-groups-list">
+      <div style="text-align:center;padding:32px;color:#94a3b8;font-size:13px;">No orientation groups yet. Click <strong>+ New Orientation Group</strong> to get started.</div>
+    </div>
+
+    <hr style="border:none;border-top:1.5px solid var(--border);margin:28px 0;" />
+
+    <!-- Month Calendar -->
     <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
-      <label style="font-weight:600;color:var(--navy);font-size:15px;">Select Month:</label>
+      <label style="font-weight:600;color:var(--navy);font-size:15px;">📅 Monthly Calendar:</label>
       <select id="orient-month-select" onchange="loadOrientMonth(this.value)" style="padding:10px 18px;border-radius:10px;border:2px solid var(--border);font-size:15px;font-weight:600;color:var(--navy);background:white;cursor:pointer;min-width:180px;">
         <option value="">-- Choose a month --</option>
         <option value="1">January 2026</option>
@@ -3822,7 +3876,351 @@ function resetLink(id) {
   applyResLink(id);
 }
 
+// ══════════════════════════════════
+//  ORIENTATION GROUPS
+// ══════════════════════════════════
+
+function getOrientGroups() {
+  try { return JSON.parse(localStorage.getItem('orient_groups') || '[]'); } catch { return []; }
+}
+function saveOrientGroups(g) { localStorage.setItem('orient_groups', JSON.stringify(g)); }
+
+function openNewGroupModal() {
+  const d = document.getElementById('og-new-modal');
+  if (d) { d.style.display = 'flex'; document.getElementById('og-orientation-date').focus(); }
+}
+function closeNewGroupModal() {
+  const d = document.getElementById('og-new-modal');
+  if (d) d.style.display = 'none';
+}
+
+function addTechToNewGroup() {
+  const input = document.getElementById('og-tech-input');
+  const list = document.getElementById('og-tech-preview');
+  const name = input.value.trim();
+  if (!name) return;
+  const tag = document.createElement('span');
+  tag.className = 'og-tech-tag';
+  tag.dataset.name = name;
+  tag.innerHTML = name + '<span class="og-tech-remove" onclick="this.parentNode.remove()">×</span>';
+  list.appendChild(tag);
+  input.value = '';
+  input.focus();
+}
+
+function saveNewGroup() {
+  const dateVal = document.getElementById('og-orientation-date').value;
+  if (!dateVal) { alert('Please select an orientation date.'); return; }
+
+  const techTags = document.querySelectorAll('#og-tech-preview .og-tech-tag');
+  const techs = Array.from(techTags).map(t => t.dataset.name).filter(Boolean);
+  if (!techs.length) { alert('Please add at least one technician.'); return; }
+
+  const orientDate = new Date(dateVal + 'T12:00:00');
+  const id = 'og_' + Date.now();
+
+  // Calculate key dates
+  // Orientation = Tuesday of orientation week
+  // Week before = Monday & Friday
+  const monday1WeekBefore = new Date(orientDate);
+  monday1WeekBefore.setDate(orientDate.getDate() - 8); // Mon before
+  const friday1WeekBefore = new Date(orientDate);
+  friday1WeekBefore.setDate(orientDate.getDate() - 4); // Fri before
+  const tuesdayOrientation = new Date(orientDate); // orientation day
+  const mondayOrWeek = new Date(orientDate);
+  mondayOrWeek.setDate(orientDate.getDate() - 1); // Mon of orientation week
+
+  function iso(d) { return d.toISOString().split('T')[0]; }
+  function fmt(d) { return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+
+  const techList = techs.join(', ');
+
+  const group = {
+    id,
+    orientationDate: iso(orientDate),
+    techs,
+    tasks: [
+      // WEEK BEFORE
+      {
+        id: id+'_t1', section: '📧 Week Before — Emails & Prep',
+        name: 'Reply ALL to Brenda\'s ORIENTATION email with tech status list',
+        dueDate: iso(monday1WeekBefore), dueLabel: 'Mon ' + fmt(monday1WeekBefore),
+        addToWeekly: true, day: 'Mon',
+        emailTemplate: techs.map(t => `__${t}__\nPosition: [Role]\nHR Onboarding: ⏳\nOSHA-10 or 30 Construction Certificate: ⏳\nHigh School Diploma / Transcript / GED: ⏳\nPhone Number and Mailing Address: ⏳`).join('\n\n'),
+        done: false
+      },
+      {
+        id: id+'_t2', section: '📧 Week Before — Emails & Prep',
+        name: 'Prepare ATA accounts + Digital ATA Scores spreadsheets for each tech',
+        dueDate: iso(monday1WeekBefore), dueLabel: 'Mon ' + fmt(monday1WeekBefore),
+        addToWeekly: true, day: 'Mon',
+        note: 'Create ATA account with Airadigm email. Add lessons: ATA Getting Started, Safety, Basic Lessons.',
+        done: false
+      },
+      {
+        id: id+'_t3', section: '📧 Week Before — Emails & Prep',
+        name: 'Follow-up email: update status of each checklist item per tech',
+        dueDate: iso(friday1WeekBefore), dueLabel: 'Fri ' + fmt(friday1WeekBefore),
+        addToWeekly: true, day: 'Fri',
+        emailTemplate: techs.map(t => `__${t}__ — Updated Status\nHR Onboarding: ⏳\nOSHA-10 or 30: ⏳\nDiploma/GED: ⏳\nPhone & Address: ⏳`).join('\n\n'),
+        done: false
+      },
+      {
+        id: id+'_t4', section: '📧 Week Before — Emails & Prep',
+        name: 'Schedule Meet & Greet with Brian',
+        dueDate: iso(friday1WeekBefore), dueLabel: 'Fri ' + fmt(friday1WeekBefore),
+        addToWeekly: true, day: 'Fri',
+        note: 'Target: Wednesday of orientation week. Include Brian, Brenda, Techs, Paula.',
+        done: false
+      },
+      // ORIENTATION WEEK
+      {
+        id: id+'_t5', section: '🗓️ Orientation Week',
+        name: 'Add techs to recurring weekly & monthly meetings',
+        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
+        addToWeekly: true, day: 'Mon',
+        note: 'Ask Brian to add to Tool Box. Ask Brenda to add to TTB. Add to New Tech Update (Wednesdays) and TTB (Thursdays). ⚠️ Survey techs: do NOT add to Wednesday meeting.',
+        done: false
+      },
+      {
+        id: id+'_t6', section: '🗓️ Orientation Week',
+        name: 'After IT onboarding: Add techs to RC Channels',
+        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
+        addToWeekly: true, day: 'Tue',
+        note: '• Company Social RC Thread\n• Field Tech Resources RC Thread\n• Training Touch Base / BZ Info Thread\n• Competition GROUP RC Thread',
+        done: false
+      },
+      {
+        id: id+'_t7', section: '🗓️ Orientation Week',
+        name: 'Create TEAM for each tech in RC',
+        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
+        addToWeekly: true, day: 'Tue',
+        note: 'Each TEAM: Assigned PM + Lead Tech (Brenda) + New Technician.',
+        done: false
+      },
+      {
+        id: id+'_t8', section: '🗓️ Orientation Week',
+        name: 'Post confirmation in Orientation RC thread',
+        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
+        addToWeekly: true, day: 'Tue',
+        note: 'Confirm: RC channels ✅, TEAM created ✅, Recurring meetings ✅\nAsk each tech to confirm attendance for scheduled meetings.',
+        done: false
+      },
+    ],
+    done: {}
+  };
+
+  // Add all tasks to Weekly Tasks
+  addOrientGroupToWeeklyTasks(group);
+
+  const groups = getOrientGroups();
+  groups.unshift(group);
+  saveOrientGroups(groups);
+
+  closeNewGroupModal();
+  // Reset form
+  document.getElementById('og-orientation-date').value = '';
+  document.getElementById('og-tech-preview').innerHTML = '';
+
+  renderOrientGroups();
+  showWtToast('✅ Orientation group created! Tasks added to Weekly Tasks.');
+}
+
+function addOrientGroupToWeeklyTasks(group) {
+  group.tasks.forEach(task => {
+    if (!task.addToWeekly) return;
+    const exists = wtTasks.find(t => t.id === task.id);
+    if (exists) return;
+    const newTask = {
+      id: task.id,
+      title: '🎓 [' + group.techs.slice(0,2).join(', ') + (group.techs.length > 2 ? '…' : '') + '] ' + task.name,
+      task: task.name,
+      day: task.day,
+      due: task.dueDate,
+      status: 'pending',
+      recurrence: null,
+      notes: task.note || '',
+      owner_id: null,
+      updated_at: new Date().toISOString()
+    };
+    wtTasks.push(newTask);
+  });
+  saveTasksLocal();
+
+  // Also add to orientation calendar notes
+  group.tasks.forEach(task => {
+    if (task.dueDate) {
+      const [y, m, d] = task.dueDate.split('-').map(Number);
+      const key = y + '-' + m + '-' + d;
+      if (!calNotes[key]) calNotes[key] = '';
+      if (!calNotes[key].includes(task.name.substring(0,30))) {
+        calNotes[key] = (calNotes[key] ? calNotes[key] + '\n' : '') + '🎓 ' + task.name;
+      }
+    }
+  });
+  localStorage.setItem('orient_notes', JSON.stringify(calNotes));
+}
+
+function renderOrientGroups() {
+  const container = document.getElementById('og-groups-list');
+  if (!container) return;
+  const groups = getOrientGroups();
+  if (!groups.length) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:#94a3b8;font-size:13px;">No orientation groups yet. Click <strong>+ New Orientation Group</strong> to get started.</div>';
+    return;
+  }
+
+  container.innerHTML = groups.map(g => {
+    const totalTasks = g.tasks.length;
+    const doneTasks = Object.values(g.done || {}).filter(Boolean).length;
+    const pct = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+    const orientFmt = new Date(g.orientationDate + 'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+    // Group tasks by section
+    const sections = {};
+    g.tasks.forEach(t => {
+      if (!sections[t.section]) sections[t.section] = [];
+      sections[t.section].push(t);
+    });
+
+    const sectionsHtml = Object.entries(sections).map(([sec, tasks]) => `
+      <div class="og-task-section">
+        <div class="og-task-section-title">${sec}</div>
+        ${tasks.map(t => {
+          const isDone = (g.done||{})[t.id];
+          return `
+          <div class="og-task-item ${isDone?'done':''}" onclick="toggleOgTask('${g.id}','${t.id}')">
+            <div class="og-task-cb">${isDone?'✓':''}</div>
+            <div class="og-task-body">
+              <div class="og-task-name">${t.name}</div>
+              <div class="og-task-meta">📅 ${t.dueLabel}</div>
+              ${t.note ? `<div style="font-size:11px;color:#64748b;margin-top:3px;white-space:pre-line;">${t.note}</div>` : ''}
+              ${t.emailTemplate ? `
+                <div style="margin-top:6px;">
+                  <div class="og-task-email-label">📧 Email Template</div>
+                  <div class="og-task-email">${t.emailTemplate}</div>
+                  <button onclick="event.stopPropagation();copyEmailTemplate('${g.id}','${t.id}')"
+                    style="margin-top:5px;background:#1a2744;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;">
+                    📋 Copy Template
+                  </button>
+                </div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`).join('');
+
+    return `
+      <div class="og-group-card" id="ogc-${g.id}">
+        <div class="og-group-header" onclick="toggleOgCard('${g.id}')">
+          <span class="og-group-arrow">▶</span>
+          <div class="og-group-title">⭐ ${orientFmt}</div>
+          <span class="og-group-badge">${g.techs.length} tech${g.techs.length!==1?'s':''}</span>
+          <span class="og-group-badge">${doneTasks}/${totalTasks} done</span>
+          <button onclick="event.stopPropagation();deleteOrientGroup('${g.id}')"
+            style="background:rgba(255,255,255,0.1);border:none;color:white;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;margin-left:8px;">🗑</button>
+        </div>
+        <div class="og-progress"><div class="og-progress-fill" style="width:${pct}%"></div></div>
+        <div class="og-group-body">
+          <div class="og-techs">
+            ${g.techs.map(t => `<span class="og-tech-tag">👤 ${t}</span>`).join('')}
+          </div>
+          <div class="og-tasks">${sectionsHtml}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleOgCard(id) {
+  const card = document.getElementById('ogc-' + id);
+  if (card) card.classList.toggle('open');
+}
+
+function toggleOgTask(groupId, taskId) {
+  const groups = getOrientGroups();
+  const g = groups.find(g => g.id === groupId);
+  if (!g) return;
+  if (!g.done) g.done = {};
+  g.done[taskId] = !g.done[taskId];
+  saveOrientGroups(groups);
+  renderOrientGroups();
+}
+
+function deleteOrientGroup(id) {
+  if (!confirm('Delete this orientation group? Tasks in Weekly Tasks will remain.')) return;
+  const groups = getOrientGroups().filter(g => g.id !== id);
+  saveOrientGroups(groups);
+  renderOrientGroups();
+  showWtToast('Group deleted.');
+}
+
+function copyEmailTemplate(groupId, taskId) {
+  const groups = getOrientGroups();
+  const g = groups.find(g => g.id === groupId);
+  if (!g) return;
+  const task = g.tasks.find(t => t.id === taskId);
+  if (!task || !task.emailTemplate) return;
+  navigator.clipboard.writeText(task.emailTemplate).then(() => {
+    showWtToast('📋 Email template copied!');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = task.emailTemplate;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showWtToast('📋 Copied!');
+  });
+}
+
+// Init orientation groups on load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(renderOrientGroups, 200);
+});
+
 document.addEventListener("DOMContentLoaded", function() { initResources(); });
 </script>
+<!-- ── NEW ORIENTATION GROUP MODAL ── -->
+<div id="og-new-modal" style="display:none;position:fixed;inset:0;background:rgba(15,31,61,0.6);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:16px;padding:28px;max-width:520px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="font-size:17px;font-weight:800;color:#1a2744;">⭐ New Orientation Group</h3>
+      <button onclick="closeNewGroupModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-bottom:20px;">Enter the orientation date and the technicians attending. All prep tasks will be auto-generated.</p>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a2744;display:block;margin-bottom:5px;">Orientation Date (Tuesday) *</label>
+        <input type="date" id="og-orientation-date" style="width:100%;padding:9px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:14px;outline:none;font-family:inherit;" />
+        <div style="font-size:11px;color:#64748b;margin-top:3px;">All prep tasks will be scheduled relative to this date.</div>
+      </div>
+
+      <div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a2744;display:block;margin-bottom:5px;">Technicians in this group</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="og-tech-input" placeholder="Tech full name" onkeydown="if(event.key==='Enter'){event.preventDefault();addTechToNewGroup();}"
+            style="flex:1;padding:9px 12px;border:1.5px solid #dce4f5;border-radius:8px;font-size:13px;outline:none;font-family:inherit;" />
+          <button onclick="addTechToNewGroup()" style="background:#1a2744;color:white;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">+ Add</button>
+        </div>
+        <div id="og-tech-preview" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:6px;background:#f8fafc;border-radius:8px;border:1.5px solid #dce4f5;"></div>
+      </div>
+
+      <div style="background:#eaf3de;border-radius:10px;padding:12px 14px;font-size:12px;color:#3b6d11;line-height:1.7;">
+        <strong>📋 Tasks auto-generated:</strong><br>
+        📅 <strong>Mon (week before):</strong> Reply ALL to Brenda's email + Prepare ATA accounts<br>
+        📅 <strong>Fri (week before):</strong> Follow-up email + Schedule Meet &amp; Greet with Brian<br>
+        📅 <strong>Mon (orientation week):</strong> Add to recurring meetings<br>
+        📅 <strong>Tue (orientation day):</strong> RC channels + Create TEAM + Post confirmation
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+      <button onclick="closeNewGroupModal()" style="padding:10px 20px;border-radius:8px;border:1.5px solid #dce4f5;background:white;cursor:pointer;font-size:13px;font-weight:600;">Cancel</button>
+      <button onclick="saveNewGroup()" style="padding:10px 22px;border-radius:8px;border:none;background:#1a2744;color:white;cursor:pointer;font-size:13px;font-weight:700;">✅ Create Group</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
