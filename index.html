@@ -880,6 +880,7 @@
   .hi-field { display:flex; flex-direction:column; gap:2px; background:#f0f4ff; border-radius:8px; padding:8px 12px; }
   .hi-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#64748b; }
   .hi-val   { font-size:13px; font-weight:600; color:#1a2744; word-break:break-word; }
+  .wt-task-done { opacity: 0.65; }
 </style>
 </head>
 <body>
@@ -3027,6 +3028,32 @@ let wtWeekOffset = 0;
 let wtTasks = [];
 let wtMembers = [];
 let wtReminders = [];
+let wtWeeklyStatus = {}; // { "taskId_weekStart": "done|pending|blocked" }
+
+function getWeekStart(dates) {
+  // Returns ISO string of Monday for the current displayed week
+  return isoDate(dates[0]);
+}
+
+function getWeekKey(taskId, weekStartStr) {
+  return taskId + '_' + weekStartStr;
+}
+
+function getTaskStatusForWeek(task, weekStartStr) {
+  const recur = (task.recurrence || '').trim();
+  if (!recur) return task.status || 'pending'; // non-recurring: use task status
+  // Recurring: look up week-specific status, default to pending
+  const key = getWeekKey(String(task.id), weekStartStr);
+  return wtWeeklyStatus[key] || 'pending';
+}
+
+function saveWeeklyStatus() {
+  localStorage.setItem('wt_weekly_status', JSON.stringify(wtWeeklyStatus));
+}
+
+function loadWeeklyStatus() {
+  try { wtWeeklyStatus = JSON.parse(localStorage.getItem('wt_weekly_status') || '{}'); } catch(e) { wtWeeklyStatus = {}; }
+}
 let wtSupabase = null;
 
 // ── Supabase init (reuse global if available) ──
@@ -3078,6 +3105,7 @@ async function loadWtData() {
     const { data: tdata } = await sb.from('weekly_tasks').select('*');
     wtTasks = tdata || [];
   } catch(e) { wtTasks = []; }
+  loadWeeklyStatus();
 
   try {
     // Members
@@ -3100,6 +3128,7 @@ function loadWtLocal() {
   try { wtTasks = JSON.parse(localStorage.getItem('wt_tasks_v2') || '[]'); } catch(e) { wtTasks = []; }
   wtMembers = loadMembersLocal();
   wtReminders = loadRemindersLocal();
+  loadWeeklyStatus();
   renderWeekly();
   renderSidebar();
   populateOwnerDropdown();
@@ -3118,6 +3147,8 @@ function saveTasksLocal() { localStorage.setItem('wt_tasks_v2', JSON.stringify(w
 // ── Render week grid ──
 function renderWeekly() {
   const dates = getWeekDates(wtWeekOffset);
+  const currentWeekStart = isoDate(dates[0]);
+  window.currentWeekStart = currentWeekStart;
   document.getElementById('wt-week-label').textContent = weekLabel(dates);
 
   // Filter tasks for this week
@@ -3161,11 +3192,11 @@ function renderWeekly() {
     return false;
   });
 
-  // Metrics
+  // Metrics — use per-week status for recurring tasks
   const total = weekTasks.length;
-  const done = weekTasks.filter(t => t.status === 'done').length;
-  const pending = weekTasks.filter(t => t.status === 'pending').length;
-  const blocked = weekTasks.filter(t => t.status === 'blocked').length;
+  const done    = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'done').length;
+  const pending = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'pending').length;
+  const blocked = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'blocked').length;
   document.getElementById('wt-metrics').innerHTML = `
     <div class="wt-metric"><div class="wt-metric-val">${total}</div><div class="wt-metric-label">Total This Week</div></div>
     <div class="wt-metric m-done"><div class="wt-metric-val" style="color:#3b6d11">${done}</div><div class="wt-metric-label">Completed</div></div>
@@ -3203,26 +3234,29 @@ function renderWeekly() {
         <div class="wt-day-body">
           ${dayTasks.length === 0
             ? '<div class="wt-empty-day">No tasks</div>'
-            : dayTasks.map(t => taskCard(t)).join('')}
+            : dayTasks.map(t => taskCard(t, weekMonday, dates)).join('')}
         </div>
       </div>`;
   }).join('');
 }
 
-function taskCard(t) {
+function taskCard(t, weekMonday, dates) {
+  const isRecurring = !!(t.recurrence && t.recurrence.trim());
+  const effectiveStatus = isRecurring ? getTaskStatus(t, dates) : (t.status || 'pending');
   const statusMap = { done:'sp-done', pending:'sp-pending', blocked:'sp-blocked', recurring:'sp-recurring' };
-  const sc = statusMap[t.status] || 'sp-pending';
+  const sc = statusMap[effectiveStatus] || 'sp-pending';
   const ownerName = t.owner_id ? (wtMembers.find(m => m.id === t.owner_id)?.name || '') : (t.owner || '');
   const taskTitle = t.title || t.task || '';
   const taskDue = t.due || '';
   const taskDesc = t.recurrence ? 'Recurring: ' + t.recurrence : '';
+  const isDone = effectiveStatus === 'done';
   return `
-    <div class="wt-task-card" onclick="cycleTaskStatus('${t.id}')">
+    <div class="wt-task-card ${isDone ? 'wt-task-done' : ''}" onclick="cycleTaskStatus('${t.id}','${weekMonday}')">
       ${t.recurrence ? `<div class="wt-task-recur">↻ ${t.recurrence}</div>` : ''}
-      <div class="wt-task-title">${taskTitle}</div>
+      <div class="wt-task-title" style="${isDone ? 'text-decoration:line-through;opacity:0.5;' : ''}">${taskTitle}</div>
       ${ownerName ? `<div class="wt-task-owner">👤 ${ownerName}</div>` : ''}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;">
-        <span class="sp ${sc}">${t.status || 'pending'}</span>
+        <span class="sp ${sc}">${effectiveStatus}</span>
         <button onclick="event.stopPropagation();addToOutlook('${taskTitle.replace(/'/g,"\'")}','${taskDue}','${taskDesc.replace(/'/g,"\'")}',60)"
           style="background:#e6f1fb;color:#185fa5;border:none;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">
           📅 Outlook
@@ -3231,17 +3265,58 @@ function taskCard(t) {
     </div>`;
 }
 
-async function cycleTaskStatus(id) {
+// Per-week status store for recurring tasks: { "taskId_YYYY-MM-DD": "done" }
+function getWeeklyStatuses() {
+  try { return JSON.parse(localStorage.getItem('wt_week_statuses') || '{}'); } catch { return {}; }
+}
+function saveWeeklyStatuses(obj) { localStorage.setItem('wt_week_statuses', JSON.stringify(obj)); }
+
+// Get the week key for a recurring task (Monday's ISO date of current week view)
+function getWeekKey(taskId, dates) {
+  return taskId + '_' + isoDate(dates[0]); // Mon of the week
+}
+
+// Get effective status for a task in a given week
+function getTaskStatus(task, dates) {
+  const isRecurring = !!(task.recurrence && task.recurrence.trim());
+  if (!isRecurring) return task.status || 'pending';
+  const key = getWeekKey(task.id, dates);
+  const statuses = getWeeklyStatuses();
+  return statuses[key] || 'pending'; // each week starts fresh as pending
+}
+
+async function cycleTaskStatus(id, weekMonday) {
   const order = ['pending','done','blocked','recurring'];
   const task = wtTasks.find(t => String(t.id) === String(id));
   if (!task) return;
-  const next = order[(order.indexOf(task.status) + 1) % order.length];
-  task.status = next;
-  task.updated_at = new Date().toISOString();
-  const sb = getWtSb();
-  if (sb) {
-    try { await sb.from('weekly_tasks').update({ status: next, updated_at: task.updated_at }).eq('id', id); } catch(e) {}
-  } else { saveTasksLocal(); }
+
+  const isRecurring = !!(task.recurrence && task.recurrence.trim());
+
+  if (isRecurring) {
+    // Use per-week status — don't touch the base task status
+    const statuses = getWeeklyStatuses();
+    const key = id + '_' + weekMonday;
+    const current = statuses[key] || 'pending';
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    statuses[key] = next;
+    saveWeeklyStatuses(statuses);
+    // Track completed time for activity log
+    if (next === 'done') {
+      const doneKey = 'wt_done_log';
+      const log = JSON.parse(localStorage.getItem(doneKey) || '[]');
+      log.unshift({ id: task.id, title: task.title || task.task, updated_at: new Date().toISOString(), week: weekMonday });
+      localStorage.setItem(doneKey, JSON.stringify(log.slice(0, 50)));
+    }
+  } else {
+    // One-time task — update status normally
+    const next = order[(order.indexOf(task.status) + 1) % order.length];
+    task.status = next;
+    task.updated_at = new Date().toISOString();
+    const sb = getWtSb();
+    if (sb) {
+      try { await sb.from('weekly_tasks').update({ status: next, updated_at: task.updated_at }).eq('id', id); } catch(e) {}
+    } else { saveTasksLocal(); }
+  }
   renderWeekly();
   renderActivityLog();
 }
@@ -3386,15 +3461,23 @@ async function deleteReminder(id) {
 function renderActivityLog() {
   const el = document.getElementById('activity-list');
   if (!el) return;
-  const done = wtTasks
-    .filter(t => t.status === 'done')
+
+  // Combine one-time done tasks + per-week recurring done log
+  const oneTimeDone = wtTasks
+    .filter(t => t.status === 'done' && !(t.recurrence && t.recurrence.trim()))
+    .map(t => ({ title: t.title || t.task || '', updated_at: t.updated_at }));
+
+  const recurDone = JSON.parse(localStorage.getItem('wt_done_log') || '[]');
+
+  const allDone = [...oneTimeDone, ...recurDone]
     .sort((a,b) => new Date(b.updated_at||0) - new Date(a.updated_at||0))
     .slice(0, 10);
-  if (!done.length) { el.innerHTML = '<div class="wt-sidebar-empty">No completed tasks yet.</div>'; return; }
-  el.innerHTML = done.map(t => {
+
+  if (!allDone.length) { el.innerHTML = '<div class="wt-sidebar-empty">No completed tasks yet.</div>'; return; }
+  el.innerHTML = allDone.map(t => {
     const ts = t.updated_at ? new Date(t.updated_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
     return `<div class="activity-item">
-      <div class="activity-title">✓ ${t.title || t.task || ''}</div>
+      <div class="activity-title">✓ ${t.title || ''}</div>
       <div class="activity-meta">${ts}</div>
     </div>`;
   }).join('');
