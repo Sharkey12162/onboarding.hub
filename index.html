@@ -3090,7 +3090,7 @@ function nextWeek() { wtWeekOffset++; renderWeekly(); }
 function goToday()  { wtWeekOffset = 0; renderWeekly(); }
 
 // ── Load data ──
-async async function loadWtData() {
+async function loadWtData() {
   const sb = getWtSb();
   if (!sb) { loadWtLocal(); return; }
 
