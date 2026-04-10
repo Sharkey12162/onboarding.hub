@@ -3039,13 +3039,7 @@ function getWeekKey(taskId, weekStartStr) {
   return taskId + '_' + weekStartStr;
 }
 
-function getTaskStatusForWeek(task, weekStartStr) {
-  const recur = (task.recurrence || '').trim();
-  if (!recur) return task.status || 'pending'; // non-recurring: use task status
-  // Recurring: look up week-specific status, default to pending
-  const key = getWeekKey(String(task.id), weekStartStr);
-  return wtWeeklyStatus[key] || 'pending';
-}
+
 
 function saveWeeklyStatus() {
   localStorage.setItem('wt_weekly_status', JSON.stringify(wtWeeklyStatus));
@@ -3148,6 +3142,7 @@ function saveTasksLocal() { localStorage.setItem('wt_tasks_v2', JSON.stringify(w
 function renderWeekly() {
   const dates = getWeekDates(wtWeekOffset);
   const currentWeekStart = isoDate(dates[0]);
+  const weekMonday = currentWeekStart; // alias used throughout
   window.currentWeekStart = currentWeekStart;
   document.getElementById('wt-week-label').textContent = weekLabel(dates);
 
@@ -3194,9 +3189,9 @@ function renderWeekly() {
 
   // Metrics — use per-week status for recurring tasks
   const total = weekTasks.length;
-  const done    = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'done').length;
-  const pending = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'pending').length;
-  const blocked = weekTasks.filter(t => getTaskStatusForWeek(t, currentWeekStart) === 'blocked').length;
+  const done    = weekTasks.filter(t => getTaskStatus(t, weekMonday) === 'done').length;
+  const pending = weekTasks.filter(t => getTaskStatus(t, weekMonday) === 'pending').length;
+  const blocked = weekTasks.filter(t => getTaskStatus(t, weekMonday) === 'blocked').length;
   document.getElementById('wt-metrics').innerHTML = `
     <div class="wt-metric"><div class="wt-metric-val">${total}</div><div class="wt-metric-label">Total This Week</div></div>
     <div class="wt-metric m-done"><div class="wt-metric-val" style="color:#3b6d11">${done}</div><div class="wt-metric-label">Completed</div></div>
@@ -3205,7 +3200,6 @@ function renderWeekly() {
   `;
 
   // Grid
-  const weekMonday = isoDate(dates[0]); // Monday's ISO date = unique key for this week
   const grid = document.getElementById('wt-grid');
   grid.innerHTML = DAYS.map((day, i) => {
     const date = dates[i];
@@ -3278,9 +3272,7 @@ function saveWeeklyStatuses(obj) {
 }
 
 // Get the week key for a recurring task (Monday's ISO date of current week view)
-function getWeekKey(taskId, dates) {
-  return taskId + '_' + isoDate(dates[0]); // Mon of the week
-}
+// getWeekKey moved above
 
 // Get effective status for a task in a given week
 function getTaskStatus(task, weekStartStr) {
