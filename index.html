@@ -1291,7 +1291,19 @@
   </section>
 
   <script>
-  // ── ORIENTATION CALENDAR ──
+  // ── Global helper: derive weekday from recurrence text ──
+function getDayFromRecurrence(recurrence) {
+  if (!recurrence) return null;
+  const r = recurrence.toLowerCase();
+  if (r.includes('monday') || r.includes('mon')) return 'Mon';
+  if (r.includes('tuesday') || r.includes('tue')) return 'Tue';
+  if (r.includes('wednesday') || r.includes('wed')) return 'Wed';
+  if (r.includes('thursday') || r.includes('thu')) return 'Thu';
+  if (r.includes('friday') || r.includes('fri')) return 'Fri';
+  return null;
+}
+
+// ── ORIENTATION CALENDAR ──
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   
@@ -3058,13 +3070,28 @@ function renderWeekly() {
 
   // Filter tasks for this week
   const weekDates = dates.map(d => isoDate(d));
+
+  // Normalize tasks — ensure recurring tasks always have a correct `day` field
+  wtTasks.forEach(t => {
+    if (t.recurrence && t.recurrence.trim() && (!t.day || !DAYS.includes(t.day))) {
+      const derived = getDayFromRecurrence(t.recurrence);
+      if (derived) t.day = derived;
+    }
+  });
+
   const weekTasks = wtTasks.filter(t => {
-    // For tasks with a specific due date → only show in their exact week
-    if (t.due && weekDates.includes(t.due)) return true;
-    // For recurring tasks → show only on matching day columns (no due date or recurrence-only)
-    if (!t.due && t.day && DAYS.includes(t.day)) return true;
-    // Recurring with recurrence text but no due → show every week on matching day
-    if (t.recurrence && !t.due && t.day) return true;
+    const isRecurring = !!(t.recurrence && t.recurrence.trim());
+    const effectiveDay = t.day && DAYS.includes(t.day) ? t.day : getDayFromRecurrence(t.recurrence);
+
+    // RECURRING tasks: always show EVERY week on their day — ignore due date for filtering
+    if (isRecurring && effectiveDay) return true;
+
+    // ONE-TIME tasks: only show in the exact week containing their due date
+    if (t.due && !isRecurring) return weekDates.includes(t.due);
+
+    // Tasks with only a day (no due, no recurrence): show every week
+    if (!t.due && effectiveDay) return true;
+
     return false;
   });
 
@@ -3084,8 +3111,20 @@ function renderWeekly() {
   const grid = document.getElementById('wt-grid');
   grid.innerHTML = DAYS.map((day, i) => {
     const date = dates[i];
-    const dayTasks = weekTasks.filter(t => t.day === day ||
-      (t.due && t.due === isoDate(date)));
+    const dayIsoDate = isoDate(date);
+      const dayTasks = weekTasks.filter(t => {
+        const isRecurring = !!(t.recurrence && t.recurrence.trim());
+        const effectiveDay = (t.day && DAYS.includes(t.day)) ? t.day : getDayFromRecurrence(t.recurrence);
+
+        // Recurring: match by effective day column only
+        if (isRecurring) return effectiveDay === day;
+
+        // One-time with due date: match exact date
+        if (t.due) return t.due === dayIsoDate;
+
+        // Day-only task: match day column
+        return effectiveDay === day;
+      });
     return `
       <div class="wt-day-col">
         <div class="wt-day-header">
@@ -3155,7 +3194,15 @@ function closeAddTaskForm() {
 async function submitTask() {
   const title = document.getElementById('wt-f-title').value.trim();
   if (!title) { alert('Please enter a task title.'); return; }
-  const day = document.getElementById('wt-f-day').value;
+  let day = document.getElementById('wt-f-day').value;
+  // If recurrence implies a specific day, use that as the day field
+  const recurVal = document.getElementById('wt-f-recur').value;
+  const customRecurVal = document.getElementById('wt-f-recur-custom').value.trim();
+  const finalRecur = recurVal === '__custom__' ? customRecurVal : recurVal;
+  if (finalRecur) {
+    const derivedDay = getDayFromRecurrence(finalRecur);
+    if (derivedDay) day = derivedDay;
+  }
   const status = document.getElementById('wt-f-status').value;
   const recurSel = document.getElementById('wt-f-recur');
   const recurCustom = document.getElementById('wt-f-recur-custom');
