@@ -1509,13 +1509,13 @@ function isEveryOtherWeek(recurrence, weekOffset) {
     }
     
     for (let d = 1; d <= daysInMonth; d++) {
-      const key = calYear + '-' + (calMonth+1) + '-' + d;
+      const key = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
       const hasNote = calNotes[key] && calNotes[key].trim();
       const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
       const isWeekend = new Date(calYear, calMonth, d).getDay() % 6 === 0;
       
       // Check if this day has orientation group tasks
-      const dayKey = calYear + '-' + (calMonth+1) + '-' + d;
+      const dayKey = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
       const orientGroups = getOrientGroups();
       const hasOrientTask = orientGroups.some(g =>
         g.tasks.some(t => t.dueDate === dayKey)
@@ -1529,8 +1529,8 @@ function isEveryOtherWeek(recurrence, weekOffset) {
         ondragleave="this.style.background='${isToday ? '#eff6ff' : isWeekend ? '#f8fafc' : 'white'}'"
         ondrop="dropNoteToDay(event,${d},${calYear},${calMonth+1})"
         style="min-height:64px;padding:6px 8px;border-radius:10px;cursor:pointer;
-        border:1.5px solid ${isToday ? 'var(--sky)' : 'var(--border)'};
-        background:${isToday ? '#eff6ff' : isWeekend ? '#f8fafc' : 'white'};
+        border:2px solid ${isToday ? '#2563eb' : hasOrientTask ? '#f59e0b' : 'var(--border)'};
+        background:${isToday ? '#eff6ff' : isWeekend ? '#f4f4f6' : 'white'};
         position:relative;transition:all 0.15s;
         ${isWeekend ? 'opacity:0.5;pointer-events:none;' : ''}
       " onmouseover="this.style.boxShadow='0 2px 12px rgba(15,31,61,0.12)'" onmouseout="this.style.boxShadow='none'">
@@ -1715,7 +1715,7 @@ function dropNoteToDay(event, day, year, month) {
 }
 function openNoteModal(day) {
     noteDay = day;
-    const key = calYear + '-' + (calMonth+1) + '-' + day;
+    const key = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
     const dateStr = MONTH_NAMES[calMonth] + ' ' + day + ', ' + calYear;
     document.getElementById('note-modal-title').textContent = dateStr;
 
@@ -1792,7 +1792,7 @@ function openNoteModal(day) {
 
   function saveNote() {
     if (!noteDay) return;
-    const key = calYear + '-' + (calMonth+1) + '-' + noteDay;
+    const key = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(noteDay).padStart(2,'0');
     const val = document.getElementById('note-input').value.trim();
     if (val) {
       calNotes[key] = val;
