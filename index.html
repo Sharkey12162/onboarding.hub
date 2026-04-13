@@ -4263,6 +4263,14 @@ function saveNewGroup() {
         done: false
       },
       {
+        id: id+'_t5b', section: '🗓️ Orientation Week',
+        name: 'Create ATA profiles + enroll in Safety, ATA Getting Started & all Basic Lessons',
+        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
+        addToWeekly: true, day: 'Mon',
+        note: techs.map(t => '👤 ' + t).join('\n') + '\n\nSteps:\n1. Create account with Airadigm email\n2. Enroll in: Safety Module, ATA Getting Started, All Basic Lessons\n3. Reset any previous quiz attempts if needed\n4. Verify enrollment in Airadigm Technical Academy dashboard',
+        done: false
+      },
+      {
         id: id+'_t6', section: '🗓️ Orientation Week',
         name: 'After IT onboarding: Add techs to RC Channels',
         dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
