@@ -921,6 +921,37 @@
   .og-progress { height:6px; background:#dce4f5; border-radius:3px; margin:10px 18px; }
   .og-progress-fill { height:100%; background:linear-gradient(90deg,#1a2744,#2563eb); border-radius:3px; transition:width 0.4s; }
 
+
+  /* ══ TASK TEMPLATE EDITOR ══ */
+  .ote-overlay { position:fixed;inset:0;background:rgba(15,31,61,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px; }
+  .ote-modal { background:white;border-radius:14px;width:100%;max-width:780px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.25); }
+  .ote-header { background:#1a2744;color:white;padding:16px 22px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between; }
+  .ote-header h3 { font-size:16px;font-weight:800;margin:0; }
+  .ote-body { flex:1;overflow-y:auto;padding:0; }
+  .ote-section { border-bottom:1px solid #f0f4ff; }
+  .ote-section-title { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#64748b;padding:12px 18px 6px;background:#f8fafc; }
+  .ote-task-row { display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-bottom:1px solid #f0f4ff;transition:background .15s; }
+  .ote-task-row:hover { background:#f8fafc; }
+  .ote-task-info { flex:1; }
+  .ote-task-name { font-size:13px;font-weight:600;color:#1a2744;margin-bottom:3px; }
+  .ote-task-meta { font-size:11px;color:#64748b;display:flex;gap:10px;flex-wrap:wrap; }
+  .ote-task-actions { display:flex;gap:6px;flex-shrink:0; }
+  .ote-btn { padding:4px 10px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:700; }
+  .ote-btn-edit { background:#e6f1fb;color:#185fa5; }
+  .ote-btn-del { background:#fcebeb;color:#a32d2d; }
+  .ote-btn-add { background:#1a2744;color:white;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;margin:12px 18px; }
+  .ote-footer { padding:14px 18px;border-top:1px solid #dce4f5;display:flex;justify-content:flex-end;gap:8px; }
+
+  /* Edit form inside modal */
+  .ote-edit-form { background:#f0f7ff;border:1.5px solid #b3d4f5;border-radius:10px;padding:14px 16px;margin:8px 18px; }
+  .ote-form-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px; }
+  .ote-form-field { display:flex;flex-direction:column;gap:3px; }
+  .ote-form-field label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#1a2744; }
+  .ote-form-field input, .ote-form-field select, .ote-form-field textarea { padding:7px 10px;border:1.5px solid #dce4f5;border-radius:7px;font-size:12px;outline:none;font-family:inherit; }
+  .ote-form-field input:focus, .ote-form-field select:focus, .ote-form-field textarea:focus { border-color:#185fa5; }
+  .ote-form-full { grid-column:1/-1; }
+  .ote-form-actions { display:flex;gap:8px;justify-content:flex-end; }
+
 </style>
 </head>
 <body>
@@ -1276,7 +1307,10 @@
     <!-- ── ORIENTATION GROUPS ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;" id="og-group-pills"></div>
-      <button class="og-add-btn" onclick="openNewGroupModal()">+ New Orientation Group</button>
+      <div style="display:flex;gap:8px;">
+        <button style="background:#f0f4ff;color:#1a2744;border:1.5px solid #b3d4f5;padding:9px 16px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;" onclick="openTaskTemplateEditor()">⚙️ Edit Task Template</button>
+        <button class="og-add-btn" onclick="openNewGroupModal()">+ New Orientation Group</button>
+      </div>
     </div>
 
     <!-- Hidden groups list (not visible, used for data) -->
@@ -4224,82 +4258,58 @@ function saveNewGroup() {
     id,
     orientationDate: iso(orientDate),
     techs,
-    tasks: [
-      // WEEK BEFORE
-      {
-        id: id+'_t1', section: '📧 Week Before — Emails & Prep',
-        name: 'Reply ALL to Brenda\'s ORIENTATION email with tech status list',
-        dueDate: iso(monday1WeekBefore), dueLabel: 'Mon ' + fmt(monday1WeekBefore),
-        addToWeekly: true, day: 'Mon',
-        emailTemplate: techs.map(t => `__${t}__\nPosition: [Role]\nHR Onboarding: ⏳\nOSHA-10 or 30 Construction Certificate: ⏳\nHigh School Diploma / Transcript / GED: ⏳\nPhone Number and Mailing Address: ⏳`).join('\n\n'),
-        done: false
-      },
-      {
-        id: id+'_t2', section: '📧 Week Before — Emails & Prep',
-        name: 'Prepare ATA accounts + Digital ATA Scores spreadsheets for each tech',
-        dueDate: iso(monday1WeekBefore), dueLabel: 'Mon ' + fmt(monday1WeekBefore),
-        addToWeekly: true, day: 'Mon',
-        note: 'Create ATA account with Airadigm email. Add lessons: ATA Getting Started, Safety, Basic Lessons.',
-        done: false
-      },
-      {
-        id: id+'_t3', section: '📧 Week Before — Emails & Prep',
-        name: 'Follow-up email: update status of each checklist item per tech',
-        dueDate: iso(friday1WeekBefore), dueLabel: 'Fri ' + fmt(friday1WeekBefore),
-        addToWeekly: true, day: 'Fri',
-        emailTemplate: techs.map(t => `__${t}__ — Updated Status\nHR Onboarding: ⏳\nOSHA-10 or 30: ⏳\nDiploma/GED: ⏳\nPhone & Address: ⏳`).join('\n\n'),
-        done: false
-      },
-      {
-        id: id+'_t4', section: '🗓️ Orientation Week',
-        name: 'Schedule Meet & Greet with Brian',
-        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
-        addToWeekly: true, day: 'Mon',
-        note: 'Target: Wednesday of orientation week. Include Brian, Brenda, Techs, Paula.',
-        done: false
-      },
-      // ORIENTATION WEEK
-      {
-        id: id+'_t5', section: '🗓️ Orientation Week',
-        name: 'Add techs to recurring weekly & monthly meetings',
-        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
-        addToWeekly: true, day: 'Mon',
-        note: 'Ask Brian to add to Tool Box. Ask Brenda to add to TTB. Add to New Tech Update (Wednesdays) and TTB (Thursdays). ⚠️ Survey techs: do NOT add to Wednesday meeting.',
-        done: false
-      },
-      {
-        id: id+'_t5b', section: '🗓️ Orientation Week',
-        name: 'Create ATA profiles + enroll in Safety, ATA Getting Started & all Basic Lessons',
-        dueDate: iso(mondayOrWeek), dueLabel: 'Mon ' + fmt(mondayOrWeek),
-        addToWeekly: true, day: 'Mon',
-        note: techs.map(t => '👤 ' + t).join('\n') + '\n\nSteps:\n1. Create account with Airadigm email\n2. Enroll in: Safety Module, ATA Getting Started, All Basic Lessons\n3. Reset any previous quiz attempts if needed\n4. Verify enrollment in Airadigm Technical Academy dashboard',
-        done: false
-      },
-      {
-        id: id+'_t6', section: '🗓️ Orientation Week',
-        name: 'After IT onboarding: Add techs to RC Channels',
-        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
-        addToWeekly: true, day: 'Tue',
-        note: '• Company Social RC Thread\n• Field Tech Resources RC Thread\n• Training Touch Base / BZ Info Thread\n• Competition GROUP RC Thread',
-        done: false
-      },
-      {
-        id: id+'_t7', section: '🗓️ Orientation Week',
-        name: 'Create TEAM for each tech in RC',
-        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
-        addToWeekly: true, day: 'Tue',
-        note: 'Each TEAM: Assigned PM + Lead Tech (Brenda) + New Technician.',
-        done: false
-      },
-      {
-        id: id+'_t8', section: '🗓️ Orientation Week',
-        name: 'Post confirmation in Orientation RC thread',
-        dueDate: iso(tuesdayOrientation), dueLabel: '⭐ Tue ' + fmt(tuesdayOrientation),
-        addToWeekly: true, day: 'Tue',
-        note: 'Confirm: RC channels ✅, TEAM created ✅, Recurring meetings ✅\nAsk each tech to confirm attendance for scheduled meetings.',
-        done: false
-      },
-    ],
+    tasks: (() => {
+      const tpl = getTaskTemplate();
+      return tpl.map((t, i) => {
+        // Calculate dueDate based on timing
+        const timingDateMap = {
+          monday_before:    iso(monday1WeekBefore),
+          friday_before:    iso(friday1WeekBefore),
+          monday_orient:    iso(mondayOrWeek),
+          tuesday_orient:   iso(tuesdayOrientation),
+          wednesday_orient: iso(addDays(orientWeekMonday, 2)),
+          thursday_orient:  iso(addDays(orientWeekMonday, 3)),
+          friday_orient:    iso(addDays(orientWeekMonday, 4)),
+        };
+        const timingLabelMap = {
+          monday_before:    'Mon ' + fmt(monday1WeekBefore),
+          friday_before:    'Fri ' + fmt(friday1WeekBefore),
+          monday_orient:    'Mon ' + fmt(mondayOrWeek),
+          tuesday_orient:   'Tue ' + fmt(tuesdayOrientation),
+          wednesday_orient: 'Wed ' + fmt(addDays(orientWeekMonday, 2)),
+          thursday_orient:  'Thu ' + fmt(addDays(orientWeekMonday, 3)),
+          friday_orient:    'Fri ' + fmt(addDays(orientWeekMonday, 4)),
+        };
+        const dueDate = timingDateMap[t.timing] || iso(mondayOrWeek);
+        const dueLabel = timingLabelMap[t.timing] || '';
+        
+        // Build email template if needed
+        let emailTemplate = undefined;
+        if (t.hasEmailTemplate && t.id.includes('t1')) {
+          emailTemplate = techs.map(tech => `__${tech}__\nPosition: [Role]\nHR Onboarding: ⏳\nOSHA-10 or 30 Construction Certificate: ⏳\nHigh School Diploma / Transcript / GED: ⏳\nPhone Number and Mailing Address: ⏳`).join('\n\n');
+        } else if (t.hasEmailTemplate) {
+          emailTemplate = techs.map(tech => `__${tech}__ — Updated Status\nHR Onboarding: ⏳\nOSHA-10 or 30: ⏳\nDiploma/GED: ⏳\nPhone & Address: ⏳`).join('\n\n');
+        }
+
+        // Build note — inject tech names if relevant
+        let note = t.note || '';
+        if (note.includes('{techs}') || t.id.includes('t5b')) {
+          note = techs.map(tech => '👤 ' + tech).join('\n') + (note ? '\n\n' + note : '');
+        }
+
+        return {
+          id: id + '_' + t.id,
+          section: t.section,
+          name: t.name,
+          dueDate, dueLabel,
+          addToWeekly: true,
+          day: t.day || TIMING_DAY_MAP[t.timing] || 'Mon',
+          note,
+          emailTemplate,
+          done: false
+        };
+      });
+    })(),
     done: {}
   };
 
@@ -4528,6 +4538,313 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(renderOrientGroups, 200);
 });
 
+// ══════════════════════════════════
+//  ORIENTATION TASK TEMPLATE EDITOR
+// ══════════════════════════════════
+
+// Default task template (mirrors saveNewGroup tasks)
+const DEFAULT_TASK_TEMPLATE = [
+  {
+    id: 'tpl_t1', section: '📧 Week Before — Emails & Prep',
+    name: "Reply ALL to Brenda's ORIENTATION email with tech status list",
+    timing: 'monday_before', day: 'Mon',
+    note: '', hasEmailTemplate: true, showInPreview: true,
+    previewLabel: "Mon (week before): Reply ALL to Brenda's email"
+  },
+  {
+    id: 'tpl_t2', section: '📧 Week Before — Emails & Prep',
+    name: 'Prepare ATA accounts + Digital ATA Scores spreadsheets for each tech',
+    timing: 'monday_before', day: 'Mon',
+    note: 'Create ATA account with Airadigm email. Add lessons: ATA Getting Started, Safety, Basic Lessons.',
+    hasEmailTemplate: false, showInPreview: true,
+    previewLabel: "Mon (week before): Prepare ATA accounts"
+  },
+  {
+    id: 'tpl_t3', section: '📧 Week Before — Emails & Prep',
+    name: 'Follow-up email: update status of each checklist item per tech',
+    timing: 'friday_before', day: 'Fri',
+    note: '', hasEmailTemplate: true, showInPreview: true,
+    previewLabel: "Fri (week before): Follow-up email"
+  },
+  {
+    id: 'tpl_t4', section: '🗓️ Orientation Week',
+    name: 'Schedule Meet & Greet with Brian',
+    timing: 'monday_orient', day: 'Mon',
+    note: 'Target: Wednesday of orientation week. Include Brian, Brenda, Techs, Paula.',
+    hasEmailTemplate: false, showInPreview: false,
+    previewLabel: ''
+  },
+  {
+    id: 'tpl_t5', section: '🗓️ Orientation Week',
+    name: 'Add techs to recurring weekly & monthly meetings',
+    timing: 'monday_orient', day: 'Mon',
+    note: 'Ask Brian to add to Tool Box. Ask Brenda to add to TTB. Add to New Tech Update (Wednesdays) and TTB (Thursdays). ⚠️ Survey techs: do NOT add to Wednesday meeting.',
+    hasEmailTemplate: false, showInPreview: true,
+    previewLabel: "Mon (orientation week): Add to recurring meetings"
+  },
+  {
+    id: 'tpl_t5b', section: '🗓️ Orientation Week',
+    name: 'Create ATA profiles + enroll in Safety, ATA Getting Started & all Basic Lessons',
+    timing: 'monday_orient', day: 'Mon',
+    note: 'Steps:\n1. Create account with Airadigm email\n2. Enroll in: Safety Module, ATA Getting Started, All Basic Lessons\n3. Reset any previous quiz attempts if needed\n4. Verify enrollment in Airadigm Technical Academy dashboard',
+    hasEmailTemplate: false, showInPreview: false,
+    previewLabel: ''
+  },
+  {
+    id: 'tpl_t6', section: '⭐ Orientation Day (Tuesday)',
+    name: 'After IT onboarding: Add techs to RC Channels',
+    timing: 'tuesday_orient', day: 'Tue',
+    note: '• Company Social RC Thread\n• Field Tech Resources RC Thread\n• Training Touch Base / BZ Info Thread\n• Competition GROUP RC Thread',
+    hasEmailTemplate: false, showInPreview: true,
+    previewLabel: "Tue (orientation day): RC channels"
+  },
+  {
+    id: 'tpl_t7', section: '⭐ Orientation Day (Tuesday)',
+    name: 'Create TEAM for each tech in RC',
+    timing: 'tuesday_orient', day: 'Tue',
+    note: 'Each TEAM: Assigned PM + Lead Tech (Brenda) + New Technician.',
+    hasEmailTemplate: false, showInPreview: true,
+    previewLabel: "Tue (orientation day): Create TEAM"
+  },
+  {
+    id: 'tpl_t8', section: '⭐ Orientation Day (Tuesday)',
+    name: 'Post confirmation in Orientation RC thread',
+    timing: 'tuesday_orient', day: 'Tue',
+    note: 'Confirm: RC channels ✅, TEAM created ✅, Recurring meetings ✅\nAsk each tech to confirm attendance for scheduled meetings.',
+    hasEmailTemplate: false, showInPreview: true,
+    previewLabel: "Tue (orientation day): Post confirmation"
+  }
+];
+
+const TIMING_OPTIONS = [
+  { value: 'monday_before',  label: 'Mon — Week Before Orientation' },
+  { value: 'friday_before',  label: 'Fri — Week Before Orientation' },
+  { value: 'monday_orient',  label: 'Mon — Orientation Week' },
+  { value: 'tuesday_orient', label: 'Tue — Orientation Day' },
+  { value: 'wednesday_orient', label: 'Wed — Orientation Week' },
+  { value: 'thursday_orient', label: 'Thu — Orientation Week' },
+  { value: 'friday_orient',  label: 'Fri — Orientation Week' },
+];
+
+const TIMING_DAY_MAP = {
+  monday_before: 'Mon', friday_before: 'Fri',
+  monday_orient: 'Mon', tuesday_orient: 'Tue',
+  wednesday_orient: 'Wed', thursday_orient: 'Thu', friday_orient: 'Fri'
+};
+
+function getTaskTemplate() {
+  try {
+    const saved = localStorage.getItem('orient_task_template');
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_TASK_TEMPLATE));
+  } catch { return JSON.parse(JSON.stringify(DEFAULT_TASK_TEMPLATE)); }
+}
+function saveTaskTemplate(tpl) {
+  localStorage.setItem('orient_task_template', JSON.stringify(tpl));
+}
+
+let _oteEditingId = null;
+
+function openTaskTemplateEditor() {
+  document.getElementById('ote-overlay').style.display = 'flex';
+  renderTaskTemplateEditor();
+}
+function closeTaskTemplateEditor() {
+  document.getElementById('ote-overlay').style.display = 'none';
+  _oteEditingId = null;
+}
+function resetTaskTemplate() {
+  if (!confirm('Reset all tasks to default? Custom tasks will be lost.')) return;
+  localStorage.removeItem('orient_task_template');
+  renderTaskTemplateEditor();
+  showWtToast('Template reset to default.');
+}
+
+function renderTaskTemplateEditor() {
+  const tpl = getTaskTemplate();
+  const body = document.getElementById('ote-body');
+  if (!body) return;
+
+  // Group by section
+  const sections = {};
+  tpl.forEach(t => {
+    if (!sections[t.section]) sections[t.section] = [];
+    sections[t.section].push(t);
+  });
+
+  let html = '';
+  Object.entries(sections).forEach(([sec, tasks]) => {
+    html += `<div class="ote-section">
+      <div class="ote-section-title">${sec}</div>`;
+    tasks.forEach(t => {
+      html += `
+        <div class="ote-task-row" id="oter-${t.id}">
+          <div class="ote-task-info">
+            <div class="ote-task-name">${t.name}</div>
+            <div class="ote-task-meta">
+              <span>📅 ${TIMING_OPTIONS.find(o=>o.value===t.timing)?.label || t.timing}</span>
+              ${t.showInPreview ? '<span style="color:#3b6d11;background:#eaf3de;padding:1px 7px;border-radius:10px;">✓ In preview</span>' : ''}
+              ${t.hasEmailTemplate ? '<span style="color:#854f0b;background:#fef9e7;padding:1px 7px;border-radius:10px;">📧 Email template</span>' : ''}
+            </div>
+            ${t.note ? `<div style="font-size:11px;color:#94a3b8;margin-top:3px;white-space:pre-line;">${t.note.substring(0,80)}${t.note.length>80?'...':''}</div>` : ''}
+          </div>
+          <div class="ote-task-actions">
+            <button class="ote-btn ote-btn-edit" onclick="startEditOteTask('${t.id}')">✏️ Edit</button>
+            <button class="ote-btn ote-btn-del" onclick="deleteOteTask('${t.id}')">🗑</button>
+          </div>
+        </div>
+        <div id="ote-form-${t.id}" style="display:none;"></div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `<button class="ote-btn-add" onclick="startAddOteTask()">+ Add New Task</button>
+           <div id="ote-add-form" style="display:none;"></div>`;
+  body.innerHTML = html;
+}
+
+function startEditOteTask(id) {
+  _oteEditingId = id;
+  const tpl = getTaskTemplate();
+  const task = tpl.find(t => t.id === id);
+  if (!task) return;
+  // Hide any open forms
+  document.querySelectorAll('[id^="ote-form-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('ote-add-form').style.display = 'none';
+  const formEl = document.getElementById('ote-form-' + id);
+  formEl.style.display = 'block';
+  formEl.innerHTML = buildOteForm(task, false);
+  formEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function startAddOteTask() {
+  document.querySelectorAll('[id^="ote-form-"]').forEach(el => el.style.display = 'none');
+  const addForm = document.getElementById('ote-add-form');
+  addForm.style.display = 'block';
+  addForm.innerHTML = buildOteForm(null, true);
+  addForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function buildOteForm(task, isNew) {
+  const t = task || { id:'', section:'📧 Week Before — Emails & Prep', name:'', timing:'monday_before', note:'', hasEmailTemplate:false, showInPreview:false, previewLabel:'' };
+  const sections = ['📧 Week Before — Emails & Prep','🗓️ Orientation Week','⭐ Orientation Day (Tuesday)'];
+  return `
+    <div class="ote-edit-form">
+      <div style="font-size:12px;font-weight:800;color:#1a2744;margin-bottom:10px;">${isNew ? '+ New Task' : '✏️ Edit Task'}</div>
+      <div class="ote-form-grid">
+        <div class="ote-form-field ote-form-full">
+          <label>Task Name *</label>
+          <input type="text" id="ote-f-name" value="${(t.name||'').replace(/"/g,'&quot;')}" placeholder="e.g. Send welcome email" />
+        </div>
+        <div class="ote-form-field">
+          <label>Timing / Day</label>
+          <select id="ote-f-timing">
+            ${TIMING_OPTIONS.map(o => `<option value="${o.value}" ${t.timing===o.value?'selected':''}>${o.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ote-form-field">
+          <label>Section</label>
+          <select id="ote-f-section">
+            ${sections.map(s => `<option value="${s}" ${t.section===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ote-form-field ote-form-full">
+          <label>Notes / Instructions</label>
+          <textarea id="ote-f-note" rows="3" placeholder="Step-by-step instructions...">${t.note||''}</textarea>
+        </div>
+        <div class="ote-form-field">
+          <label>Show in Preview (green box)</label>
+          <select id="ote-f-preview">
+            <option value="yes" ${t.showInPreview?'selected':''}>✓ Yes — show in preview</option>
+            <option value="no" ${!t.showInPreview?'selected':''}>No — hide from preview</option>
+          </select>
+        </div>
+        <div class="ote-form-field">
+          <label>Has Email Template</label>
+          <select id="ote-f-email">
+            <option value="yes" ${t.hasEmailTemplate?'selected':''}>📧 Yes</option>
+            <option value="no" ${!t.hasEmailTemplate?'selected':''}>No</option>
+          </select>
+        </div>
+        <div class="ote-form-field ote-form-full" id="ote-preview-label-wrap" style="${t.showInPreview?'':'display:none'}">
+          <label>Preview Label (shown in green box)</label>
+          <input type="text" id="ote-f-plabel" value="${(t.previewLabel||'').replace(/"/g,'&quot;')}" placeholder="e.g. Mon (week before): Reply to Brenda" />
+        </div>
+      </div>
+      <div class="ote-form-actions">
+        <button onclick="cancelOteForm()" style="padding:7px 16px;border-radius:7px;border:1.5px solid #dce4f5;background:white;cursor:pointer;font-size:12px;font-weight:600;">Cancel</button>
+        <button onclick="${isNew ? 'saveNewOteTask()' : "saveEditOteTask('" + t.id + "')"}" style="padding:7px 16px;border-radius:7px;border:none;background:#1a2744;color:white;cursor:pointer;font-size:12px;font-weight:700;">${isNew ? 'Add Task' : 'Save Changes'}</button>
+      </div>
+    </div>`;
+}
+
+function cancelOteForm() {
+  document.querySelectorAll('[id^="ote-form-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('ote-add-form').style.display = 'none';
+  _oteEditingId = null;
+}
+
+function saveEditOteTask(id) {
+  const tpl = getTaskTemplate();
+  const idx = tpl.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  const name = document.getElementById('ote-f-name').value.trim();
+  if (!name) { alert('Task name is required.'); return; }
+  tpl[idx] = {
+    ...tpl[idx],
+    name,
+    timing: document.getElementById('ote-f-timing').value,
+    section: document.getElementById('ote-f-section').value,
+    note: document.getElementById('ote-f-note').value.trim(),
+    showInPreview: document.getElementById('ote-f-preview').value === 'yes',
+    hasEmailTemplate: document.getElementById('ote-f-email').value === 'yes',
+    previewLabel: document.getElementById('ote-f-plabel')?.value.trim() || '',
+    day: TIMING_DAY_MAP[document.getElementById('ote-f-timing').value] || 'Mon'
+  };
+  saveTaskTemplate(tpl);
+  cancelOteForm();
+  renderTaskTemplateEditor();
+  showWtToast('Task updated!');
+}
+
+function saveNewOteTask() {
+  const name = document.getElementById('ote-f-name').value.trim();
+  if (!name) { alert('Task name is required.'); return; }
+  const tpl = getTaskTemplate();
+  const timing = document.getElementById('ote-f-timing').value;
+  const newTask = {
+    id: 'tpl_custom_' + Date.now(),
+    name,
+    timing,
+    section: document.getElementById('ote-f-section').value,
+    note: document.getElementById('ote-f-note').value.trim(),
+    showInPreview: document.getElementById('ote-f-preview').value === 'yes',
+    hasEmailTemplate: document.getElementById('ote-f-email').value === 'yes',
+    previewLabel: document.getElementById('ote-f-plabel')?.value.trim() || '',
+    day: TIMING_DAY_MAP[timing] || 'Mon'
+  };
+  tpl.push(newTask);
+  saveTaskTemplate(tpl);
+  cancelOteForm();
+  renderTaskTemplateEditor();
+  showWtToast('Task added!');
+}
+
+function deleteOteTask(id) {
+  if (!confirm('Delete this task from the template?\n\nThis will not affect already-created groups.')) return;
+  const tpl = getTaskTemplate().filter(t => t.id !== id);
+  saveTaskTemplate(tpl);
+  renderTaskTemplateEditor();
+  showWtToast('Task deleted from template.');
+}
+
+// Show/hide preview label field when showInPreview changes
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'ote-f-preview') {
+    const wrap = document.getElementById('ote-preview-label-wrap');
+    if (wrap) wrap.style.display = e.target.value === 'yes' ? '' : 'none';
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function() { initResources(); });
 </script>
 <!-- ── NEW ORIENTATION GROUP MODAL ── -->
@@ -4559,18 +4876,49 @@ document.addEventListener("DOMContentLoaded", function() { initResources(); });
         <div id="og-tech-preview" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;padding:6px;background:#f8fafc;border-radius:8px;border:1.5px solid #dce4f5;"></div>
       </div>
 
-      <div style="background:#eaf3de;border-radius:10px;padding:12px 14px;font-size:12px;color:#3b6d11;line-height:1.7;">
+      <div id="og-preview-box" style="background:#eaf3de;border-radius:10px;padding:12px 14px;font-size:12px;color:#3b6d11;line-height:1.7;">
         <strong>📋 Tasks auto-generated:</strong><br>
-        📅 <strong>Mon (week before):</strong> Reply ALL to Brenda's email + Prepare ATA accounts<br>
-        📅 <strong>Fri (week before):</strong> Follow-up email + Schedule Meet &amp; Greet with Brian<br>
-        📅 <strong>Mon (orientation week):</strong> Add to recurring meetings<br>
-        📅 <strong>Tue (orientation day):</strong> RC channels + Create TEAM + Post confirmation
+        <span id="og-preview-content"></span>
       </div>
+      <script>
+        (function() {
+          const tpl = (function() { try { const s = localStorage.getItem('orient_task_template'); return s ? JSON.parse(s) : null; } catch(e) { return null; } })();
+          const tasks = tpl || [];
+          const preview = tasks.filter(t => t.showInPreview);
+          const grouped = {};
+          preview.forEach(t => { if (!grouped[t.timing]) grouped[t.timing] = []; grouped[t.timing].push(t.previewLabel || t.name.substring(0,40)); });
+          const timingOrder = ['monday_before','friday_before','monday_orient','tuesday_orient','wednesday_orient','thursday_orient','friday_orient'];
+          const timingLabels = {monday_before:'Mon (week before)',friday_before:'Fri (week before)',monday_orient:'Mon (orientation week)',tuesday_orient:'Tue (orientation day)',wednesday_orient:'Wed (orientation week)',thursday_orient:'Thu (orientation week)',friday_orient:'Fri (orientation week)'};
+          let html = '';
+          timingOrder.forEach(k => {
+            if (grouped[k] && grouped[k].length) {
+              html += '📅 <strong>' + timingLabels[k] + ':</strong> ' + grouped[k].map(l => l.replace(/^[A-Za-z]+.*?:\s*/,'')).join(' + ') + '<br>';
+            }
+          });
+          const el = document.getElementById('og-preview-content');
+          if (el) el.innerHTML = html || 'No tasks in preview.';
+        })();
+      </script>
     </div>
 
     <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
       <button onclick="closeNewGroupModal()" style="padding:10px 20px;border-radius:8px;border:1.5px solid #dce4f5;background:white;cursor:pointer;font-size:13px;font-weight:600;">Cancel</button>
       <button onclick="saveNewGroup()" style="padding:10px 22px;border-radius:8px;border:none;background:#1a2744;color:white;cursor:pointer;font-size:13px;font-weight:700;">✅ Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TASK TEMPLATE EDITOR MODAL ── -->
+<div id="ote-overlay" class="ote-overlay" style="display:none;" onclick="if(event.target===this)closeTaskTemplateEditor()">
+  <div class="ote-modal">
+    <div class="ote-header">
+      <h3>⚙️ Orientation Task Template Editor</h3>
+      <button onclick="closeTaskTemplateEditor()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;font-weight:700;">✕ Close</button>
+    </div>
+    <div class="ote-body" id="ote-body"></div>
+    <div class="ote-footer">
+      <button onclick="resetTaskTemplate()" style="padding:8px 16px;border-radius:8px;border:1.5px solid #dce4f5;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#a32d2d;">↺ Reset to Default</button>
+      <button onclick="closeTaskTemplateEditor()" style="padding:8px 20px;border-radius:8px;border:none;background:#1a2744;color:white;cursor:pointer;font-size:13px;font-weight:700;">✅ Done</button>
     </div>
   </div>
 </div>
