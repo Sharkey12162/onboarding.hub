@@ -67,6 +67,8 @@
   .task-name { font-size: 12px; font-weight: 500; color: #1e293b; margin-bottom: 6px; line-height: 1.35; }
   .task-name.done { text-decoration: line-through; color: #94a3b8; }
   .task-footer { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+
+  /* STATUS BADGE — clickable */
   .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
   .badge-pending { background: #fef3c7; color: #92400e; }
   .badge-done { background: #d1fae5; color: #065f46; }
@@ -74,6 +76,24 @@
   .badge-blocked { background: #fee2e2; color: #991b1b; }
   .badge-outlook { background: #e0e7ff; color: #3730a3; font-size: 9px; padding: 2px 6px; }
   .badge-owner { font-size: 10px; color: #64748b; }
+
+  .status-btn {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500;
+    cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 3px;
+    transition: opacity .15s, transform .1s;
+    user-select: none;
+  }
+  .status-btn:hover { opacity: .8; }
+  .status-btn:active { transform: scale(.95); }
+  .status-btn::after { content: ' ↻'; font-size: 9px; opacity: .6; }
+  .status-btn.pending { background: #fef3c7; color: #92400e; }
+  .status-btn.progress { background: #dbeafe; color: #1e40af; }
+  .status-btn.done    { background: #d1fae5; color: #065f46; }
+  .status-btn.blocked { background: #fee2e2; color: #991b1b; }
+
+  /* delete btn on card */
+  .btn-del { background: none; border: none; color: #cbd5e1; font-size: 13px; cursor: pointer; padding: 0 2px; line-height: 1; margin-left: auto; }
+  .btn-del:hover { color: #ef4444; }
 
   /* SIDEBAR */
   .sidebar { width: 248px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
@@ -94,18 +114,19 @@
   .log-date { color: #94a3b8; margin-top: 2px; font-size: 10px; }
 
   /* LEGEND */
-  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; align-items: center; }
   .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
+  .leg-tip { font-size: 11px; color: #94a3b8; margin-left: auto; }
 
   /* MODAL */
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 200; }
   .modal-backdrop.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; width: 440px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+  .modal { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; width: 460px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
   .modal-head { background: #1a2540; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
   .modal-title { color: #fff; font-size: 15px; font-weight: 500; }
   .modal-close { background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1; }
   .modal-close:hover { color: #fff; }
-  .modal-body { padding: 20px; }
+  .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
   .form-row { margin-bottom: 14px; }
   .form-label { font-size: 12px; color: #64748b; margin-bottom: 5px; display: block; font-weight: 500; }
   .form-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 12px; font-size: 13px; color: #1e293b; outline: none; font-family: inherit; transition: border-color .15s; }
@@ -117,6 +138,14 @@
   .btn-cancel:hover { background: #e2e8f0; }
   .btn-save { background: #1a2540; color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
   .btn-save:hover { background: #263454; }
+
+  /* RECURRING DAYS PICKER */
+  .recurring-section { display: none; margin-top: 10px; }
+  .recurring-section.visible { display: block; }
+  .days-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .day-toggle { padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; user-select: none; transition: all .15s; }
+  .day-toggle.selected { background: #1a2540; color: #fff; border-color: #1a2540; }
+  .recur-hint { font-size: 11px; color: #94a3b8; margin-top: 6px; }
 
   @media (max-width: 900px) {
     .days { grid-template-columns: repeat(3, minmax(0,1fr)); }
@@ -155,7 +184,7 @@
             <option>Brenda &amp; Paula</option>
           </select>
         </div>
-        <div>
+        <div id="single-day-row">
           <label class="form-label">Day</label>
           <select id="f-day" class="form-input">
             <option value="0">Monday</option>
@@ -191,9 +220,24 @@
         <label class="form-label">Notes</label>
         <input id="f-notes" class="form-input" type="text" placeholder="Optional notes...">
       </div>
+
+      <!-- RECURRING TOGGLE -->
       <div class="form-row" style="display:flex;align-items:center;gap:8px">
-        <input id="f-recurring" type="checkbox" style="width:16px;height:16px;cursor:pointer">
+        <input id="f-recurring" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleRecurring(this.checked)">
         <label class="form-label" style="margin:0;cursor:pointer" for="f-recurring">Recurring task</label>
+      </div>
+
+      <!-- MULTI-DAY PICKER (shown when recurring is checked) -->
+      <div class="recurring-section" id="recurring-section">
+        <label class="form-label">Repeat on these days</label>
+        <div class="days-picker">
+          <span class="day-toggle" data-day="0" onclick="toggleDay(this)">Mon</span>
+          <span class="day-toggle" data-day="1" onclick="toggleDay(this)">Tue</span>
+          <span class="day-toggle" data-day="2" onclick="toggleDay(this)">Wed</span>
+          <span class="day-toggle" data-day="3" onclick="toggleDay(this)">Thu</span>
+          <span class="day-toggle" data-day="4" onclick="toggleDay(this)">Fri</span>
+        </div>
+        <div class="recur-hint">Select one or more days. Each day gets its own status each week — marking done on Monday won't affect Friday.</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -248,9 +292,11 @@
       <div class="days" id="days-grid"></div>
       <div class="legend">
         <div class="leg-item"><span class="badge badge-done">done</span> Completed</div>
-        <div class="leg-item"><span class="badge badge-pending">pending</span> In Progress / To Do</div>
-        <div class="leg-item"><span class="badge badge-blocked">blocked</span> Blocked / At Risk</div>
-        <div class="leg-item"><span class="badge" style="background:#e0f2fe;color:#0369a1">recurring</span> Recurring Task</div>
+        <div class="leg-item"><span class="badge badge-progress">in progress</span> In Progress</div>
+        <div class="leg-item"><span class="badge badge-pending">pending</span> To Do</div>
+        <div class="leg-item"><span class="badge badge-blocked">blocked</span> Blocked</div>
+        <div class="leg-item"><span class="badge" style="background:#e0f2fe;color:#0369a1">↻ recurring</span> Recurring</div>
+        <div class="leg-tip">Click the status badge to change it ↻</div>
       </div>
     </div>
     <div class="sidebar">
@@ -269,7 +315,7 @@
       <div class="side-card">
         <div class="side-head">
           <span class="side-head-title">📋 Activity Log</span>
-          <span style="font-size:10px;color:#94a3b8">Last 10 completed</span>
+          <span style="font-size:10px;color:#94a3b8">Last 10</span>
         </div>
         <div class="side-body" id="activity-log">
           <div class="log-item"><strong>✓ [Chad Lorenz, Ismael Saucedo]</strong> Add techs to recurring weekly &amp; monthly meetings<div class="log-date">Apr 13, 1:07 PM</div></div>
@@ -283,21 +329,88 @@
 
 <script>
   const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+  const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   let weekOffset = 0;
 
+  // ── STATUS CYCLE ──
+  const STATUS_CYCLE = ['pending','progress','done','blocked'];
+  const STATUS_LABEL = { pending:'pending', progress:'in progress', done:'done', blocked:'blocked' };
+
+  // ── INITIAL TASKS ──
+  // Recurring tasks use `recurringDays: [0,1,2,3,4]` (array of day indices).
+  // Per-week status is stored in `weekStatus: { "weekKey_day": "status" }`.
+  // Non-recurring tasks use `day` (single int) and `weekOffset`.
   const INIT_TASKS = [
-    { name:'ATA Hours Report', owner:'Paula', day:0, status:'pending', recurring:true, cat:'Training', notes:'', weekOffset:0 },
-    { name:'IN Candidates – Follow-Up – Daily', owner:'Paula Quintero', day:3, status:'done', recurring:true, allDay:true, cat:'Hiring', notes:'', weekOffset:0 },
-    { name:'ATA Progress – Report – Weekly', owner:'Paula Quintero', day:4, status:'done', recurring:true, cat:'Training', notes:'', weekOffset:0 },
+    {
+      id: 't1', name: 'ATA Hours Report', owner: 'Paula', cat: 'Training', notes: '',
+      recurring: true, recurringDays: [0],
+      weekStatus: {}
+    },
+    {
+      id: 't2', name: 'IN Candidates – Follow-Up – Daily', owner: 'Paula Quintero',
+      cat: 'Hiring', notes: '', allDay: true,
+      recurring: true, recurringDays: [0,1,2,3,4],
+      weekStatus: {}
+    },
+    {
+      id: 't3', name: 'ATA Progress – Report – Weekly', owner: 'Paula Quintero',
+      cat: 'Training', notes: '',
+      recurring: true, recurringDays: [4],
+      weekStatus: {}
+    },
   ];
 
-  let tasks = JSON.parse(localStorage.getItem('airadigm_tasks') || 'null') || JSON.parse(JSON.stringify(INIT_TASKS));
-
-  function saveTasks() {
-    try { localStorage.setItem('airadigm_tasks', JSON.stringify(tasks)); } catch(e) {}
+  let tasks = JSON.parse(localStorage.getItem('airadigm_tasks_v2') || 'null');
+  if (!tasks) {
+    tasks = JSON.parse(JSON.stringify(INIT_TASKS));
   }
 
+  function saveTasks() {
+    try { localStorage.setItem('airadigm_tasks_v2', JSON.stringify(tasks)); } catch(e) {}
+  }
+
+  // ── WEEK KEY — unique per weekOffset ──
+  function weekKey(offset) { return 'w' + offset; }
+
+  // ── STATUS for a recurring task on a specific week+day ──
+  function getRecurStatus(task, offset, day) {
+    const k = weekKey(offset) + '_d' + day;
+    return (task.weekStatus && task.weekStatus[k]) || 'pending';
+  }
+
+  function setRecurStatus(taskId, offset, day, status) {
+    const t = tasks.find(x => x.id === taskId);
+    if (!t) return;
+    if (!t.weekStatus) t.weekStatus = {};
+    const k = weekKey(offset) + '_d' + day;
+    t.weekStatus[k] = status;
+    saveTasks();
+  }
+
+  // ── CYCLE STATUS ──
+  function cycleStatus(taskId, offset, day, isRecurring) {
+    if (isRecurring) {
+      const cur = getRecurStatus(tasks.find(x=>x.id===taskId), offset, day);
+      const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
+      setRecurStatus(taskId, offset, day, next);
+    } else {
+      const t = tasks.find(x => x.id === taskId);
+      if (!t) return;
+      const cur = t.status || 'pending';
+      t.status = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
+      saveTasks();
+    }
+    renderCalendar();
+  }
+
+  function deleteTask(taskId) {
+    tasks = tasks.filter(x => x.id !== taskId);
+    saveTasks();
+    renderCalendar();
+  }
+
+  // ── WEEK DATES ──
   function getWeekDates(offset) {
     const today = new Date();
     const dow = today.getDay();
@@ -317,18 +430,35 @@
     return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
   }
 
+  // ── RENDER ──
   function renderCalendar() {
     const dates = getWeekDates(weekOffset);
     document.getElementById('week-label').textContent = 'Week of ' + fmt(dates[0]) + ' – ' + fmt(dates[4]);
 
-    const weekTasks = tasks.filter(t => (t.weekOffset ?? 0) === weekOffset);
-
     let total=0, done=0, pending=0, blocked=0;
-    weekTasks.forEach(t => {
-      total++;
-      if(t.status==='done') done++;
-      else if(t.status==='blocked') blocked++;
-      else pending++;
+
+    // Collect all task+day combos visible this week
+    const slots = []; // {task, day, status}
+    tasks.forEach(t => {
+      if (t.recurring) {
+        (t.recurringDays || [t.day]).forEach(day => {
+          const st = getRecurStatus(t, weekOffset, day);
+          slots.push({task: t, day, status: st});
+          total++;
+          if (st==='done') done++;
+          else if (st==='blocked') blocked++;
+          else pending++;
+        });
+      } else {
+        if ((t.weekOffset ?? 0) === weekOffset) {
+          const st = t.status || 'pending';
+          slots.push({task: t, day: t.day, status: st});
+          total++;
+          if (st==='done') done++;
+          else if (st==='blocked') blocked++;
+          else pending++;
+        }
+      }
     });
 
     document.getElementById('s-total').textContent = total;
@@ -351,22 +481,65 @@
       const body = document.createElement('div');
       body.className = 'day-body';
 
-      const dayTasks = weekTasks.filter(t => t.day === di);
-      if(dayTasks.length === 0) {
+      const daySlots = slots.filter(s => s.day === di);
+
+      if (daySlots.length === 0) {
         body.innerHTML = '<div class="no-tasks">No tasks</div>';
       } else {
-        const badgeMap = { done:'badge-done', pending:'badge-pending', progress:'badge-progress', blocked:'badge-blocked' };
-        const badgeLabel = { done:'done', pending:'pending', progress:'in progress', blocked:'blocked' };
-        dayTasks.forEach(t => {
+        daySlots.forEach(({task: t, day, status}) => {
           const card = document.createElement('div');
           card.className = 'task-card';
+
+          // Tag
           let tag = '';
-          if(t.allDay) tag = '<span class="task-tag tag-allday">All days</span>';
-          else if(t.recurring) tag = `<span class="task-tag tag-recurring">↻ Every ${['Monday','Tuesday','Wednesday','Thursday','Friday'][t.day]}</span>`;
-          const nameClass = 'task-name' + (t.status==='done' ? ' done' : '');
-          const bClass = badgeMap[t.status] || 'badge-pending';
-          const bLabel = badgeLabel[t.status] || t.status;
-          card.innerHTML = `${tag}<div class="${nameClass}">${t.name}</div><div class="task-footer"><span class="badge ${bClass}">${bLabel}</span><span class="badge badge-outlook">📅 Outlook</span>${t.owner ? `<span class="badge-owner">${t.owner}</span>` : ''}</div>`;
+          if (t.allDay) {
+            tag = '<span class="task-tag tag-allday">All days</span>';
+          } else if (t.recurring) {
+            const recurDays = (t.recurringDays || [t.day]);
+            if (recurDays.length > 1) {
+              tag = `<span class="task-tag tag-recurring">↻ ${recurDays.map(d=>DAYS[d]).join(', ')}</span>`;
+            } else {
+              tag = `<span class="task-tag tag-recurring">↻ Every ${DAY_FULL[day]}</span>`;
+            }
+          }
+
+          const nameClass = 'task-name' + (status==='done' ? ' done' : '');
+
+          // Status button (clickable)
+          const statusBtn = document.createElement('button');
+          statusBtn.className = `status-btn ${status}`;
+          statusBtn.textContent = STATUS_LABEL[status] || status;
+          statusBtn.title = 'Click to change status';
+          statusBtn.onclick = () => cycleStatus(t.id, weekOffset, day, t.recurring);
+
+          // Delete button
+          const delBtn = document.createElement('button');
+          delBtn.className = 'btn-del';
+          delBtn.title = 'Delete task';
+          delBtn.textContent = '×';
+          delBtn.onclick = () => {
+            if (confirm(`Delete "${t.name}"?`)) deleteTask(t.id);
+          };
+
+          card.innerHTML = `${tag}<div class="${nameClass}">${t.name}</div>`;
+          const footer = document.createElement('div');
+          footer.className = 'task-footer';
+          footer.appendChild(statusBtn);
+
+          const outlookBadge = document.createElement('span');
+          outlookBadge.className = 'badge badge-outlook';
+          outlookBadge.textContent = '📅 Outlook';
+          footer.appendChild(outlookBadge);
+
+          if (t.owner) {
+            const ownerBadge = document.createElement('span');
+            ownerBadge.className = 'badge-owner';
+            ownerBadge.textContent = t.owner;
+            footer.appendChild(ownerBadge);
+          }
+
+          footer.appendChild(delBtn);
+          card.appendChild(footer);
           body.appendChild(card);
         });
       }
@@ -378,9 +551,14 @@
   function changeWeek(dir) { weekOffset += dir; renderCalendar(); }
   function goToday() { weekOffset = 0; renderCalendar(); }
 
+  // ── MODAL ──
   function openModal() {
     document.getElementById('modal-backdrop').classList.add('open');
     document.getElementById('f-task').focus();
+    // Pre-select the current day in single-day selector
+    const today = new Date().getDay();
+    const dayMap = {1:0,2:1,3:2,4:3,5:4};
+    document.getElementById('f-day').value = dayMap[today] ?? 0;
   }
 
   function closeModal() {
@@ -390,46 +568,96 @@
     document.getElementById('f-notes').value = '';
     document.getElementById('f-recurring').checked = false;
     document.getElementById('f-status').value = 'pending';
+    // Reset day toggles
+    document.querySelectorAll('.day-toggle').forEach(el => el.classList.remove('selected'));
+    document.getElementById('recurring-section').classList.remove('visible');
+    document.getElementById('single-day-row').style.display = '';
+  }
+
+  function toggleRecurring(checked) {
+    document.getElementById('recurring-section').classList.toggle('visible', checked);
+    // When recurring is on, hide the single-day picker (days are picked via checkboxes)
+    document.getElementById('single-day-row').style.display = checked ? 'none' : '';
+    if (checked) {
+      // Auto-select the day that's currently set in the single-day dropdown
+      const singleDay = document.getElementById('f-day').value;
+      const btn = document.querySelector(`.day-toggle[data-day="${singleDay}"]`);
+      if (btn) btn.classList.add('selected');
+    }
+  }
+
+  function toggleDay(el) {
+    el.classList.toggle('selected');
+  }
+
+  function generateId() {
+    return 't' + Date.now() + Math.random().toString(36).slice(2,6);
   }
 
   function saveTask() {
     const name = document.getElementById('f-task').value.trim();
-    if(!name) {
+    if (!name) {
       document.getElementById('f-task').classList.add('error');
       document.getElementById('f-task').focus();
       return;
     }
-    const task = {
-      name,
-      owner: document.getElementById('f-owner').value,
-      day: parseInt(document.getElementById('f-day').value),
-      status: document.getElementById('f-status').value,
-      cat: document.getElementById('f-cat').value,
-      notes: document.getElementById('f-notes').value,
-      recurring: document.getElementById('f-recurring').checked,
-      weekOffset
-    };
-    tasks.push(task);
+
+    const isRecurring = document.getElementById('f-recurring').checked;
+
+    if (isRecurring) {
+      // Collect selected days
+      const selectedDays = [...document.querySelectorAll('.day-toggle.selected')].map(el => parseInt(el.dataset.day));
+      if (selectedDays.length === 0) {
+        alert('Please select at least one day for the recurring task.');
+        return;
+      }
+      const task = {
+        id: generateId(),
+        name,
+        owner: document.getElementById('f-owner').value,
+        cat: document.getElementById('f-cat').value,
+        notes: document.getElementById('f-notes').value,
+        recurring: true,
+        recurringDays: selectedDays.sort((a,b)=>a-b),
+        weekStatus: {}
+      };
+      tasks.push(task);
+    } else {
+      const task = {
+        id: generateId(),
+        name,
+        owner: document.getElementById('f-owner').value,
+        day: parseInt(document.getElementById('f-day').value),
+        status: document.getElementById('f-status').value,
+        cat: document.getElementById('f-cat').value,
+        notes: document.getElementById('f-notes').value,
+        recurring: false,
+        weekOffset
+      };
+      tasks.push(task);
+    }
+
     saveTasks();
 
+    // Log
     const log = document.getElementById('activity-log');
     const entry = document.createElement('div');
     entry.className = 'log-item';
     const now = new Date();
     entry.innerHTML = `<strong>+ ${name}</strong> added<div class="log-date">${now.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>`;
     log.insertBefore(entry, log.firstChild);
-    while(log.children.length > 10) log.removeChild(log.lastChild);
+    while (log.children.length > 10) log.removeChild(log.lastChild);
 
     closeModal();
     renderCalendar();
   }
 
   document.getElementById('modal-backdrop').addEventListener('click', function(e) {
-    if(e.target === this) closeModal();
+    if (e.target === this) closeModal();
   });
 
   document.addEventListener('keydown', function(e) {
-    if(e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') closeModal();
   });
 
   renderCalendar();
