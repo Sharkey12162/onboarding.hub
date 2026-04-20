@@ -3,249 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Airadigm Onboarding Hub – Weekly Tasks</title>
+<title>Airadigm Onboarding Hub</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; min-height: 100vh; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; min-height: 100vh; }
+.nav { background: #1a2540; padding: 10px 24px; display: flex; align-items: center; gap: 32px; position: sticky; top: 0; z-index: 100; }
+.nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-icon { width: 36px; height: 36px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.nav-title { color: #fff; font-size: 14px; font-weight: 500; line-height: 1.2; }
+.nav-sub { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.nav-links { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.nav-link { color: #94a3b8; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; background: transparent; border: none; white-space: nowrap; transition: background .15s, color .15s; }
+.nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+.nav-link.active { background: #f59e0b; color: #1a2540; font-weight: 500; }
+.page { display: none; }
+.page.active { display: block; }
+.main { padding: 28px 24px; max-width: 1400px; margin: 0 auto; }
+.page-title { font-size: 24px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+.page-sub { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+.btn-primary { background: #1a2540; color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+.btn-primary:hover { background: #263454; }
+.btn-secondary { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 16px; font-size: 13px; cursor: pointer; color: #334155; font-family: inherit; }
+.btn-secondary:hover { background: #e2e8f0; }
+.badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 200; }
+.modal-backdrop.open { display: flex; }
+.modal { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+.modal-head { background: #1a2540; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.modal-title { color: #fff; font-size: 15px; font-weight: 500; }
+.modal-close { background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1; }
+.modal-close:hover { color: #fff; }
+.modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; justify-content: flex-end; }
+.form-row { margin-bottom: 14px; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.form-label { font-size: 12px; color: #64748b; margin-bottom: 5px; display: block; font-weight: 500; }
+.form-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 12px; font-size: 13px; color: #1e293b; outline: none; font-family: inherit; transition: border-color .15s; }
+.form-input:focus { border-color: #94a3b8; }
+.form-input.error { border-color: #dc2626; }
 
-  /* NAV */
-  .nav { background: #1a2540; padding: 10px 24px; display: flex; align-items: center; gap: 32px; }
-  .nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .nav-icon { width: 36px; height: 36px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .nav-title { color: #fff; font-size: 14px; font-weight: 500; line-height: 1.2; }
-  .nav-sub { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
-  .nav-links { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
-  .nav-link { color: #94a3b8; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; background: transparent; border: none; white-space: nowrap; transition: background .15s, color .15s; }
-  .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
-  .nav-link.active { background: #f59e0b; color: #1a2540; font-weight: 500; }
+/* RESOURCES */
+.resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.resource-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; }
+.resource-cat { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
+.resource-name { font-size: 14px; font-weight: 600; color: #1e293b; margin-bottom: 5px; }
+.resource-desc { font-size: 12px; color: #64748b; line-height: 1.5; margin-bottom: 10px; }
+.resource-link { font-size: 12px; color: #3b82f6; word-break: break-all; text-decoration: none; }
+.resource-link:hover { text-decoration: underline; }
 
-  /* MAIN */
-  .main { padding: 28px 24px; max-width: 1400px; margin: 0 auto; }
-  .page-title { font-size: 24px; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
-  .page-sub { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+/* RESPONSIBILITIES */
+.resp-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.resp-header { padding: 14px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; }
+.resp-header:hover { background: #f8fafc; }
+.resp-trigger { font-size: 11px; color: #f59e0b; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+.resp-title { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.4; }
+.resp-meta { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+.resp-chevron { font-size: 18px; color: #94a3b8; flex-shrink: 0; transition: transform .2s; }
+.resp-chevron.open { transform: rotate(180deg); }
+.resp-body { display: none; padding: 0 18px 16px; border-top: 1px solid #f1f5f9; }
+.resp-body.open { display: block; }
+.resp-step { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f8fafc; }
+.resp-step:last-child { border-bottom: none; }
+.step-check { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; margin-top: 2px; accent-color: #1a2540; }
+.step-text { font-size: 12px; color: #334155; line-height: 1.5; }
+.step-text.checked { text-decoration: line-through; color: #94a3b8; }
 
-  /* STATS */
-  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
-  .stat-num { font-size: 30px; font-weight: 600; color: #1e293b; }
-  .stat-num.green { color: #16a34a; border-left: 3px solid #16a34a; padding-left: 10px; }
-  .stat-num.amber { color: #d97706; border-left: 3px solid #d97706; padding-left: 10px; }
-  .stat-num.red { color: #dc2626; border-left: 3px solid #dc2626; padding-left: 10px; }
-  .stat-label { font-size: 11px; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+/* ORIENTATION */
+.orient-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day-head { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #94a3b8; text-align: center; padding: 6px 0; letter-spacing: .04em; }
+.cal-cell { background: #fff; border: 1px solid #e2e8f0; border-radius: 7px; min-height: 68px; padding: 6px; cursor: pointer; transition: border-color .15s; }
+.cal-cell:hover { border-color: #94a3b8; }
+.cal-cell.empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+.cal-cell.today-cell { border-color: #1a2540; background: #f0f4ff; }
+.cal-cell.has-orient { border-color: #f59e0b; }
+.cal-cell.has-note { border-color: #3b82f6; }
+.cal-num { font-size: 12px; font-weight: 500; color: #334155; margin-bottom: 3px; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin: 1px; }
+.dot-orient { background: #f59e0b; }
+.dot-note { background: #3b82f6; }
+.cal-note-preview { font-size: 9px; color: #3b82f6; line-height: 1.3; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cal-orient-label { font-size: 9px; color: #f59e0b; font-weight: 600; margin-top: 2px; }
+.orient-groups { margin-top: 24px; }
+.group-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.group-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; gap: 10px; }
+.group-name { font-size: 14px; font-weight: 600; color: #1e293b; }
+.group-techs { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+.group-tasks { display: flex; flex-wrap: wrap; gap: 4px; }
+.group-task-chip { font-size: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 7px; color: #475569; }
+.btn-sm { font-size: 11px; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; font-family: inherit; white-space: nowrap; }
+.btn-sm:hover { background: #f1f5f9; }
+.btn-sm.danger:hover { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
-  /* TOOLBAR */
-  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-  .week-nav { display: flex; align-items: center; gap: 8px; }
-  .nav-btn { width: 30px; height: 30px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: #334155; transition: background .15s; }
-  .nav-btn:hover { background: #f1f5f9; }
-  .week-label { font-size: 14px; font-weight: 500; color: #1e293b; white-space: nowrap; min-width: 180px; }
-  .btn-today { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; color: #334155; transition: background .15s; }
-  .btn-today:hover { background: #f1f5f9; }
-  .btn-add { background: #1a2540; color: #fff; border: none; border-radius: 6px; padding: 7px 18px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-left: auto; transition: background .15s; }
-  .btn-add:hover { background: #263454; }
+/* SUB-TABS (Orientation / Bootcamp) */
+.sub-tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 0; }
+.sub-tab { padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: #64748b; border-bottom: 3px solid transparent; margin-bottom: -1px; font-family: inherit; transition: color .15s; }
+.sub-tab:hover { color: #1e293b; }
+.sub-tab.active { color: #1a2540; border-bottom-color: #1a2540; }
+.sub-section { display: none; }
+.sub-section.active { display: block; }
 
-  /* CONTENT */
-  .content-row { display: flex; gap: 16px; align-items: flex-start; }
-  .calendar { flex: 1; min-width: 0; }
-  .days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+/* BOOTCAMP GROUP CARD */
+.bc-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+.bc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; gap: 10px; }
+.bc-name { font-size: 14px; font-weight: 600; color: #1e293b; }
+.bc-date { font-size: 12px; color: #64748b; }
+.bc-tasks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.bc-task-row { width: 100%; display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f8fafc; }
+.bc-task-row:last-child { border-bottom: none; }
+.bc-check { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: #7c3aed; }
+.bc-task-text { font-size: 12px; color: #334155; line-height: 1.4; }
+.bc-task-text.checked { text-decoration: line-through; color: #94a3b8; }
+.bc-day-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #7c3aed; background: #ede9fe; border-radius: 4px; padding: 2px 6px; white-space: nowrap; flex-shrink: 0; }
+.bc-day-label.fri { color: #0369a1; background: #e0f2fe; }
+.dot-bootcamp { background: #7c3aed; }
 
-  /* DAY COL */
-  .day-col { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; min-height: 210px; }
-  .day-head { padding: 10px 12px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; }
-  .day-head.today { background: #1a2540; }
-  .day-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
-  .day-head.today .day-name, .day-head.today .day-date { color: #94a3b8; }
-  .day-date { font-size: 11px; color: #94a3b8; }
-  .day-body { padding: 8px; }
-  .no-tasks { font-size: 11px; color: #cbd5e1; text-align: center; padding: 24px 0; }
+/* WEEKLY TASKS */
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 20px; }
+.stat-num { font-size: 30px; font-weight: 600; color: #1e293b; }
+.stat-num.green { color: #16a34a; border-left: 3px solid #16a34a; padding-left: 10px; }
+.stat-num.amber { color: #d97706; border-left: 3px solid #d97706; padding-left: 10px; }
+.stat-num.red { color: #dc2626; border-left: 3px solid #dc2626; padding-left: 10px; }
+.stat-label { font-size: 11px; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.week-nav { display: flex; align-items: center; gap: 8px; }
+.nav-btn { width: 30px; height: 30px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: #334155; }
+.nav-btn:hover { background: #f1f5f9; }
+.week-label { font-size: 14px; font-weight: 500; color: #1e293b; white-space: nowrap; min-width: 180px; }
+.btn-today { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; color: #334155; }
+.btn-today:hover { background: #f1f5f9; }
+.btn-add { background: #1a2540; color: #fff; border: none; border-radius: 6px; padding: 7px 18px; font-size: 13px; font-weight: 500; cursor: pointer; margin-left: auto; }
+.btn-add:hover { background: #263454; }
+.content-row { display: flex; gap: 16px; align-items: flex-start; }
+.calendar-wrap { flex: 1; min-width: 0; }
+.days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.day-col { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; min-height: 210px; }
+.day-head { padding: 10px 12px; display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; }
+.day-head.today-col { background: #1a2540; }
+.day-head.today-col .day-name, .day-head.today-col .day-date { color: #94a3b8; }
+.day-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; }
+.day-date { font-size: 11px; color: #94a3b8; }
+.day-body { padding: 8px; }
+.no-tasks { font-size: 11px; color: #cbd5e1; text-align: center; padding: 24px 0; }
+.task-card { border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 10px; margin-bottom: 6px; background: #f8fafc; }
+.task-tag { font-size: 10px; border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 3px; font-weight: 500; }
+.tag-recurring { background: #e0f2fe; color: #0369a1; }
+.tag-allday { background: #ede9fe; color: #7c3aed; }
+.task-time { font-size: 10px; color: #7c3aed; font-weight: 500; margin-bottom: 3px; }
+.task-name { font-size: 12px; font-weight: 500; color: #1e293b; margin-bottom: 6px; line-height: 1.35; }
+.task-name.done { text-decoration: line-through; color: #94a3b8; }
+.task-footer { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.status-btn { font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500; cursor: pointer; border: none; display: inline-flex; align-items: center; user-select: none; }
+.status-btn:hover { opacity: .8; }
+.status-btn:active { transform: scale(.95); }
+.status-btn::after { content: ' ↻'; font-size: 9px; opacity: .6; }
+.status-btn.pending { background: #fef3c7; color: #92400e; }
+.status-btn.progress { background: #dbeafe; color: #1e40af; }
+.status-btn.done    { background: #d1fae5; color: #065f46; }
+.status-btn.blocked { background: #fee2e2; color: #991b1b; }
+.badge-owner { font-size: 10px; color: #64748b; }
+.btn-del { background: none; border: none; color: #cbd5e1; font-size: 13px; cursor: pointer; padding: 0 2px; line-height: 1; margin-left: auto; }
+.btn-del:hover { color: #ef4444; }
+.sidebar { width: 248px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+.side-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+.side-head { background: #1a2540; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
+.side-head-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: #e2e8f0; }
+.side-body { padding: 12px 14px; }
+.log-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 11px; color: #64748b; line-height: 1.4; }
+.log-item:last-child { border-bottom: none; }
+.log-item strong { color: #334155; font-weight: 500; }
+.log-date { color: #94a3b8; margin-top: 2px; font-size: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; align-items: center; }
+.leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
+.leg-tip { font-size: 11px; color: #94a3b8; margin-left: auto; }
+.days-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.day-toggle { padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; user-select: none; transition: all .15s; }
+.day-toggle.selected { background: #1a2540; color: #fff; border-color: #1a2540; }
+.recur-hint { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+.recurring-section { display: none; margin-top: 10px; }
+.recurring-section.visible { display: block; }
+.tz-preview { font-size: 11px; color: #7c3aed; margin-top: 5px; min-height: 16px; }
 
-  /* TASK CARD */
-  .task-card { border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 10px; margin-bottom: 6px; background: #f8fafc; }
-  .task-tag { font-size: 10px; border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 4px; font-weight: 500; }
-  .tag-recurring { background: #e0f2fe; color: #0369a1; }
-  .tag-allday { background: #ede9fe; color: #7c3aed; }
-  .task-name { font-size: 12px; font-weight: 500; color: #1e293b; margin-bottom: 6px; line-height: 1.35; }
-  .task-name.done { text-decoration: line-through; color: #94a3b8; }
-  .task-footer { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+/* NEW HIRE CHECKLIST */
+.checklist-toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+.hire-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.hire-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid #e2e8f0; background: #fff; font-size: 12px; cursor: pointer; color: #475569; font-family: inherit; }
+.hire-tab.active { background: #1a2540; color: #fff; border-color: #1a2540; }
+.hire-section { margin-bottom: 18px; }
+.hire-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94a3b8; padding: 8px 0 6px; border-bottom: 1px solid #f1f5f9; margin-bottom: 8px; }
+.hire-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f8fafc; }
+.hire-check { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: #1a2540; }
+.hire-text { font-size: 12px; color: #334155; line-height: 1.5; }
+.hire-text.checked { text-decoration: line-through; color: #94a3b8; }
+.hire-progress { height: 6px; background: #e2e8f0; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+.hire-progress-bar { height: 100%; background: #16a34a; border-radius: 3px; transition: width .3s; }
+.hire-progress-label { font-size: 11px; color: #64748b; margin-bottom: 6px; }
 
-  /* STATUS BADGE — clickable */
-  .badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
-  .badge-pending { background: #fef3c7; color: #92400e; }
-  .badge-done { background: #d1fae5; color: #065f46; }
-  .badge-progress { background: #dbeafe; color: #1e40af; }
-  .badge-blocked { background: #fee2e2; color: #991b1b; }
-  .badge-outlook { background: #e0e7ff; color: #3730a3; font-size: 9px; padding: 2px 6px; }
-  .badge-owner { font-size: 10px; color: #64748b; }
-
-  .status-btn {
-    font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500;
-    cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 3px;
-    transition: opacity .15s, transform .1s;
-    user-select: none;
-  }
-  .status-btn:hover { opacity: .8; }
-  .status-btn:active { transform: scale(.95); }
-  .status-btn::after { content: ' ↻'; font-size: 9px; opacity: .6; }
-  .status-btn.pending { background: #fef3c7; color: #92400e; }
-  .status-btn.progress { background: #dbeafe; color: #1e40af; }
-  .status-btn.done    { background: #d1fae5; color: #065f46; }
-  .status-btn.blocked { background: #fee2e2; color: #991b1b; }
-
-  /* delete btn on card */
-  .btn-del { background: none; border: none; color: #cbd5e1; font-size: 13px; cursor: pointer; padding: 0 2px; line-height: 1; margin-left: auto; }
-  .btn-del:hover { color: #ef4444; }
-
-  /* SIDEBAR */
-  .sidebar { width: 248px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
-  .side-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
-  .side-head { background: #1a2540; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
-  .side-head-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: #e2e8f0; }
-  .side-add-btn { background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; }
-  .side-add-btn:hover { background: rgba(255,255,255,.25); }
-  .side-body { padding: 12px 14px; }
-  .reminder-item { padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-  .reminder-item:last-child { border-bottom: none; }
-  .reminder-done .reminder-text { text-decoration: line-through; color: #94a3b8; }
-  .reminder-text { font-size: 12px; color: #334155; margin-bottom: 3px; line-height: 1.3; }
-  .reminder-date { font-size: 11px; color: #94a3b8; }
-  .log-item { padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 11px; color: #64748b; line-height: 1.4; }
-  .log-item:last-child { border-bottom: none; }
-  .log-item strong { color: #334155; font-weight: 500; }
-  .log-date { color: #94a3b8; margin-top: 2px; font-size: 10px; }
-
-  /* LEGEND */
-  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; align-items: center; }
-  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
-  .leg-tip { font-size: 11px; color: #94a3b8; margin-left: auto; }
-
-  /* MODAL */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 200; }
-  .modal-backdrop.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; width: 460px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
-  .modal-head { background: #1a2540; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
-  .modal-title { color: #fff; font-size: 15px; font-weight: 500; }
-  .modal-close { background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1; }
-  .modal-close:hover { color: #fff; }
-  .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
-  .form-row { margin-bottom: 14px; }
-  .form-label { font-size: 12px; color: #64748b; margin-bottom: 5px; display: block; font-weight: 500; }
-  .form-input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 12px; font-size: 13px; color: #1e293b; outline: none; font-family: inherit; transition: border-color .15s; }
-  .form-input:focus { border-color: #94a3b8; box-shadow: 0 0 0 2px rgba(26,37,64,.08); }
-  .form-input.error { border-color: #dc2626; }
-  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .modal-footer { padding: 14px 20px; border-top: 1px solid #f1f5f9; display: flex; gap: 8px; justify-content: flex-end; }
-  .btn-cancel { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 16px; font-size: 13px; cursor: pointer; color: #334155; font-family: inherit; }
-  .btn-cancel:hover { background: #e2e8f0; }
-  .btn-save { background: #1a2540; color: #fff; border: none; border-radius: 7px; padding: 8px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  .btn-save:hover { background: #263454; }
-
-  /* RECURRING DAYS PICKER */
-  .recurring-section { display: none; margin-top: 10px; }
-  .recurring-section.visible { display: block; }
-  .days-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-  .day-toggle { padding: 5px 10px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; user-select: none; transition: all .15s; }
-  .day-toggle.selected { background: #1a2540; color: #fff; border-color: #1a2540; }
-  .recur-hint { font-size: 11px; color: #94a3b8; margin-top: 6px; }
-
-  @media (max-width: 900px) {
-    .days { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .sidebar { width: 100%; }
-    .content-row { flex-direction: column; }
-    .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  }
-  @media (max-width: 600px) {
-    .days { grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .nav-links { display: none; }
-    .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  }
+@media (max-width: 900px) {
+  .days { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .sidebar { width: 100%; }
+  .content-row { flex-direction: column; }
+  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .resources-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .days { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .nav-links { display: none; }
+  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
 </style>
 </head>
 <body>
-
-<!-- MODAL -->
-<div id="modal-backdrop" class="modal-backdrop">
-  <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">Add new task</span>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <label class="form-label">Task name *</label>
-        <input id="f-task" class="form-input" type="text" placeholder="What needs to be done?">
-      </div>
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Owner</label>
-          <select id="f-owner" class="form-input">
-            <option>Paula</option>
-            <option>Natalia</option>
-            <option>Natalia &amp; Paula</option>
-            <option>Brenda &amp; Paula</option>
-          </select>
-        </div>
-        <div id="single-day-row">
-          <label class="form-label">Day</label>
-          <select id="f-day" class="form-input">
-            <option value="0">Monday</option>
-            <option value="1">Tuesday</option>
-            <option value="2">Wednesday</option>
-            <option value="3">Thursday</option>
-            <option value="4">Friday</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row-2">
-        <div>
-          <label class="form-label">Status</label>
-          <select id="f-status" class="form-input">
-            <option value="pending">Pending</option>
-            <option value="progress">In Progress</option>
-            <option value="done">Done</option>
-            <option value="blocked">Blocked</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Category</label>
-          <select id="f-cat" class="form-input">
-            <option>Training</option>
-            <option>Hiring</option>
-            <option>Orientation</option>
-            <option>Meetings</option>
-            <option>Onboarding</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <label class="form-label">Notes</label>
-        <input id="f-notes" class="form-input" type="text" placeholder="Optional notes...">
-      </div>
-
-      <!-- RECURRING TOGGLE -->
-      <div class="form-row" style="display:flex;align-items:center;gap:8px">
-        <input id="f-recurring" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleRecurring(this.checked)">
-        <label class="form-label" style="margin:0;cursor:pointer" for="f-recurring">Recurring task</label>
-      </div>
-
-      <!-- MULTI-DAY PICKER (shown when recurring is checked) -->
-      <div class="recurring-section" id="recurring-section">
-        <label class="form-label">Repeat on these days</label>
-        <div class="days-picker">
-          <span class="day-toggle" data-day="0" onclick="toggleDay(this)">Mon</span>
-          <span class="day-toggle" data-day="1" onclick="toggleDay(this)">Tue</span>
-          <span class="day-toggle" data-day="2" onclick="toggleDay(this)">Wed</span>
-          <span class="day-toggle" data-day="3" onclick="toggleDay(this)">Thu</span>
-          <span class="day-toggle" data-day="4" onclick="toggleDay(this)">Fri</span>
-        </div>
-        <div class="recur-hint">Select one or more days. Each day gets its own status each week — marking done on Monday won't affect Friday.</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveTask()">Add task</button>
-    </div>
-  </div>
-</div>
 
 <!-- NAV -->
 <nav class="nav">
@@ -257,410 +227,925 @@
     </div>
   </div>
   <div class="nav-links">
-    <button class="nav-link">Resources</button>
-    <button class="nav-link">Responsibilities</button>
-    <button class="nav-link">Orientation 2026</button>
-    <button class="nav-link active">Weekly Tasks</button>
-    <button class="nav-link">New Hire Checklist</button>
+    <button class="nav-link" onclick="showPage('resources',this)">Resources</button>
+    <button class="nav-link" onclick="showPage('responsibilities',this)">Responsibilities</button>
+    <button class="nav-link" onclick="showPage('orientation',this)">Orientation &amp; Bootcamp 2026</button>
+    <button class="nav-link active" onclick="showPage('weekly',this)">Weekly Tasks</button>
+    <button class="nav-link" onclick="showPage('newhire',this)">New Hire Checklist</button>
   </div>
 </nav>
 
-<!-- MAIN -->
-<div class="main">
-  <div class="page-title">Weekly Tasks</div>
-  <div class="page-sub">5-day week view with status tracking, reminders, and activity log.</div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total this week</div></div>
-    <div class="stat"><div class="stat-num green" id="s-done">0</div><div class="stat-label">Completed</div></div>
-    <div class="stat"><div class="stat-num amber" id="s-pending">0</div><div class="stat-label">Pending</div></div>
-    <div class="stat"><div class="stat-num red" id="s-blocked">0</div><div class="stat-label">Blocked</div></div>
-  </div>
-
-  <div class="toolbar">
-    <div class="week-nav">
-      <button class="nav-btn" onclick="changeWeek(-1)">&#8249;</button>
-      <span class="week-label" id="week-label"></span>
-      <button class="nav-btn" onclick="changeWeek(1)">&#8250;</button>
-    </div>
-    <button class="btn-today" onclick="goToday()">Today</button>
-    <button class="btn-add" onclick="openModal()">+ Add Task</button>
-  </div>
-
-  <div class="content-row">
-    <div class="calendar">
-      <div class="days" id="days-grid"></div>
-      <div class="legend">
-        <div class="leg-item"><span class="badge badge-done">done</span> Completed</div>
-        <div class="leg-item"><span class="badge badge-progress">in progress</span> In Progress</div>
-        <div class="leg-item"><span class="badge badge-pending">pending</span> To Do</div>
-        <div class="leg-item"><span class="badge badge-blocked">blocked</span> Blocked</div>
-        <div class="leg-item"><span class="badge" style="background:#e0f2fe;color:#0369a1">↻ recurring</span> Recurring</div>
-        <div class="leg-tip">Click the status badge to change it ↻</div>
+<!-- MODAL: ADD TASK -->
+<div id="task-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Add new task</span><button class="modal-close" onclick="closeTaskModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">Task name *</label>
+        <input id="f-task" class="form-input" type="text" placeholder="What needs to be done?">
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="form-label">Owner</label>
+          <select id="f-owner" class="form-input">
+            <option>Paula</option><option>Natalia</option><option>Natalia &amp; Paula</option><option>Brenda &amp; Paula</option>
+          </select>
+        </div>
+        <div id="single-day-row">
+          <label class="form-label">Day</label>
+          <select id="f-day" class="form-input">
+            <option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Time <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
+        <div class="form-row-3"><input id="f-time-start" class="form-input" type="time" placeholder="Start"><input id="f-time-end" class="form-input" type="time" placeholder="End"><select id="f-timezone" class="form-input"><option value="ET">ET – Eastern</option><option value="CT">CT – Central</option><option value="MT">MT – Mountain</option><option value="PT">PT – Pacific</option><option value="AKT">AKT – Alaska</option><option value="HT">HT – Hawaii</option></select></div>
+        <div class="tz-preview" id="tz-preview"></div>
+      </div>
+      <div class="form-row-2">
+        <div>
+          <label class="form-label">Status</label>
+          <select id="f-status" class="form-input"><option value="pending">Pending</option><option value="progress">In Progress</option><option value="done">Done</option><option value="blocked">Blocked</option></select>
+        </div>
+        <div>
+          <label class="form-label">Category</label>
+          <select id="f-cat" class="form-input"><option>Training</option><option>Hiring</option><option>Orientation</option><option>Meetings</option><option>Onboarding</option></select>
+        </div>
+      </div>
+      <div class="form-row"><label class="form-label">Notes</label><input id="f-notes" class="form-input" type="text" placeholder="Optional notes..."></div>
+      <div class="form-row" style="display:flex;align-items:center;gap:8px">
+        <input id="f-recurring" type="checkbox" style="width:16px;height:16px;cursor:pointer" onchange="toggleRecurring(this.checked)">
+        <label class="form-label" style="margin:0;cursor:pointer" for="f-recurring">Recurring task</label>
+      </div>
+      <div class="recurring-section" id="recurring-section">
+        <label class="form-label">Repeat on these days</label>
+        <div class="days-picker">
+          <span class="day-toggle" data-day="0" onclick="toggleDay(this)">Mon</span>
+          <span class="day-toggle" data-day="1" onclick="toggleDay(this)">Tue</span>
+          <span class="day-toggle" data-day="2" onclick="toggleDay(this)">Wed</span>
+          <span class="day-toggle" data-day="3" onclick="toggleDay(this)">Thu</span>
+          <span class="day-toggle" data-day="4" onclick="toggleDay(this)">Fri</span>
+        </div>
+        <div class="recur-hint">Each day gets its own status per week.</div>
       </div>
     </div>
-    <div class="sidebar">
-      <div class="side-card">
-        <div class="side-head">
-          <span class="side-head-title">🔔 Reminders</span>
-          <button class="side-add-btn">+ Add</button>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeTaskModal()">Cancel</button><button class="btn-primary" onclick="saveTask()">Add task</button></div>
+  </div>
+</div>
+
+<!-- MODAL: CALENDAR NOTE -->
+<div id="note-modal" class="modal-backdrop">
+  <div class="modal" style="width:420px">
+    <div class="modal-head"><span class="modal-title" id="note-modal-title">Day Note</span><button class="modal-close" onclick="closeNoteModal()">×</button></div>
+    <div class="modal-body">
+      <div id="note-orient-info" style="margin-bottom:10px"></div>
+      <div class="form-row"><label class="form-label">Note / reminder for this day</label><textarea id="note-input" class="form-input" rows="4" placeholder="Add a note..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeNoteModal()">Cancel</button><button class="btn-primary" onclick="saveNote()">Save</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NEW ORIENTATION GROUP -->
+<div id="orient-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">New Orientation Group</span><button class="modal-close" onclick="closeOrientModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Orientation date *</label><input id="og-date" class="form-input" type="date"></div>
+      <div class="form-row"><label class="form-label">Technician names (one per line) *</label><textarea id="og-techs" class="form-input" rows="4" placeholder="John Smith&#10;Jane Doe"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeOrientModal()">Cancel</button><button class="btn-primary" onclick="saveOrientGroup()">Create group</button></div>
+  </div>
+</div>
+
+<!-- MODAL: ADD HIRE -->
+<div id="hire-modal" class="modal-backdrop">
+  <div class="modal" style="width:400px">
+    <div class="modal-head"><span class="modal-title">Add New Hire</span><button class="modal-close" onclick="closeHireModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Full name *</label><input id="h-name" class="form-input" type="text" placeholder="e.g. John Smith"></div>
+      <div class="form-row-2">
+        <div><label class="form-label">Start date</label><input id="h-start" class="form-input" type="date"></div>
+        <div><label class="form-label">Region</label><input id="h-region" class="form-input" type="text" placeholder="e.g. DFW"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeHireModal()">Cancel</button><button class="btn-primary" onclick="saveHire()">Add hire</button></div>
+  </div>
+</div>
+
+<!-- PAGE: RESOURCES -->
+<div id="page-resources" class="page">
+  <div class="main">
+    <div class="page-title">Onboarding Resources</div>
+    <div class="page-sub">Key files, platforms, and links used in the onboarding process.</div>
+    <div class="resources-grid" id="resources-grid"></div>
+  </div>
+</div>
+
+<!-- PAGE: RESPONSIBILITIES -->
+<div id="page-responsibilities" class="page">
+  <div class="main">
+    <div class="page-title">Responsibilities &amp; SOPs</div>
+    <div class="page-sub">Trigger-based procedures — click to expand and check off steps.</div>
+    <div id="resp-list"></div>
+  </div>
+</div>
+
+<!-- MODAL: NEW BOOTCAMP GROUP -->
+<div id="bootcamp-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">New Bootcamp Group</span><button class="modal-close" onclick="closeBootcampModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Bootcamp start date *</label><input id="bc-date" class="form-input" type="date"></div>
+      <div class="form-row"><label class="form-label">Technician names (one per line) *</label><textarea id="bc-techs" class="form-input" rows="4" placeholder="John Smith&#10;Jane Doe"></textarea></div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:6px">Auto-generates tasks for the Monday and Friday of the prior week.</div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeBootcampModal()">Cancel</button><button class="btn-primary" onclick="saveBootcampGroup()">Create group</button></div>
+  </div>
+</div>
+
+<!-- PAGE: ORIENTATION & BOOTCAMP 2026 -->
+<div id="page-orientation" class="page">
+  <div class="main">
+    <div class="page-title">Orientation &amp; Bootcamp 2026</div>
+    <div class="page-sub">Monthly calendar — click any day to add a note or view tasks.</div>
+
+    <!-- SUB-TABS -->
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('orientation-sub',this)">🎓 Orientation</button>
+      <button class="sub-tab" onclick="switchSubTab('bootcamp-sub',this)">🚀 Bootcamp</button>
+    </div>
+
+    <!-- ── ORIENTATION SUB-SECTION ── -->
+    <div id="orientation-sub" class="sub-section active">
+      <div class="orient-toolbar">
+        <select id="cal-month-select" class="form-input" style="width:180px" onchange="calChangeMonth()">
+          <option value="0">January 2026</option><option value="1">February 2026</option><option value="2">March 2026</option>
+          <option value="3">April 2026</option><option value="4">May 2026</option><option value="5">June 2026</option>
+          <option value="6">July 2026</option><option value="7">August 2026</option><option value="8">September 2026</option>
+          <option value="9">October 2026</option><option value="10">November 2026</option><option value="11">December 2026</option>
+        </select>
+        <button class="btn-primary" onclick="openOrientModal()">+ New Orientation Group</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div style="margin-top:24px">
+        <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px">Orientation Groups</div>
+        <div id="orient-groups-list"></div>
+      </div>
+    </div>
+
+    <!-- ── BOOTCAMP SUB-SECTION ── -->
+    <div id="bootcamp-sub" class="sub-section">
+      <div class="orient-toolbar">
+        <select id="bc-month-select" class="form-input" style="width:180px" onchange="bcCalChangeMonth()">
+          <option value="0">January 2026</option><option value="1">February 2026</option><option value="2">March 2026</option>
+          <option value="3">April 2026</option><option value="4">May 2026</option><option value="5">June 2026</option>
+          <option value="6">July 2026</option><option value="7">August 2026</option><option value="8">September 2026</option>
+          <option value="9">October 2026</option><option value="10">November 2026</option><option value="11">December 2026</option>
+        </select>
+        <button class="btn-primary" onclick="openBootcampModal()">+ New Bootcamp Group</button>
+      </div>
+      <div class="cal-grid" id="bc-cal-grid"></div>
+      <div style="margin-top:24px">
+        <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px">Bootcamp Groups</div>
+        <div id="bootcamp-groups-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PAGE: WEEKLY TASKS -->
+<div id="page-weekly" class="page active">
+  <div class="main">
+    <div class="page-title">Weekly Tasks</div>
+    <div class="page-sub">5-day week view — click any status badge to change it.</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-num green" id="s-done">0</div><div class="stat-label">Completed</div></div>
+      <div class="stat"><div class="stat-num amber" id="s-pending">0</div><div class="stat-label">Pending</div></div>
+      <div class="stat"><div class="stat-num red" id="s-blocked">0</div><div class="stat-label">Blocked</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="week-nav">
+        <button class="nav-btn" onclick="changeWeek(-1)">&#8249;</button>
+        <span class="week-label" id="week-label"></span>
+        <button class="nav-btn" onclick="changeWeek(1)">&#8250;</button>
+      </div>
+      <button class="btn-today" onclick="goToday()">Today</button>
+      <button class="btn-add" onclick="openTaskModal()">+ Add Task</button>
+    </div>
+    <div class="content-row">
+      <div class="calendar-wrap">
+        <div class="days" id="days-grid"></div>
+        <div class="legend">
+          <div class="leg-item"><span class="badge" style="background:#d1fae5;color:#065f46">done</span></div>
+          <div class="leg-item"><span class="badge" style="background:#dbeafe;color:#1e40af">in progress</span></div>
+          <div class="leg-item"><span class="badge" style="background:#fef3c7;color:#92400e">pending</span></div>
+          <div class="leg-item"><span class="badge" style="background:#fee2e2;color:#991b1b">blocked</span></div>
+          <div class="leg-item"><span class="badge" style="background:#e0f2fe;color:#0369a1">↻ recurring</span></div>
+          <div class="leg-tip">Click status to change ↻</div>
         </div>
-        <div class="side-body">
-          <div class="reminder-item reminder-done">
-            <div class="reminder-text">Follow up James and Kevin on Indeed</div>
-            <div class="reminder-date">📅 2026-04-09</div>
+      </div>
+      <div class="sidebar">
+        <div class="side-card">
+          <div class="side-head"><span class="side-head-title">📋 Activity Log</span><span style="font-size:10px;color:#94a3b8">Last 10</span></div>
+          <div class="side-body" id="activity-log">
+            <div class="log-item"><strong>✓ ATA Hours Report</strong> submitted<div class="log-date">Apr 14</div></div>
           </div>
-        </div>
-      </div>
-      <div class="side-card">
-        <div class="side-head">
-          <span class="side-head-title">📋 Activity Log</span>
-          <span style="font-size:10px;color:#94a3b8">Last 10</span>
-        </div>
-        <div class="side-body" id="activity-log">
-          <div class="log-item"><strong>✓ [Chad Lorenz, Ismael Saucedo]</strong> Add techs to recurring weekly &amp; monthly meetings<div class="log-date">Apr 13, 1:07 PM</div></div>
-          <div class="log-item"><strong>✓ [Chad Lorenz, Ismael Saucedo]</strong> Completed onboarding checklist<div class="log-date">Apr 12, 3:30 PM</div></div>
-          <div class="log-item"><strong>✓ ATA Hours Report</strong> Submitted<div class="log-date">Apr 11, 9:00 AM</div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- PAGE: NEW HIRE CHECKLIST -->
+<div id="page-newhire" class="page">
+  <div class="main">
+    <div class="page-title">New Hire Checklist</div>
+    <div class="page-sub">Per-technician onboarding checklist — checkboxes save automatically.</div>
+    <div class="checklist-toolbar">
+      <div class="hire-tabs" id="hire-tabs"></div>
+      <button class="btn-primary" onclick="openHireModal()" style="font-size:12px;padding:7px 14px">+ Add hire</button>
+    </div>
+    <div id="hire-content"></div>
+  </div>
+</div>
+
 <script>
-  const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
-  const DAY_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let weekOffset = 0;
+// ─── NAVIGATION ───
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'resources') renderResources();
+  if (id === 'responsibilities') renderResponsibilities();
+  if (id === 'orientation') { renderOrientCalendar(); renderOrientGroups(); }
+  if (id === 'newhire') renderHireChecklist();
+}
 
-  // ── STATUS CYCLE ──
-  const STATUS_CYCLE = ['pending','progress','done','blocked'];
-  const STATUS_LABEL = { pending:'pending', progress:'in progress', done:'done', blocked:'blocked' };
+// ─── RESOURCES ───
+const RESOURCES = [
+  { cat:'Hiring / Onboarding', name:'New Hire Checklist', desc:'Centralized checklist for each new hire — office and field staff. Tracks onboarding completion.', url:'New hire checklist - Updated File Sept. 2025.xlsx' },
+  { cat:'Hiring / Onboarding', name:'Diploma / GED / OSHA List', desc:'Confirms whether each technician has submitted OSHA 10/30 and Diploma or GED. Required for NEBB exam eligibility.', url:'Diploma_GED_OSHA List.xlsx' },
+  { cat:'Hiring / Onboarding', name:'OSHA 10 & 30 Cards – Certificates', desc:'SharePoint folder storing OSHA cards/certificates, organized by region.', url:'company documents - OSHA 10 & 30 Cards - Certificates - All Documents' },
+  { cat:'Hiring / Onboarding', name:'Tech Education Certs (SharePoint)', desc:'Technicians\' education documents (Diploma, GED, transcripts). Saved as LastName, FirstName.', url:'High School or GED Diplomas - OneDrive' },
+  { cat:'ATA / Training', name:'ATA Progress – Hours Sheet', desc:'Tracks technician training hours by region. Reviewed every Monday using PM assistant weekly reports.', url:'ATA progress since Feb 2025.xlsx' },
+  { cat:'ATA / Training', name:'ATA Progress – TIMELOGS Sheet', desc:'Paste weekly training hours from the Training Cost Code timelogs. Updated every Monday.', url:'ATA progress since Feb 2025.xlsx' },
+  { cat:'ATA / Training', name:'ATA Progress – Lesson Progress Sheet', desc:'Tracks ATA lesson status using color coding (green/yellow/blue). Reviewed every Friday.', url:'ATA progress since Feb 2025.xlsx' },
+  { cat:'ATA / Training', name:'Airadigm Technical Academy', desc:'Training platform for ATA lessons. Accounts created with Airadigm emails. Technicians enrolled on Day 1 of orientation.', url:'https://joe-balancer.teachable.com/admin/dashboard' },
+  { cat:'ATA / Training', name:'Digital ATA Scores', desc:'Individual spreadsheets per tech — Last Name, First Name – Digital ATA Scores. Created at orientation start, updated every Friday.', url:'Digital ATA Scores (SharePoint)' },
+];
+function renderResources() {
+  document.getElementById('resources-grid').innerHTML = RESOURCES.map(r => `
+    <div class="resource-card">
+      <div class="resource-cat">${r.cat}</div>
+      <div class="resource-name">${r.name}</div>
+      <div class="resource-desc">${r.desc}</div>
+      ${r.url.startsWith('http') ? `<a class="resource-link" href="${r.url}" target="_blank">🔗 Open</a>` : `<span class="resource-link">📄 ${r.url}</span>`}
+    </div>`).join('');
+}
 
-  // ── INITIAL TASKS ──
-  // Recurring tasks use `recurringDays: [0,1,2,3,4]` (array of day indices).
-  // Per-week status is stored in `weekStatus: { "weekKey_day": "status" }`.
-  // Non-recurring tasks use `day` (single int) and `weekOffset`.
-  const INIT_TASKS = [
-    {
-      id: 't1', name: 'ATA Hours Report', owner: 'Paula', cat: 'Training', notes: '',
-      recurring: true, recurringDays: [0],
-      weekStatus: {}
-    },
-    {
-      id: 't2', name: 'IN Candidates – Follow-Up – Daily', owner: 'Paula Quintero',
-      cat: 'Hiring', notes: '', allDay: true,
-      recurring: true, recurringDays: [0,1,2,3,4],
-      weekStatus: {}
-    },
-    {
-      id: 't3', name: 'ATA Progress – Report – Weekly', owner: 'Paula Quintero',
-      cat: 'Training', notes: '',
-      recurring: true, recurringDays: [4],
-      weekStatus: {}
-    },
+// ─── RESPONSIBILITIES ───
+const RESPONSIBILITIES = [
+  { trigger:'New candidate applications in Indeed under "New" status', title:'Screen New Candidates (Indeed)', owner:'Brenda, Paula, Natalia', timing:'Multiple times per month',
+    steps:['Open Indeed → Jobs → select job post → review New applicants oldest to newest','Verify candidate is within 1 hour of a major airport or city (Google Maps)','Check screener questions — candidate should answer "Yes" to all','Resume review: manual/hands-on work, HVAC experience, stable work history, professional maturity','Check Indeed indicators: Status, Activity Fit, multiple applications, prior rejections','Decision: does NOT meet criteria → Reject. Meets criteria → click (?) icon next to name'] },
+  { trigger:'One week prior to remote orientation, after receiving Brenda\'s ORIENTATION email', title:'Prepare & Send Consolidated Onboarding Checklists', owner:'Paula', timing:'One week before orientation',
+    steps:['Pre-step: Confirm cell phone number and mailing address via Indeed messaging','Reply ALL to Brenda\'s ORIENTATION email','Create checklist per tech: digital onboarding complete? OSHA 10/30 on file? Diploma/GED on file?','If digital onboarding unclear → follow up with Lisa','Mark what is completed vs. pending before Day 1','Combine all checklists into ONE single email for the group','Send to Brenda and the onboarding team'] },
+  { trigger:'Friday morning before orientation week', title:'Email Follow-Up — Update Onboarding Status', owner:'Paula', timing:'Friday before orientation week',
+    steps:['Reply ALL to Brenda\'s original ORIENTATION email','Update status per technician: all items completed or flag pending','Include: digital onboarding, OSHA 10/30, Diploma/GED status','Note any outstanding follow-ups with Lisa','This is the final status update before orientation week begins'] },
+  { trigger:'Monday of Orientation week', title:'Send Orientation Link to Ana & Joe + Schedule Meet & Greet', owner:'Paula', timing:'Monday of orientation week',
+    steps:['Post Orientation link in Onboarding Thread in RC','Set up 1-hour placeholder in Outlook Calendar and send link to Ana for IT Onboarding','Set up Meet & Greet: Brian, Brenda, Techs, Paula — use same Orientation link','Target Wednesday of orientation week — check calendars first','Send calendar invite to all participants'] },
+  { trigger:'ORIENTATION — Once Brenda confirms RC account is active in the Onboarding thread', title:'Add New Techs to RC Threads, Create TEAM & Set Up Recurring Meetings', owner:'Paula', timing:'As soon as RC account is active',
+    steps:['Add to: Company Social RC Thread','Add to: Field Tech Resources RC Thread','Add to: Training Touch Base / BZ Info Thread','Add to: Competition GROUP RC Thread','Create TEAM: assigned PM + Lead Tech (Brenda) + new tech','Add to recurring meetings: New Tech Update (Wed) and TTB (Thu)','⚠ SURVEY tech → do NOT add to Wednesday New Tech Update meeting','Post confirmation in Orientation thread','Ask tech to confirm attendance for scheduled meetings'] },
+];
+
+let respChecks = JSON.parse(localStorage.getItem('resp_checks') || '{}');
+function renderResponsibilities() {
+  document.getElementById('resp-list').innerHTML = RESPONSIBILITIES.map((r, ri) => `
+    <div class="resp-card">
+      <div class="resp-header" onclick="toggleResp(${ri})">
+        <div>
+          <div class="resp-trigger">Trigger: ${r.trigger}</div>
+          <div class="resp-title">${r.title}</div>
+          <div class="resp-meta">👤 ${r.owner} &nbsp;·&nbsp; 🕐 ${r.timing}</div>
+        </div>
+        <span class="resp-chevron" id="resp-chev-${ri}">▾</span>
+      </div>
+      <div class="resp-body" id="resp-body-${ri}">
+        <div style="padding-top:10px">
+          ${r.steps.map((s, si) => {
+            const key = `${ri}_${si}`;
+            const checked = !!respChecks[key];
+            return `<div class="resp-step">
+              <input type="checkbox" class="step-check" ${checked?'checked':''} onchange="toggleRespCheck('${key}',this,${ri},${si})">
+              <div class="step-text ${checked?'checked':''}" id="rs-${ri}-${si}">${s}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function toggleResp(ri) {
+  document.getElementById('resp-body-'+ri).classList.toggle('open');
+  document.getElementById('resp-chev-'+ri).classList.toggle('open');
+}
+function toggleRespCheck(key, el, ri, si) {
+  respChecks[key] = el.checked;
+  localStorage.setItem('resp_checks', JSON.stringify(respChecks));
+  const el2 = document.getElementById(`rs-${ri}-${si}`);
+  if (el2) el2.classList.toggle('checked', el.checked);
+}
+
+// ─── ORIENTATION CALENDAR ───
+let calYear = 2026;
+let calMonth = new Date().getMonth();
+let calNotes = JSON.parse(localStorage.getItem('orient_notes') || '{}');
+let orientGroups = JSON.parse(localStorage.getItem('orient_groups') || '[]');
+let noteDay = null;
+
+document.getElementById('cal-month-select').value = calMonth;
+
+function calChangeMonth() {
+  calMonth = parseInt(document.getElementById('cal-month-select').value);
+  renderOrientCalendar();
+}
+
+function renderOrientCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1);
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1; // Monday-first
+
+  const orientDates = {};
+  orientGroups.forEach(g => {
+    (g.tasks || []).forEach(t => {
+      if (!orientDates[t.date]) orientDates[t.date] = [];
+      orientDates[t.date].push(t.name);
+    });
+  });
+
+  const DAY_HEADS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = DAY_HEADS.map(d => `<div class="cal-day-head">${d}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-cell empty"></div>';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${calYear}-${calMonth+1}-${day}`;
+    const isT = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===day;
+    const note = calNotes[dateKey];
+    const oTasks = orientDates[dateKey] || [];
+    let cls = 'cal-cell' + (isT?' today-cell':'') + (oTasks.length?' has-orient':'') + (note?' has-note':'');
+    const numHtml = isT
+      ? `<div class="cal-num"><span style="background:#1a2540;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${day}</span></div>`
+      : `<div class="cal-num">${day}</div>`;
+    const dots = (oTasks.length?'<span class="cal-dot dot-orient"></span>':'') + (note?'<span class="cal-dot dot-note"></span>':'');
+    const oLabel = oTasks.length ? `<div class="cal-orient-label">🎓 ${oTasks.length} task${oTasks.length>1?'s':''}</div>` : '';
+    const nPrev = note ? `<div class="cal-note-preview">${note}</div>` : '';
+    html += `<div class="${cls}" onclick="openNoteModal(${day})">${numHtml}<div>${dots}</div>${oLabel}${nPrev}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function openNoteModal(day) {
+  noteDay = day;
+  const dateKey = `${calYear}-${calMonth+1}-${day}`;
+  const MN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('note-modal-title').textContent = `Note — ${MN[calMonth]} ${day}, ${calYear}`;
+  document.getElementById('note-input').value = calNotes[dateKey] || '';
+  const orientDates = {};
+  orientGroups.forEach(g => { (g.tasks||[]).forEach(t => { if(!orientDates[t.date]) orientDates[t.date]=[]; orientDates[t.date].push(t.name); }); });
+  const oT = orientDates[dateKey] || [];
+  document.getElementById('note-orient-info').innerHTML = oT.length
+    ? `<div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:5px">Orientation tasks this day</div>`+oT.map(t=>`<div style="font-size:12px;color:#f59e0b;padding:2px 0">🎓 ${t}</div>`).join('') : '';
+  document.getElementById('note-modal').classList.add('open');
+  setTimeout(() => document.getElementById('note-input').focus(), 50);
+}
+function closeNoteModal() { document.getElementById('note-modal').classList.remove('open'); noteDay=null; }
+function saveNote() {
+  if (!noteDay) return;
+  const dateKey = `${calYear}-${calMonth+1}-${noteDay}`;
+  const val = document.getElementById('note-input').value.trim();
+  if (val) calNotes[dateKey]=val; else delete calNotes[dateKey];
+  localStorage.setItem('orient_notes', JSON.stringify(calNotes));
+  closeNoteModal(); renderOrientCalendar();
+}
+
+function openOrientModal() {
+  document.getElementById('orient-modal').classList.add('open');
+  const d=new Date(); d.setDate(d.getDate()+(1+7-d.getDay())%7||7);
+  document.getElementById('og-date').valueAsDate=d;
+}
+function closeOrientModal() { document.getElementById('orient-modal').classList.remove('open'); document.getElementById('og-date').value=''; document.getElementById('og-techs').value=''; }
+
+function toDateKey(d) { return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function prevWD(d, n) { let r=new Date(d),c=0; while(c<n){r.setDate(r.getDate()-1);if(r.getDay()!==0&&r.getDay()!==6)c++;} return r; }
+
+// ─── SHARED: convert ISO date string to weekOffset relative to today ───
+function dateToWeekOffset(dateStr) {
+  // dateStr format: "2026-5-19" or "2026-05-19"
+  const parts = dateStr.split('-');
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  const today = new Date();
+  // Get Monday of today's week
+  const todayDow = today.getDay();
+  const todayMon = new Date(today);
+  todayMon.setDate(today.getDate() - (todayDow===0?6:todayDow-1));
+  todayMon.setHours(0,0,0,0);
+  // Get Monday of target date's week
+  const dDow = d.getDay();
+  const dMon = new Date(d);
+  dMon.setDate(d.getDate() - (dDow===0?6:dDow-1));
+  dMon.setHours(0,0,0,0);
+  const diffMs = dMon - todayMon;
+  return Math.round(diffMs / (7*24*60*60*1000));
+}
+
+// ─── SHARED: day-of-week index (0=Mon..4=Fri) from dateStr ───
+function dateStrToDayIdx(dateStr) {
+  const parts = dateStr.split('-');
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  const dow = d.getDay(); // 0=Sun,1=Mon,...,6=Sat
+  return dow === 0 ? 6 : dow - 1; // Mon=0..Fri=4
+}
+
+// ─── SHARED: push a list of event tasks into weekly tasks ───
+function addEventTasksToWeekly(eventTasks, groupLabel, cat, sourceId) {
+  // Remove any previously generated tasks for this group (by sourceId)
+  tasks = tasks.filter(t => t.sourceId !== sourceId);
+  eventTasks.forEach(t => {
+    const wo = dateToWeekOffset(t.date);
+    const dayIdx = dateStrToDayIdx(t.date);
+    if (dayIdx < 0 || dayIdx > 4) return; // skip weekends just in case
+    tasks.push({
+      id: genId(),
+      name: t.name,
+      owner: 'Paula',
+      day: dayIdx,
+      status: 'pending',
+      cat: cat,
+      notes: groupLabel,
+      recurring: false,
+      weekOffset: wo,
+      sourceId: sourceId,    // link back to the group so we can delete them together
+      eventTag: cat          // for visual tag on card
+    });
+  });
+  saveTasks();
+}
+
+function saveOrientGroup() {
+  const ds = document.getElementById('og-date').value;
+  const tr = document.getElementById('og-techs').value.trim();
+  if (!ds||!tr) { alert('Please fill in all fields.'); return; }
+  const oDate = new Date(ds+'T12:00:00');
+  const techs = tr.split('\n').map(s=>s.trim()).filter(Boolean);
+  const monOrient = new Date(oDate); while(monOrient.getDay()!==1) monOrient.setDate(monOrient.getDate()-1);
+  const friBefore = new Date(monOrient); friBefore.setDate(monOrient.getDate()-3); // fri of prior week
+  const monBefore = new Date(monOrient); monBefore.setDate(monOrient.getDate()-7);
+  friBefore.setDate(monBefore.getDate()+4);
+  const groupId = 'og'+Date.now();
+  const eventTasks = [
+    {name:"🎓 Reply ALL to Brenda's email — Onboarding checklists", date:toDateKey(monBefore)},
+    {name:"🎓 Prepare ATA accounts & Digital ATA Scores spreadsheets", date:toDateKey(monBefore)},
+    {name:"🎓 Final onboarding status update (Reply All)", date:toDateKey(friBefore)},
+    {name:"🎓 Send Orientation link to Ana & Joe (IT Onboarding)", date:toDateKey(monOrient)},
+    {name:"🎓 Schedule Meet & Greet with ATA Team", date:toDateKey(monOrient)},
+    {name:"🎓 Create ATA profiles — enroll in Safety, Getting Started, Basics", date:toDateKey(monOrient)},
+    {name:"🎓 Add techs to RC Channels", date:toDateKey(oDate)},
+    {name:"🎓 Create TEAM in RC (PM + Brenda + new tech)", date:toDateKey(oDate)},
+    {name:"🎓 Post confirmation in Orientation thread", date:toDateKey(oDate)},
+  ];
+  orientGroups.push({id:groupId, orientDate:toDateKey(oDate), techs, tasks:eventTasks.map(t=>({name:t.name.replace('🎓 ',''),date:t.date})), createdAt:new Date().toISOString()});
+  localStorage.setItem('orient_groups', JSON.stringify(orientGroups));
+  addEventTasksToWeekly(eventTasks, `Orientation ${toDateKey(oDate)} — ${techs.join(', ')}`, 'Orientation', groupId);
+  closeOrientModal(); renderOrientCalendar(); renderOrientGroups();
+}
+
+function deleteOrientGroup(id) {
+  if (!confirm('Delete this orientation group and its Weekly Tasks?')) return;
+  orientGroups = orientGroups.filter(g=>g.id!==id);
+  tasks = tasks.filter(t => t.sourceId !== id);
+  localStorage.setItem('orient_groups', JSON.stringify(orientGroups));
+  saveTasks();
+  renderOrientCalendar(); renderOrientGroups();
+}
+
+function renderOrientGroups() {
+  const el = document.getElementById('orient-groups-list');
+  if (!orientGroups.length) { el.innerHTML='<div style="font-size:13px;color:#94a3b8;padding:12px 0">No orientation groups yet. Click "+ New Orientation Group" to create one.</div>'; return; }
+  el.innerHTML = orientGroups.map(g => `
+    <div class="group-card">
+      <div class="group-header">
+        <div><div class="group-name">🎓 Orientation — ${g.orientDate}</div><div class="group-techs">Techs: ${g.techs.join(', ')}</div></div>
+        <button class="btn-sm danger" onclick="deleteOrientGroup('${g.id}')">Delete</button>
+      </div>
+      <div class="group-tasks">${(g.tasks||[]).map(t=>`<span class="group-task-chip">${t.date}: ${t.name}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+// ─── SUB-TAB SWITCHING ───
+function switchSubTab(id, btn) {
+  document.querySelectorAll('.sub-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'bootcamp-sub') { bcCalMonth = new Date().getMonth(); document.getElementById('bc-month-select').value = bcCalMonth; renderBcCalendar(); renderBootcampGroups(); }
+  if (id === 'orientation-sub') { renderOrientCalendar(); renderOrientGroups(); }
+}
+
+// ─── BOOTCAMP CALENDAR ───
+let bcCalYear = 2026;
+let bcCalMonth = new Date().getMonth();
+let bootcampGroups = JSON.parse(localStorage.getItem('bootcamp_groups') || '[]');
+let bcChecks = JSON.parse(localStorage.getItem('bootcamp_checks') || '{}');
+
+function bcCalChangeMonth() {
+  bcCalMonth = parseInt(document.getElementById('bc-month-select').value);
+  renderBcCalendar();
+}
+
+function renderBcCalendar() {
+  const grid = document.getElementById('bc-cal-grid');
+  const today = new Date();
+  const firstDay = new Date(bcCalYear, bcCalMonth, 1);
+  const daysInMonth = new Date(bcCalYear, bcCalMonth + 1, 0).getDate();
+  let startDow = firstDay.getDay();
+  startDow = startDow === 0 ? 6 : startDow - 1;
+
+  // Collect bootcamp task dates
+  const bcDates = {};
+  bootcampGroups.forEach(g => {
+    (g.tasks || []).forEach(t => {
+      if (!bcDates[t.date]) bcDates[t.date] = [];
+      bcDates[t.date].push(t.name);
+    });
+    // Also mark the bootcamp start date itself
+    if (g.bootcampDate) {
+      if (!bcDates[g.bootcampDate]) bcDates[g.bootcampDate] = [];
+      bcDates[g.bootcampDate].push('🚀 Bootcamp starts');
+    }
+  });
+
+  const DAY_HEADS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let html = DAY_HEADS.map(d => `<div class="cal-day-head">${d}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-cell empty"></div>';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${bcCalYear}-${bcCalMonth+1}-${day}`;
+    const isT = today.getFullYear()===bcCalYear && today.getMonth()===bcCalMonth && today.getDate()===day;
+    const bcTasks = bcDates[dateKey] || [];
+    const isBootcampDay = bootcampGroups.some(g => g.bootcampDate === dateKey);
+    let cls = 'cal-cell' + (isT?' today-cell':'') + (bcTasks.length?' has-orient':'');
+    if (isBootcampDay) cls += ' has-note';
+    const numHtml = isT
+      ? `<div class="cal-num"><span style="background:#1a2540;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px">${day}</span></div>`
+      : `<div class="cal-num">${day}</div>`;
+    const dots = bcTasks.length ? '<span class="cal-dot dot-bootcamp"></span>' : '';
+    const oLabel = bcTasks.length ? `<div class="cal-orient-label" style="color:#7c3aed">🚀 ${bcTasks.length} task${bcTasks.length>1?'s':''}</div>` : '';
+    html += `<div class="${cls}" style="cursor:default">${numHtml}<div>${dots}</div>${oLabel}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function openBootcampModal() {
+  document.getElementById('bootcamp-modal').classList.add('open');
+  // Default to next Monday
+  const d = new Date(); d.setDate(d.getDate() + (1+7-d.getDay())%7||7);
+  document.getElementById('bc-date').valueAsDate = d;
+  document.getElementById('bc-techs').value = '';
+}
+function closeBootcampModal() {
+  document.getElementById('bootcamp-modal').classList.remove('open');
+  document.getElementById('bc-date').value = '';
+  document.getElementById('bc-techs').value = '';
+}
+
+function saveBootcampGroup() {
+  const ds = document.getElementById('bc-date').value;
+  const tr = document.getElementById('bc-techs').value.trim();
+  if (!ds || !tr) { alert('Please fill in all fields.'); return; }
+
+  const bcDate = new Date(ds + 'T12:00:00');
+  const techs = tr.split('\n').map(s => s.trim()).filter(Boolean);
+
+  // Monday of the week BEFORE bootcamp week
+  const monBefore = new Date(bcDate);
+  while (monBefore.getDay() !== 1) monBefore.setDate(monBefore.getDate() - 1);
+  monBefore.setDate(monBefore.getDate() - 7);
+  const friBefore = new Date(monBefore); friBefore.setDate(monBefore.getDate() + 4);
+
+  const groupId = 'bc' + Date.now();
+  const eventTasks = [
+    { name: '🚀 Hotel reservation requested', date: toDateKey(monBefore), day: 'Mon' },
+    { name: '🚀 Hotel reservation confirmed', date: toDateKey(friBefore), day: 'Fri' },
+    { name: '🚀 Hotel reservation forwarded to employee', date: toDateKey(friBefore), day: 'Fri' },
+    { name: '🚀 Flights purchased & received by employee', date: toDateKey(friBefore), day: 'Fri' },
   ];
 
-  let tasks = JSON.parse(localStorage.getItem('airadigm_tasks_v2') || 'null');
-  if (!tasks) {
-    tasks = JSON.parse(JSON.stringify(INIT_TASKS));
+  const group = {
+    id: groupId,
+    bootcampDate: toDateKey(bcDate),
+    techs,
+    tasks: eventTasks.map(t => ({ name: t.name.replace('🚀 ',''), date: t.date, day: t.day })),
+    createdAt: new Date().toISOString()
+  };
+
+  bootcampGroups.push(group);
+  localStorage.setItem('bootcamp_groups', JSON.stringify(bootcampGroups));
+  addEventTasksToWeekly(eventTasks, `Bootcamp ${toDateKey(bcDate)} — ${techs.join(', ')}`, 'Bootcamp', groupId);
+  closeBootcampModal();
+  renderBcCalendar();
+  renderBootcampGroups();
+}
+
+function deleteBootcampGroup(id) {
+  if (!confirm('Delete this bootcamp group and its Weekly Tasks?')) return;
+  bootcampGroups = bootcampGroups.filter(g => g.id !== id);
+  tasks = tasks.filter(t => t.sourceId !== id);
+  Object.keys(bcChecks).filter(k => k.startsWith(id)).forEach(k => delete bcChecks[k]);
+  localStorage.setItem('bootcamp_groups', JSON.stringify(bootcampGroups));
+  localStorage.setItem('bootcamp_checks', JSON.stringify(bcChecks));
+  saveTasks();
+  renderBcCalendar();
+  renderBootcampGroups();
+}
+
+function toggleBcCheck(key, el) {
+  bcChecks[key] = el.checked;
+  localStorage.setItem('bootcamp_checks', JSON.stringify(bcChecks));
+  const sp = document.getElementById('bc-t-' + key);
+  if (sp) sp.classList.toggle('checked', el.checked);
+}
+
+function renderBootcampGroups() {
+  const el = document.getElementById('bootcamp-groups-list');
+  if (!bootcampGroups.length) {
+    el.innerHTML = '<div style="font-size:13px;color:#94a3b8;padding:12px 0">No bootcamp groups yet. Click "+ New Bootcamp Group" to create one.</div>';
+    return;
   }
+  el.innerHTML = bootcampGroups.map(g => {
+    const monTasks = g.tasks.filter(t => t.day === 'Mon');
+    const friTasks = g.tasks.filter(t => t.day === 'Fri');
+    const monDate = monTasks[0]?.date || '';
+    const friDate = friTasks[0]?.date || '';
+    const allDone = g.tasks.every(t => bcChecks[`${g.id}_${t.name}`]);
 
-  function saveTasks() {
-    try { localStorage.setItem('airadigm_tasks_v2', JSON.stringify(tasks)); } catch(e) {}
-  }
+    return `<div class="bc-card">
+      <div class="bc-header">
+        <div>
+          <div class="bc-name">🚀 Bootcamp — ${g.bootcampDate}</div>
+          <div class="bc-date">Techs: ${g.techs.join(', ')}</div>
+          <div class="bc-date" style="margin-top:2px;color:#7c3aed">Prep week: Mon ${monDate} → Fri ${friDate}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${allDone ? '<span style="font-size:11px;background:#d1fae5;color:#065f46;padding:3px 8px;border-radius:4px;font-weight:500">✓ All done</span>' : ''}
+          <button class="btn-sm danger" onclick="deleteBootcampGroup('${g.id}')">Delete</button>
+        </div>
+      </div>
+      ${monDate ? `<div style="font-size:11px;font-weight:600;color:#7c3aed;text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px;border-top:1px solid #f1f5f9;margin-top:6px">Monday ${monDate}</div>` : ''}
+      ${monTasks.map(t => {
+        const key = `${g.id}_${t.name}`;
+        const checked = !!bcChecks[key];
+        return `<div class="bc-task-row">
+          <input type="checkbox" class="bc-check" ${checked?'checked':''} onchange="toggleBcCheck('${key}',this)">
+          <span class="bc-task-text ${checked?'checked':''}" id="bc-t-${key}">${t.name}</span>
+        </div>`;
+      }).join('')}
+      ${friDate ? `<div style="font-size:11px;font-weight:600;color:#0369a1;text-transform:uppercase;letter-spacing:.04em;padding:8px 0 4px;border-top:1px solid #f1f5f9;margin-top:4px">Friday ${friDate}</div>` : ''}
+      ${friTasks.map(t => {
+        const key = `${g.id}_${t.name}`;
+        const checked = !!bcChecks[key];
+        return `<div class="bc-task-row">
+          <input type="checkbox" class="bc-check" ${checked?'checked':''} onchange="toggleBcCheck('${key}',this)">
+          <span class="bc-task-text ${checked?'checked':''}" id="bc-t-${key}">${t.name}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
 
-  // ── WEEK KEY — unique per weekOffset ──
-  function weekKey(offset) { return 'w' + offset; }
+// ─── WEEKLY TASKS ───
+const WD = ['Mon','Tue','Wed','Thu','Fri'];
+const WDF = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const WM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let weekOffset = 0;
+const SC = ['pending','progress','done','blocked'];
+const SL = {pending:'pending',progress:'in progress',done:'done',blocked:'blocked'};
 
-  // ── STATUS for a recurring task on a specific week+day ──
-  function getRecurStatus(task, offset, day) {
-    const k = weekKey(offset) + '_d' + day;
-    return (task.weekStatus && task.weekStatus[k]) || 'pending';
-  }
+const INIT_TASKS = [
+  {id:'t1',name:'ATA Hours Report',owner:'Paula',cat:'Training',notes:'',recurring:true,recurringDays:[0],weekStatus:{}},
+  {id:'t2',name:'IN Candidates – Follow-Up',owner:'Paula',cat:'Hiring',notes:'',allDay:true,recurring:true,recurringDays:[0,1,2,3,4],weekStatus:{}},
+  {id:'t3',name:'ATA Progress – Report',owner:'Paula',cat:'Training',notes:'',recurring:true,recurringDays:[4],weekStatus:{}},
+];
 
-  function setRecurStatus(taskId, offset, day, status) {
-    const t = tasks.find(x => x.id === taskId);
-    if (!t) return;
-    if (!t.weekStatus) t.weekStatus = {};
-    const k = weekKey(offset) + '_d' + day;
-    t.weekStatus[k] = status;
-    saveTasks();
-  }
+let tasks = JSON.parse(localStorage.getItem('airadigm_tasks_v2')||'null') || JSON.parse(JSON.stringify(INIT_TASKS));
+function saveTasks() { try{localStorage.setItem('airadigm_tasks_v2',JSON.stringify(tasks));}catch(e){} }
+function wk(o) { return 'w'+o; }
+function getRSt(task,offset,day) { const k=wk(offset)+'_d'+day; return (task.weekStatus&&task.weekStatus[k])||'pending'; }
+function setRSt(id,offset,day,st) { const t=tasks.find(x=>x.id===id); if(!t)return; if(!t.weekStatus)t.weekStatus={}; t.weekStatus[wk(offset)+'_d'+day]=st; saveTasks(); }
+function cycleStatus(id,offset,day,isRec) {
+  if(isRec){const t=tasks.find(x=>x.id===id);setRSt(id,offset,day,SC[(SC.indexOf(getRSt(t,offset,day))+1)%SC.length]);}
+  else{const t=tasks.find(x=>x.id===id);if(!t)return;t.status=SC[(SC.indexOf(t.status||'pending')+1)%SC.length];saveTasks();}
+  renderWeekly();
+}
+function deleteTask(id) { if(!confirm('Delete this task?'))return; tasks=tasks.filter(x=>x.id!==id); saveTasks(); renderWeekly(); }
+function getWkDates(o) {
+  const today=new Date(); const dow=today.getDay();
+  const mon=new Date(today); mon.setDate(today.getDate()-(dow===0?6:dow-1)+o*7);
+  return Array.from({length:5},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+function fD(d){return WM[d.getMonth()]+' '+d.getDate();}
+function isTdy(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}
 
-  // ── CYCLE STATUS ──
-  function cycleStatus(taskId, offset, day, isRecurring) {
-    if (isRecurring) {
-      const cur = getRecurStatus(tasks.find(x=>x.id===taskId), offset, day);
-      const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
-      setRecurStatus(taskId, offset, day, next);
+function renderWeekly() {
+  const dates=getWkDates(weekOffset);
+  document.getElementById('week-label').textContent='Week of '+fD(dates[0])+' – '+fD(dates[4]);
+
+  // Build ISO date strings for this week's 5 days for matching event tasks
+  const weekISODates = dates.map(d => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`);
+
+  let total=0,done=0,pending=0,blocked=0;
+  const slots=[];
+  tasks.forEach(t=>{
+    if(t.recurring){
+      (t.recurringDays||[t.day]).forEach(day=>{
+        const st=getRSt(t,weekOffset,day); slots.push({task:t,day,status:st});
+        total++;if(st==='done')done++;else if(st==='blocked')blocked++;else pending++;
+      });
     } else {
-      const t = tasks.find(x => x.id === taskId);
-      if (!t) return;
-      const cur = t.status || 'pending';
-      t.status = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length];
-      saveTasks();
-    }
-    renderCalendar();
-  }
-
-  function deleteTask(taskId) {
-    tasks = tasks.filter(x => x.id !== taskId);
-    saveTasks();
-    renderCalendar();
-  }
-
-  // ── WEEK DATES ──
-  function getWeekDates(offset) {
-    const today = new Date();
-    const dow = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
-    return Array.from({length:5}, (_,i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      return d;
-    });
-  }
-
-  function fmt(d) { return MONTHS[d.getMonth()] + ' ' + d.getDate(); }
-
-  function isToday(d) {
-    const t = new Date();
-    return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
-  }
-
-  // ── RENDER ──
-  function renderCalendar() {
-    const dates = getWeekDates(weekOffset);
-    document.getElementById('week-label').textContent = 'Week of ' + fmt(dates[0]) + ' – ' + fmt(dates[4]);
-
-    let total=0, done=0, pending=0, blocked=0;
-
-    // Collect all task+day combos visible this week
-    const slots = []; // {task, day, status}
-    tasks.forEach(t => {
-      if (t.recurring) {
-        (t.recurringDays || [t.day]).forEach(day => {
-          const st = getRecurStatus(t, weekOffset, day);
-          slots.push({task: t, day, status: st});
-          total++;
-          if (st==='done') done++;
-          else if (st==='blocked') blocked++;
-          else pending++;
-        });
+      // Event tasks (orientation/bootcamp) — match by absolute ISO date
+      if (t.sourceId) {
+        // Find which day column this date falls in this week
+        const dayIdx = weekISODates.indexOf(`${t.weekOffset !== undefined ? '' : ''}${t.notes ? '' : ''}${t.day !== undefined ? '' : ''}`);
+        // Re-derive day from the stored weekOffset + day combo
+        // Actually we store day (0-4) and weekOffset, so show when weekOffset matches
+        if((t.weekOffset??0)===weekOffset){
+          const st=t.status||'pending'; slots.push({task:t,day:t.day,status:st});
+          total++;if(st==='done')done++;else if(st==='blocked')blocked++;else pending++;
+        }
       } else {
-        if ((t.weekOffset ?? 0) === weekOffset) {
-          const st = t.status || 'pending';
-          slots.push({task: t, day: t.day, status: st});
-          total++;
-          if (st==='done') done++;
-          else if (st==='blocked') blocked++;
-          else pending++;
+        if((t.weekOffset??0)===weekOffset){
+          const st=t.status||'pending'; slots.push({task:t,day:t.day,status:st});
+          total++;if(st==='done')done++;else if(st==='blocked')blocked++;else pending++;
         }
       }
-    });
-
-    document.getElementById('s-total').textContent = total;
-    document.getElementById('s-done').textContent = done;
-    document.getElementById('s-pending').textContent = pending;
-    document.getElementById('s-blocked').textContent = blocked;
-
-    const grid = document.getElementById('days-grid');
-    grid.innerHTML = '';
-
-    dates.forEach((d, di) => {
-      const col = document.createElement('div');
-      col.className = 'day-col';
-
-      const head = document.createElement('div');
-      head.className = 'day-head' + (isToday(d) ? ' today' : '');
-      head.innerHTML = `<span class="day-name">${DAYS[di]}</span><span class="day-date">${d.toLocaleString('en-US',{month:'short',day:'numeric'}).toUpperCase()}</span>`;
-      col.appendChild(head);
-
-      const body = document.createElement('div');
-      body.className = 'day-body';
-
-      const daySlots = slots.filter(s => s.day === di);
-
-      if (daySlots.length === 0) {
-        body.innerHTML = '<div class="no-tasks">No tasks</div>';
-      } else {
-        daySlots.forEach(({task: t, day, status}) => {
-          const card = document.createElement('div');
-          card.className = 'task-card';
-
-          // Tag
-          let tag = '';
-          if (t.allDay) {
-            tag = '<span class="task-tag tag-allday">All days</span>';
-          } else if (t.recurring) {
-            const recurDays = (t.recurringDays || [t.day]);
-            if (recurDays.length > 1) {
-              tag = `<span class="task-tag tag-recurring">↻ ${recurDays.map(d=>DAYS[d]).join(', ')}</span>`;
-            } else {
-              tag = `<span class="task-tag tag-recurring">↻ Every ${DAY_FULL[day]}</span>`;
-            }
-          }
-
-          const nameClass = 'task-name' + (status==='done' ? ' done' : '');
-
-          // Status button (clickable)
-          const statusBtn = document.createElement('button');
-          statusBtn.className = `status-btn ${status}`;
-          statusBtn.textContent = STATUS_LABEL[status] || status;
-          statusBtn.title = 'Click to change status';
-          statusBtn.onclick = () => cycleStatus(t.id, weekOffset, day, t.recurring);
-
-          // Delete button
-          const delBtn = document.createElement('button');
-          delBtn.className = 'btn-del';
-          delBtn.title = 'Delete task';
-          delBtn.textContent = '×';
-          delBtn.onclick = () => {
-            if (confirm(`Delete "${t.name}"?`)) deleteTask(t.id);
-          };
-
-          card.innerHTML = `${tag}<div class="${nameClass}">${t.name}</div>`;
-          const footer = document.createElement('div');
-          footer.className = 'task-footer';
-          footer.appendChild(statusBtn);
-
-          const outlookBadge = document.createElement('span');
-          outlookBadge.className = 'badge badge-outlook';
-          outlookBadge.textContent = '📅 Outlook';
-          footer.appendChild(outlookBadge);
-
-          if (t.owner) {
-            const ownerBadge = document.createElement('span');
-            ownerBadge.className = 'badge-owner';
-            ownerBadge.textContent = t.owner;
-            footer.appendChild(ownerBadge);
-          }
-
-          footer.appendChild(delBtn);
-          card.appendChild(footer);
-          body.appendChild(card);
-        });
-      }
-      col.appendChild(body);
-      grid.appendChild(col);
-    });
-  }
-
-  function changeWeek(dir) { weekOffset += dir; renderCalendar(); }
-  function goToday() { weekOffset = 0; renderCalendar(); }
-
-  // ── MODAL ──
-  function openModal() {
-    document.getElementById('modal-backdrop').classList.add('open');
-    document.getElementById('f-task').focus();
-    // Pre-select the current day in single-day selector
-    const today = new Date().getDay();
-    const dayMap = {1:0,2:1,3:2,4:3,5:4};
-    document.getElementById('f-day').value = dayMap[today] ?? 0;
-  }
-
-  function closeModal() {
-    document.getElementById('modal-backdrop').classList.remove('open');
-    document.getElementById('f-task').value = '';
-    document.getElementById('f-task').classList.remove('error');
-    document.getElementById('f-notes').value = '';
-    document.getElementById('f-recurring').checked = false;
-    document.getElementById('f-status').value = 'pending';
-    // Reset day toggles
-    document.querySelectorAll('.day-toggle').forEach(el => el.classList.remove('selected'));
-    document.getElementById('recurring-section').classList.remove('visible');
-    document.getElementById('single-day-row').style.display = '';
-  }
-
-  function toggleRecurring(checked) {
-    document.getElementById('recurring-section').classList.toggle('visible', checked);
-    // When recurring is on, hide the single-day picker (days are picked via checkboxes)
-    document.getElementById('single-day-row').style.display = checked ? 'none' : '';
-    if (checked) {
-      // Auto-select the day that's currently set in the single-day dropdown
-      const singleDay = document.getElementById('f-day').value;
-      const btn = document.querySelector(`.day-toggle[data-day="${singleDay}"]`);
-      if (btn) btn.classList.add('selected');
     }
-  }
-
-  function toggleDay(el) {
-    el.classList.toggle('selected');
-  }
-
-  function generateId() {
-    return 't' + Date.now() + Math.random().toString(36).slice(2,6);
-  }
-
-  function saveTask() {
-    const name = document.getElementById('f-task').value.trim();
-    if (!name) {
-      document.getElementById('f-task').classList.add('error');
-      document.getElementById('f-task').focus();
-      return;
-    }
-
-    const isRecurring = document.getElementById('f-recurring').checked;
-
-    if (isRecurring) {
-      // Collect selected days
-      const selectedDays = [...document.querySelectorAll('.day-toggle.selected')].map(el => parseInt(el.dataset.day));
-      if (selectedDays.length === 0) {
-        alert('Please select at least one day for the recurring task.');
-        return;
-      }
-      const task = {
-        id: generateId(),
-        name,
-        owner: document.getElementById('f-owner').value,
-        cat: document.getElementById('f-cat').value,
-        notes: document.getElementById('f-notes').value,
-        recurring: true,
-        recurringDays: selectedDays.sort((a,b)=>a-b),
-        weekStatus: {}
-      };
-      tasks.push(task);
-    } else {
-      const task = {
-        id: generateId(),
-        name,
-        owner: document.getElementById('f-owner').value,
-        day: parseInt(document.getElementById('f-day').value),
-        status: document.getElementById('f-status').value,
-        cat: document.getElementById('f-cat').value,
-        notes: document.getElementById('f-notes').value,
-        recurring: false,
-        weekOffset
-      };
-      tasks.push(task);
-    }
-
-    saveTasks();
-
-    // Log
-    const log = document.getElementById('activity-log');
-    const entry = document.createElement('div');
-    entry.className = 'log-item';
-    const now = new Date();
-    entry.innerHTML = `<strong>+ ${name}</strong> added<div class="log-date">${now.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>`;
-    log.insertBefore(entry, log.firstChild);
-    while (log.children.length > 10) log.removeChild(log.lastChild);
-
-    closeModal();
-    renderCalendar();
-  }
-
-  document.getElementById('modal-backdrop').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
   });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-blocked').textContent=blocked;
+  const grid=document.getElementById('days-grid'); grid.innerHTML='';
+  dates.forEach((d,di)=>{
+    const col=document.createElement('div');col.className='day-col';
+    const head=document.createElement('div');head.className='day-head'+(isTdy(d)?' today-col':'');
+    head.innerHTML=`<span class="day-name">${WD[di]}</span><span class="day-date">${d.toLocaleString('en-US',{month:'short',day:'numeric'}).toUpperCase()}</span>`;
+    col.appendChild(head);
+    const body=document.createElement('div');body.className='day-body';
+    const ds=slots.filter(s=>s.day===di);
+    if(!ds.length){body.innerHTML='<div class="no-tasks">No tasks</div>';}
+    else{ds.forEach(({task:t,day,status})=>{
+      const card=document.createElement('div');card.className='task-card';
+      // Event tag (Orientation / Bootcamp) takes priority over recurring tag
+      let tag='';
+      if(t.eventTag==='Orientation'){
+        tag='<span class="task-tag" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa">🎓 Orientation</span>';
+      } else if(t.eventTag==='Bootcamp'){
+        tag='<span class="task-tag" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe">🚀 Bootcamp</span>';
+      } else if(t.allDay){
+        tag='<span class="task-tag tag-allday">All days</span>';
+      } else if(t.recurring){
+        const rd=t.recurringDays||[t.day];
+        tag=rd.length>1?`<span class="task-tag tag-recurring">↻ ${rd.map(x=>WD[x]).join(', ')}</span>`:`<span class="task-tag tag-recurring">↻ Every ${WDF[day]}</span>`;
+      }
+      let tH='';
+      if(t.timeStart){const f=h=>{const[hh,mm]=h.split(':');const n=parseInt(hh);return(n%12||12)+':'+mm+(n<12?'am':'pm');};tH=`<div class="task-time">🕐 ${f(t.timeStart)}${t.timeEnd?' – '+f(t.timeEnd):''}${t.timezone?' '+getTzAbbr(t.timezone):''}</div>`;}
+      const nc='task-name'+(status==='done'?' done':'');
+      // Strip emoji prefix from name for display (already shown in tag)
+      const displayName = t.name.replace(/^[🎓🚀]\s*/,'');
+      card.innerHTML=`${tag}${tH}<div class="${nc}">${displayName}</div>`;
+      const footer=document.createElement('div');footer.className='task-footer';
+      const sb=document.createElement('button');sb.className=`status-btn ${status}`;sb.textContent=SL[status]||status;sb.title='Click to change';sb.onclick=()=>cycleStatus(t.id,weekOffset,day,t.recurring);
+      footer.appendChild(sb);
+      if(t.owner){const ob=document.createElement('span');ob.className='badge-owner';ob.textContent=t.owner;footer.appendChild(ob);}
+      const db=document.createElement('button');db.className='btn-del';db.textContent='×';db.onclick=()=>deleteTask(t.id);footer.appendChild(db);
+      card.appendChild(footer);body.appendChild(card);
+    });}
+    col.appendChild(body);grid.appendChild(col);
   });
+}
+function changeWeek(dir){weekOffset+=dir;renderWeekly();}
+function goToday(){weekOffset=0;renderWeekly();}
 
-  renderCalendar();
+function openTaskModal(){
+  document.getElementById('task-modal').classList.add('open');document.getElementById('f-task').focus();
+  const td=new Date().getDay();const dm={1:0,2:1,3:2,4:3,5:4};document.getElementById('f-day').value=dm[td]??0;
+}
+function closeTaskModal(){
+  document.getElementById('task-modal').classList.remove('open');
+  ['f-task','f-notes','f-time-start','f-time-end'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-task').classList.remove('error');
+  document.getElementById('f-timezone').value='ET';document.getElementById('tz-preview').textContent='';
+  document.getElementById('f-recurring').checked=false;document.getElementById('f-status').value='pending';
+  document.querySelectorAll('.day-toggle').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('recurring-section').classList.remove('visible');document.getElementById('single-day-row').style.display='';
+}
+function toggleRecurring(c){
+  document.getElementById('recurring-section').classList.toggle('visible',c);document.getElementById('single-day-row').style.display=c?'none':'';
+  if(c){const v=document.getElementById('f-day').value;const b=document.querySelector(`.day-toggle[data-day="${v}"]`);if(b)b.classList.add('selected');}
+}
+function toggleDay(el){el.classList.toggle('selected');}
+function genId(){return 't'+Date.now()+Math.random().toString(36).slice(2,6);}
+function saveTask(){
+  const name=document.getElementById('f-task').value.trim();
+  if(!name){document.getElementById('f-task').classList.add('error');document.getElementById('f-task').focus();return;}
+  const isR=document.getElementById('f-recurring').checked;
+  const ts=document.getElementById('f-time-start').value||null;
+  const te=document.getElementById('f-time-end').value||null;
+  const tz=ts?document.getElementById('f-timezone').value:null;
+  if(isR){
+    const sel=[...document.querySelectorAll('.day-toggle.selected')].map(el=>parseInt(el.dataset.day));
+    if(!sel.length){alert('Select at least one day.');return;}
+    tasks.push({id:genId(),name,owner:document.getElementById('f-owner').value,cat:document.getElementById('f-cat').value,notes:document.getElementById('f-notes').value,timeStart:ts,timeEnd:te,timezone:tz,recurring:true,recurringDays:sel.sort((a,b)=>a-b),weekStatus:{}});
+  } else {
+    tasks.push({id:genId(),name,owner:document.getElementById('f-owner').value,day:parseInt(document.getElementById('f-day').value),status:document.getElementById('f-status').value,cat:document.getElementById('f-cat').value,notes:document.getElementById('f-notes').value,timeStart:ts,timeEnd:te,timezone:tz,recurring:false,weekOffset});
+  }
+  saveTasks();
+  const log=document.getElementById('activity-log');const e=document.createElement('div');e.className='log-item';
+  const now=new Date();e.innerHTML=`<strong>+ ${name}</strong> added<div class="log-date">${now.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>`;
+  log.insertBefore(e,log.firstChild);while(log.children.length>10)log.removeChild(log.lastChild);
+  closeTaskModal();renderWeekly();
+}
+
+const TZ_MAP={ET:{std:'EST',dst:'EDT',stdOff:'UTC−5',dstOff:'UTC−4'},CT:{std:'CST',dst:'CDT',stdOff:'UTC−6',dstOff:'UTC−5'},MT:{std:'MST',dst:'MDT',stdOff:'UTC−7',dstOff:'UTC−6'},PT:{std:'PST',dst:'PDT',stdOff:'UTC−8',dstOff:'UTC−7'},AKT:{std:'AKST',dst:'AKDT',stdOff:'UTC−9',dstOff:'UTC−8'},HT:{std:'HST',dst:'HST',stdOff:'UTC−10',dstOff:'UTC−10'}};
+function isDST(){const d=new Date();const j=new Date(d.getFullYear(),0,1);const jl=new Date(d.getFullYear(),6,1);return d.getTimezoneOffset()<Math.max(j.getTimezoneOffset(),jl.getTimezoneOffset());}
+function getTzAbbr(tz){const i=TZ_MAP[tz];return i?(isDST()?i.dst:i.std):tz;}
+function updateTzPreview(){
+  const s=document.getElementById('f-time-start').value;const e=document.getElementById('f-time-end').value;const tz=document.getElementById('f-timezone').value;
+  const p=document.getElementById('tz-preview');if(!s){p.textContent='';return;}
+  const f=h=>{const[hh,mm]=h.split(':');const n=parseInt(hh);return(n%12||12)+':'+mm+(n<12?'am':'pm');};
+  const i=TZ_MAP[tz]||{};p.textContent=`🕐 ${f(s)}${e?' – '+f(e):''} ${getTzAbbr(tz)} (${isDST()?i.dstOff:i.stdOff})`;
+}
+setTimeout(()=>{ ['f-time-start','f-time-end','f-timezone'].forEach(id=>{document.getElementById(id)?.addEventListener('change',updateTzPreview);document.getElementById(id)?.addEventListener('input',updateTzPreview);}); },100);
+
+// ─── NEW HIRE CHECKLIST ───
+const CL_SECTIONS=[
+  {title:'Pre-Orientation Documentation',items:['Digital onboarding complete (New Hire Spreadsheet)','OSHA 10 or OSHA 30 Construction certificate on file','High school diploma, transcript, or GED on file','OSHA card uploaded to SharePoint (by region)','Education doc uploaded to SharePoint (Last, First format)','Cell phone number confirmed (Indeed messaging)','Mailing address confirmed (Indeed messaging)']},
+  {title:'ATA / Training Setup',items:['Airadigm Technical Academy account created (Airadigm email)','Enrolled in: Basics','Enrolled in: ATA Getting Started','Enrolled in: Safety','Digital ATA Scores spreadsheet created (Last, First – Digital ATA Scores.xlsx)','ATA Scores spreadsheet saved to SharePoint: Digital ATA Scores folder']},
+  {title:'Systems & Access',items:['QAD user account created (coordinate with Lisa)','WEX account/access set up','USA Balancing access set up','RC account active — confirmed by Brenda in Onboarding thread','Added to: Company Social RC Thread','Added to: Field Tech Resources RC Thread','Added to: Training Touch Base / BZ Info Thread','Added to: Competition GROUP RC Thread','RC TEAM created: PM + Lead Tech (Brenda) + new tech']},
+  {title:'Recurring Meetings',items:['Added to New Tech Update (Wednesdays) — skip if Survey tech','Added to Training Touch Base – TTB (Thursdays)','Tech confirmed attendance for scheduled meetings']},
+  {title:'Office Admin',items:['Added to Office Calendar (Outlook)','Added to Anniversary / Birthday Tracker spreadsheet','Added to AirSolutions & Balancing Employee Location Map (Google My Maps)']},
+];
+
+let hires = JSON.parse(localStorage.getItem('airadigm_hires')||'[]');
+let hireChecks = JSON.parse(localStorage.getItem('airadigm_hire_checks')||'{}');
+let activeHireIdx = 0;
+
+function renderHireChecklist(){
+  const tabsEl=document.getElementById('hire-tabs');
+  const contentEl=document.getElementById('hire-content');
+  if(!hires.length){tabsEl.innerHTML='';contentEl.innerHTML='<div style="padding:40px;text-align:center;color:#94a3b8;font-size:14px">No hires yet. Click "+ Add hire" to get started.</div>';return;}
+  tabsEl.innerHTML=hires.map((h,i)=>`<button class="hire-tab ${i===activeHireIdx?'active':''}" onclick="switchHire(${i})">${h.name}</button>`).join('');
+  const hire=hires[activeHireIdx];const ck=hire.id;
+  const all=CL_SECTIONS.flatMap(s=>s.items);const doneC=all.filter((_,i)=>hireChecks[`${ck}_${i}`]).length;
+  const pct=Math.round(doneC/all.length*100);
+  let html=`<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:600;color:#1e293b">${hire.name}</span><span style="font-size:12px;color:#64748b">${hire.startDate||''} ${hire.region?'· '+hire.region:''}</span></div><div class="hire-progress-label">${doneC} of ${all.length} completed (${pct}%)</div><div class="hire-progress"><div class="hire-progress-bar" style="width:${pct}%"></div></div></div>`;
+  let gi=0;
+  CL_SECTIONS.forEach(sec=>{
+    html+=`<div class="hire-section"><div class="hire-section-title">${sec.title}</div>`;
+    sec.items.forEach(item=>{
+      const key=`${ck}_${gi}`;const checked=!!hireChecks[key];
+      html+=`<div class="hire-item"><input type="checkbox" class="hire-check" ${checked?'checked':''} onchange="toggleHireCheck('${key}',this)"><span class="hire-text ${checked?'checked':''}" id="hi-${key}">${item}</span></div>`;
+      gi++;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div style="margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9"><button class="btn-secondary" onclick="deleteHire(${activeHireIdx})" style="font-size:12px;color:#dc2626;border-color:#fca5a5">Remove ${hire.name}</button></div>`;
+  contentEl.innerHTML=html;
+}
+function switchHire(i){activeHireIdx=i;renderHireChecklist();}
+function toggleHireCheck(key,el){hireChecks[key]=el.checked;localStorage.setItem('airadigm_hire_checks',JSON.stringify(hireChecks));const sp=document.getElementById('hi-'+key);if(sp)sp.classList.toggle('checked',el.checked);renderHireChecklist();}
+function deleteHire(i){if(!confirm(`Remove ${hires[i].name}?`))return;hires.splice(i,1);localStorage.setItem('airadigm_hires',JSON.stringify(hires));activeHireIdx=Math.max(0,i-1);renderHireChecklist();}
+function openHireModal(){document.getElementById('hire-modal').classList.add('open');document.getElementById('h-name').focus();}
+function closeHireModal(){document.getElementById('hire-modal').classList.remove('open');document.getElementById('h-name').value='';document.getElementById('h-start').value='';document.getElementById('h-region').value='';document.getElementById('h-name').classList.remove('error');}
+function saveHire(){
+  const name=document.getElementById('h-name').value.trim();
+  if(!name){document.getElementById('h-name').classList.add('error');return;}
+  hires.push({id:'hire'+Date.now(),name,startDate:document.getElementById('h-start').value,region:document.getElementById('h-region').value});
+  localStorage.setItem('airadigm_hires',JSON.stringify(hires));activeHireIdx=hires.length-1;closeHireModal();renderHireChecklist();
+}
+
+// ─── GLOBAL EVENTS ───
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();}});
+['task-modal','note-modal','orient-modal','hire-modal','bootcamp-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();}});});
+
+// ─── INIT ───
+renderWeekly();
+calMonth=new Date().getMonth();
+document.getElementById('cal-month-select').value=calMonth;
 </script>
 </body>
 </html>
