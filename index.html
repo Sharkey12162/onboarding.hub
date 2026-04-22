@@ -166,6 +166,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .badge-owner { font-size: 10px; color: #64748b; }
 .btn-del { background: none; border: none; color: #cbd5e1; font-size: 13px; cursor: pointer; padding: 0 2px; line-height: 1; margin-left: auto; }
 .btn-del:hover { color: #ef4444; }
+.btn-note { background: none; border: none; font-size: 12px; cursor: pointer; padding: 0 3px; line-height: 1; color: #cbd5e1; transition: color .15s; }
+.btn-note:hover { color: #6366f1; }
+.btn-note.has-note { color: #6366f1; }
+.task-note-preview { font-size: 10px; color: #6366f1; background: #eef2ff; border-radius: 4px; padding: 3px 6px; margin-top: 4px; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .sidebar { width: 248px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
 .side-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
 .side-head { background: #1a2540; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; }
@@ -303,6 +307,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="form-row"><label class="form-label">Note / reminder for this day</label><textarea id="note-input" class="form-input" rows="4" placeholder="Add a note..."></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeNoteModal()">Cancel</button><button class="btn-primary" onclick="saveNote()">Save</button></div>
+  </div>
+</div>
+
+<!-- MODAL: TASK NOTE -->
+<div id="task-note-modal" class="modal-backdrop">
+  <div class="modal" style="width:400px">
+    <div class="modal-head"><span class="modal-title" id="task-note-modal-title">Task Note</span><button class="modal-close" onclick="closeTaskNoteModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">Note for this task</label><textarea id="task-note-input" class="form-input" rows="4" placeholder="Add a note or comment..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeTaskNoteModal()">Cancel</button><button class="btn-danger" id="task-note-clear-btn" onclick="clearTaskNote()" style="background:#fee2e2;color:#dc2626;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px">Clear</button><button class="btn-primary" onclick="saveTaskNote()">Save</button></div>
   </div>
 </div>
 
@@ -960,6 +975,30 @@ function getWkDates(o) {
 function fD(d){return WM[d.getMonth()]+' '+d.getDate();}
 function isTdy(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear();}
 
+// ─── TASK NOTES ───
+let taskNotes = JSON.parse(localStorage.getItem('task_notes') || '{}');
+let activeTaskNoteId = null;
+function saveTaskNotes() { localStorage.setItem('task_notes', JSON.stringify(taskNotes)); }
+function openTaskNoteModal(taskId, taskName) {
+  activeTaskNoteId = taskId;
+  document.getElementById('task-note-modal-title').textContent = taskName.length > 40 ? taskName.substring(0,40)+'…' : taskName;
+  document.getElementById('task-note-input').value = taskNotes[taskId] || '';
+  document.getElementById('task-note-modal').classList.add('open');
+  setTimeout(() => document.getElementById('task-note-input').focus(), 50);
+}
+function closeTaskNoteModal() { document.getElementById('task-note-modal').classList.remove('open'); activeTaskNoteId = null; }
+function saveTaskNote() {
+  if (!activeTaskNoteId) return;
+  const val = document.getElementById('task-note-input').value.trim();
+  if (val) taskNotes[activeTaskNoteId] = val; else delete taskNotes[activeTaskNoteId];
+  saveTaskNotes(); closeTaskNoteModal(); renderWeekly();
+}
+function clearTaskNote() {
+  if (!activeTaskNoteId) return;
+  delete taskNotes[activeTaskNoteId];
+  saveTaskNotes(); closeTaskNoteModal(); renderWeekly();
+}
+
 function renderWeekly() {
   const dates=getWkDates(weekOffset);
   document.getElementById('week-label').textContent='Week of '+fD(dates[0])+' – '+fD(dates[4]);
@@ -1031,8 +1070,16 @@ function renderWeekly() {
       const sb=document.createElement('button');sb.className=`status-btn ${status}`;sb.textContent=SL[status]||status;sb.title='Click to change';sb.onclick=()=>cycleStatus(t.id,weekOffset,day,t.recurring);
       footer.appendChild(sb);
       if(t.owner){const ob=document.createElement('span');ob.className='badge-owner';ob.textContent=t.owner;footer.appendChild(ob);}
+      // Note button
+      const noteKey = t.recurring ? `${t.id}_r` : t.id;
+      const hasNote = !!taskNotes[noteKey];
+      const nb=document.createElement('button');nb.className='btn-note'+(hasNote?' has-note':'');nb.title=hasNote?'Edit note':'Add note';nb.textContent='📝';nb.onclick=()=>openTaskNoteModal(noteKey, t.name.replace(/^[🎓🚀]\s*/,''));
+      footer.appendChild(nb);
       const db=document.createElement('button');db.className='btn-del';db.textContent='×';db.onclick=()=>deleteTask(t.id);footer.appendChild(db);
-      card.appendChild(footer);body.appendChild(card);
+      card.appendChild(footer);
+      // Note preview below footer
+      if(hasNote){const np=document.createElement('div');np.className='task-note-preview';np.textContent=taskNotes[noteKey];card.appendChild(np);}
+      body.appendChild(card);
     });}
     col.appendChild(body);grid.appendChild(col);
   });
@@ -1139,8 +1186,8 @@ function saveHire(){
 }
 
 // ─── GLOBAL EVENTS ───
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();}});
-['task-modal','note-modal','orient-modal','hire-modal','bootcamp-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();}});});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();closeTaskNoteModal();}});
+['task-modal','note-modal','orient-modal','hire-modal','bootcamp-modal','task-note-modal'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this){closeTaskModal();closeNoteModal();closeOrientModal();closeHireModal();closeBootcampModal();closeTaskNoteModal();}});});
 
 // ─── INIT ───
 renderWeekly();
