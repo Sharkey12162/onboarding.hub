@@ -578,6 +578,7 @@ let calYear = 2026;
 let calMonth = new Date().getMonth();
 let calNotes = JSON.parse(localStorage.getItem('orient_notes') || '{}');
 let orientGroups = JSON.parse(localStorage.getItem('orient_groups') || '[]');
+let editingOrientGroupId = null;
 let noteDay = null;
 
 document.getElementById('cal-month-select').value = calMonth;
@@ -649,11 +650,28 @@ function saveNote() {
 }
 
 function openOrientModal() {
+  editingOrientGroupId = null;
+  document.querySelector('#orient-modal .modal-title').textContent = 'New Orientation Group';
+  document.querySelector('#orient-modal .btn-primary').textContent = 'Create group';
+  document.getElementById('og-techs').value = '';
   document.getElementById('orient-modal').classList.add('open');
   const d=new Date(); d.setDate(d.getDate()+(1+7-d.getDay())%7||7);
   document.getElementById('og-date').valueAsDate=d;
 }
-function closeOrientModal() { document.getElementById('orient-modal').classList.remove('open'); document.getElementById('og-date').value=''; document.getElementById('og-techs').value=''; }
+function openEditOrientModal(id) {
+  const g = orientGroups.find(x=>x.id===id);
+  if (!g) return;
+  editingOrientGroupId = id;
+  document.querySelector('#orient-modal .modal-title').textContent = 'Edit Orientation Group';
+  document.querySelector('#orient-modal .btn-primary').textContent = 'Save changes';
+  // Parse stored date and set
+  const parts = g.orientDate.split('-');
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  document.getElementById('og-date').valueAsDate = d;
+  document.getElementById('og-techs').value = g.techs.join('\n');
+  document.getElementById('orient-modal').classList.add('open');
+}
+function closeOrientModal() { document.getElementById('orient-modal').classList.remove('open'); document.getElementById('og-date').value=''; document.getElementById('og-techs').value=''; editingOrientGroupId=null; }
 
 function toDateKey(d) { return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
 function prevWD(d, n) { let r=new Date(d),c=0; while(c<n){r.setDate(r.getDate()-1);if(r.getDay()!==0&&r.getDay()!==6)c++;} return r; }
@@ -715,30 +733,56 @@ function saveOrientGroup() {
   const ds = document.getElementById('og-date').value;
   const tr = document.getElementById('og-techs').value.trim();
   if (!ds||!tr) { alert('Please fill in all fields.'); return; }
+
   const oDate = new Date(ds+'T12:00:00');
   const techs = tr.split('\n').map(s=>s.trim()).filter(Boolean);
-  const monOrient = new Date(oDate); while(monOrient.getDay()!==1) monOrient.setDate(monOrient.getDate()-1);
-  const friBefore = new Date(monOrient); friBefore.setDate(monOrient.getDate()-3); // fri of prior week
-  const monBefore = new Date(monOrient); monBefore.setDate(monOrient.getDate()-7);
-  friBefore.setDate(monBefore.getDate()+4);
-  const groupId = 'og'+Date.now();
+
+  // Monday of orientation week
+  const monOrient = new Date(oDate);
+  const dow = monOrient.getDay();
+  monOrient.setDate(monOrient.getDate() - (dow===0?6:dow-1));
+
+  // Monday of the week BEFORE orientation
+  const monBefore = new Date(monOrient);
+  monBefore.setDate(monOrient.getDate() - 7);
+
+  // Friday of the week BEFORE (monBefore + 4 days)
+  const friBefore = new Date(monBefore);
+  friBefore.setDate(monBefore.getDate() + 4);
+
+  const groupId = editingOrientGroupId || ('og'+Date.now());
+
   const eventTasks = [
-    {name:"🎓 Reply ALL to Brenda's email — Onboarding checklists", date:toDateKey(monBefore)},
-    {name:"🎓 Prepare ATA accounts & Digital ATA Scores spreadsheets", date:toDateKey(monBefore)},
-    {name:"🎓 Final onboarding status update (Reply All)", date:toDateKey(friBefore)},
-    {name:"🎓 Send Orientation link to Ana & Joe (IT Onboarding)", date:toDateKey(monOrient)},
-    {name:"🎓 Schedule Meet & Greet with ATA Team", date:toDateKey(monOrient)},
-    {name:"🎓 Create ATA profiles — enroll in Safety, Getting Started, Basics", date:toDateKey(monOrient)},
-    {name:"🎓 Add techs to RC Channels", date:toDateKey(oDate)},
-    {name:"🎓 Create TEAM in RC (PM + Brenda + new tech)", date:toDateKey(oDate)},
-    {name:"🎓 Post confirmation in Orientation thread", date:toDateKey(oDate)},
+    {name:"Reply ALL to Brenda's email — Onboarding checklists",        date:toDateKey(monBefore)},
+    {name:"Prepare ATA accounts & Digital ATA Scores spreadsheets",      date:toDateKey(monBefore)},
+    {name:"Final onboarding status update (Reply All)",                  date:toDateKey(friBefore)},
+    {name:"Send Orientation link to Ana & Joe (IT Onboarding)",          date:toDateKey(monOrient)},
+    {name:"Schedule Meet & Greet with ATA Team",                         date:toDateKey(monOrient)},
+    {name:"Create ATA profiles — enroll in Safety, Getting Started, Basics", date:toDateKey(monOrient)},
+    {name:"Add techs to RC Channels",                                    date:toDateKey(oDate)},
+    {name:"Create TEAM in RC (PM + Brenda + new tech)",                  date:toDateKey(oDate)},
+    {name:"Post confirmation in Orientation thread",                     date:toDateKey(oDate)},
   ];
-  orientGroups.push({id:groupId, orientDate:toDateKey(oDate), techs, tasks:eventTasks.map(t=>({name:t.name.replace('🎓 ',''),date:t.date})), createdAt:new Date().toISOString()});
+
+  const groupData = {
+    id: groupId,
+    orientDate: toDateKey(oDate),
+    techs,
+    tasks: eventTasks.map(t=>({name:t.name, date:t.date})),
+    createdAt: new Date().toISOString()
+  };
+
+  if (editingOrientGroupId) {
+    orientGroups = orientGroups.map(g => g.id === editingOrientGroupId ? groupData : g);
+  } else {
+    orientGroups.push(groupData);
+  }
+
   localStorage.setItem('orient_groups', JSON.stringify(orientGroups));
-  addEventTasksToWeekly(eventTasks, `Orientation ${toDateKey(oDate)} — ${techs.join(', ')}`, 'Orientation', groupId);
+  const tagged = eventTasks.map(t=>({...t, name:'🎓 '+t.name}));
+  addEventTasksToWeekly(tagged, 'Orientation '+toDateKey(oDate)+' — '+techs.join(', '), 'Orientation', groupId);
   closeOrientModal(); renderOrientCalendar(); renderOrientGroups();
 }
-
 function deleteOrientGroup(id) {
   if (!confirm('Delete this orientation group and its Weekly Tasks?')) return;
   orientGroups = orientGroups.filter(g=>g.id!==id);
@@ -755,7 +799,10 @@ function renderOrientGroups() {
     <div class="group-card">
       <div class="group-header">
         <div><div class="group-name">🎓 Orientation — ${g.orientDate}</div><div class="group-techs">Techs: ${g.techs.join(', ')}</div></div>
-        <button class="btn-sm danger" onclick="deleteOrientGroup('${g.id}')">Delete</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm" onclick="openEditOrientModal('${g.id}')" style="background:#e0e7ff;color:#4f46e5;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">Edit</button>
+          <button class="btn-sm danger" onclick="deleteOrientGroup('${g.id}')">Delete</button>
+        </div>
       </div>
       <div class="group-tasks">${(g.tasks||[]).map(t=>`<span class="group-task-chip">${t.date}: ${t.name}</span>`).join('')}</div>
     </div>`).join('');
